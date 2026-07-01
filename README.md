@@ -124,26 +124,6 @@ User input -> Mission Understanding Agent -> Waypoint Planner Agent -> Safety Co
 - README and documentation
 - Final presentation/demo materials
 
-## Daily Progress Template
-
-```text
-Date:
-Today's Completed Tasks:
-1.
-2.
-3.
-Problems Faced:
-1.
-2.
-How I Solved Them:
-1.
-2.
-Pending Tasks:
-1.
-2.
-GitHub Commit Link:
-```
-
 ## License
 
 This project is developed as part of an internship program and is intended for academic demonstration and learning.
