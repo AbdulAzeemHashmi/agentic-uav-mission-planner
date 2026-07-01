@@ -226,6 +226,17 @@ if st.session_state.current_page == "Home":
         </p>
     </div>
     """, unsafe_allow_html=True)
+
+    st.subheader("📘 Internship Project Snapshot")
+    st.markdown("""
+    - **Project Domain:** Unmanned Aerial Vehicles (UAVs), Agentic AI, and Safety Compliance
+    - **Project Type:** End-to-end software application for mission planning and safety verification
+    - **Recommended Duration:** 8 weeks / 2 months
+    - **Target Level:** 5th semester undergraduate
+    - **Core Scope:** Natural language mission input, waypoint generation, map visualization, geofence checks, correction suggestions, report export, and SQLite storage
+    """)
+
+    st.write("---")
     
     col1, col2 = st.columns(2)
     with col1:
