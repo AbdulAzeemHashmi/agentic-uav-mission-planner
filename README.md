@@ -24,28 +24,34 @@ agentic-uav-mission-planner/
 |-- requirements.txt                   # Python dependency list
 |-- .env                               # Local secrets file (GEMINI_API_KEY)
 |-- .gitignore                         # Git ignore rules
+|
 |-- agents/
-   |-- __init__.py
-   |-- mission_understanding_agent.py # Gemini NLP parsing layer
-   |-- waypoint_planner_agent.py      # Geometric coordinate generator
-   |-- safety_compliance_agent.py     # Rule-based safety checker
-   |-- correction_agent.py            # Auto-correction engine
-   |-- report_agent.py                # HTML summary formatter
+|   |-- __init__.py
+|   |-- mission_understanding_agent.py # Gemini NLP parsing layer
+|   |-- waypoint_planner_agent.py      # Geometric coordinate generator
+|   |-- safety_compliance_agent.py     # Rule-based safety checker
+|   |-- correction_agent.py            # Auto-correction engine
+|   |-- report_agent.py                # HTML summary formatter
+|
 |-- utils/
-   |-- __init__.py
-   |-- database_utils.py              # SQLite schema and CRUD operations
-   |-- map_utils.py                   # Folium map builder
-   |-- export_utils.py                # PDF, CSV, and JSON exporters
-   |-- distance_utils.py              # Haversine and bearing calculations
+|   |-- __init__.py
+|   |-- database_utils.py              # SQLite schema and CRUD operations
+|   |-- map_utils.py                   # Folium map builder
+|   |-- export_utils.py                # PDF, CSV, and JSON exporters
+|   |-- distance_utils.py              # Haversine and bearing calculations
+|
 |-- data/
-   |-- sample_missions.csv            # Sample mission statistics
-   |-- sample_waypoints.csv           # Sample flight coordinates
+|   |-- sample_missions.csv            # Sample mission statistics
+|   |-- sample_waypoints.csv           # Sample flight coordinates
+|
 |-- docs/
-   |-- uav_terms.md                   # UAV terminology reference guide
+|   |-- uav_terms.md                   # UAV terminology reference guide
+|
 |-- tests/
-   |-- test_planner.py                # Unit tests covering all core modules
+|   |-- test_planner.py                # Unit tests covering all core modules
+|
 |-- reports/
-    |-- generated_reports/             # Auto-generated PDF output directory
+|   |-- generated_reports/             # Auto-generated PDF output directory
 ```
 
 ---
