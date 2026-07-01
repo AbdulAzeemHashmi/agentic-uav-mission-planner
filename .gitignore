@@ -1,10 +1,15 @@
 .env
 __pycache__/
 *.pyc
+*.pyo
 database/
 *.db
-reports/generated_reports/
+reports/generated_reports/*.pdf
+.venv/
+venv/
 .vscode/
 .idea/
-.antigravity-ide/
 *.log
+*.egg-info/
+dist/
+build/
