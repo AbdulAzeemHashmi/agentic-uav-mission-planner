@@ -1,0 +1,10 @@
+.env
+__pycache__/
+*.pyc
+database/
+*.db
+reports/generated_reports/
+.vscode/
+.idea/
+.antigravity-ide/
+*.log

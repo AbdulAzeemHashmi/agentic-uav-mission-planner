@@ -1,0 +1,5 @@
+mission_name,mission_type,altitude,duration,status
+FAST Surveillance,surveillance,60.0,15.0,Safe
+Airport Perimeter Scan,inspection,100.0,40.0,Needs Revision
+Sector B Delivery,delivery,45.0,10.0,Safe
+City Park Search,search_and_rescue,30.0,25.0,Safe

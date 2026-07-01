@@ -1,0 +1,9 @@
+streamlit==1.32.0
+streamlit-folium==0.18.0
+folium==0.16.0
+pandas==2.2.1
+google-generativeai==0.4.1
+python-dotenv==1.0.1
+shapely==2.0.3
+reportlab==4.1.0
+matplotlib==3.8.3
