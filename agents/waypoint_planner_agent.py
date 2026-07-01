@@ -1,5 +1,216 @@
 import math
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
+
+# ---------------------------------------------------------------------------
+# COORDINATE GEOMETRY PRIMER
+# ---------------------------------------------------------------------------
+# The Earth is approximately a sphere with a circumference of ~40,075 km.
+# This means 1 degree of latitude always equals roughly 111,000 meters.
+# Longitude degrees shrink toward the poles, so we scale by cos(latitude).
+#
+#   lat_offset  = distance_meters / 111_000
+#   lon_offset  = distance_meters / (111_000 * cos(lat_radians))
+#
+# This is a "flat-Earth" / "small-area" approximation — accurate enough
+# for areas < 50 km across (well within UAV operating range).
+# ---------------------------------------------------------------------------
+
+# Meters per degree of latitude (constant, because latitude lines are parallel)
+METERS_PER_DEG_LAT: float = 111_000.0
+
+
+def generate_square_route(
+    home_lat: float,
+    home_lon: float,
+    altitude: float,
+    side_length_meters: float = 100.0
+) -> List[Dict[str, Any]]:
+    """
+    Generates a square patrol route centered on the home (takeoff) point.
+
+    Coordinate Geometry:
+    --------------------
+    We convert `side_length_meters` into degree offsets using the
+    111,000 m/degree approximation:
+
+        half  = side_length_meters / 2          (half the square side)
+        d_lat = half / 111_000                  (latitude offset, degrees)
+        d_lon = half / (111_000 * cos(lat))     (longitude offset, degrees)
+
+    The four corners are placed at:
+        NE  →  (+d_lat, +d_lon)
+        NW  →  (+d_lat, -d_lon)
+        SW  →  (-d_lat, -d_lon)
+        SE  →  (-d_lat, +d_lon)
+
+    Args:
+        home_lat          : Latitude of the takeoff / home point (decimal degrees)
+        home_lon          : Longitude of the takeoff / home point (decimal degrees)
+        altitude          : Cruise altitude in meters (applied to every node)
+        side_length_meters: Physical side length of the square in meters (default 100 m)
+
+    Returns:
+        List of waypoint dicts: [{sequence_no, latitude, longitude, altitude, action}, ...]
+        Starts with Takeoff (seq 0), ends with RTL.
+    """
+    waypoints: List[Dict[str, Any]] = []
+    seq: int = 0
+
+    # --- Step 1: Compute degree offsets from meters ---
+    half_side: float = side_length_meters / 2.0
+
+    # Latitude offset is constant (111,000 m per degree)
+    d_lat: float = half_side / METERS_PER_DEG_LAT
+
+    # Longitude offset shrinks near the poles — we scale by cos(latitude)
+    # math.radians() converts degrees to radians, which cos() requires
+    lat_rad: float = math.radians(home_lat)
+    d_lon: float = half_side / (METERS_PER_DEG_LAT * math.cos(lat_rad))
+
+    # --- Step 2: Takeoff at Home Point (Sequence 0) ---
+    waypoints.append({
+        "sequence_no": seq,
+        "latitude":    home_lat,
+        "longitude":   home_lon,
+        "altitude":    altitude,
+        "action":      "takeoff"
+    })
+    seq += 1
+
+    # --- Step 3: Four corners of the square (NE → NW → SW → SE) ---
+    # This order creates a clean closed loop when connected by PolyLine.
+    square_corners = [
+        ( d_lat,  d_lon),   # NE corner
+        ( d_lat, -d_lon),   # NW corner
+        (-d_lat, -d_lon),   # SW corner
+        (-d_lat,  d_lon),   # SE corner
+    ]
+
+    for lat_off, lon_off in square_corners:
+        waypoints.append({
+            "sequence_no": seq,
+            "latitude":    home_lat + lat_off,
+            "longitude":   home_lon + lon_off,
+            "altitude":    altitude,
+            "action":      "waypoint"
+        })
+        seq += 1
+
+    # --- Step 4: Return-to-Launch back at Home (auto-appended) ---
+    waypoints.append({
+        "sequence_no": seq,
+        "latitude":    home_lat,
+        "longitude":   home_lon,
+        "altitude":    altitude,
+        "action":      "rtl"
+    })
+
+    return waypoints
+
+
+def generate_perimeter_route(
+    home_lat: float,
+    home_lon: float,
+    altitude: float,
+    bounds: Optional[dict] = None
+) -> List[Dict[str, Any]]:
+    """
+    Generates a boundary perimeter patrol route.
+
+    If `bounds` is provided, the UAV flies the exact edges of that bounding box.
+    If `bounds` is None, a default perimeter is auto-computed as a rectangle
+    roughly 300 m × 300 m centered on the home point.
+
+    Boundary Check Purpose:
+    -----------------------
+    This route is used to verify that the entire flight area is within allowed
+    airspace before committing to a detailed grid or circular scan. The UAV
+    traces the outer boundary first, flags any geofence violations, and then
+    the Safety Compliance Agent approves or rejects the inner mission plan.
+
+    Args:
+        home_lat : Latitude of the takeoff / home point (decimal degrees)
+        home_lon : Longitude of the takeoff / home point (decimal degrees)
+        altitude : Cruise altitude in meters
+        bounds   : Optional dict with keys {"north", "south", "east", "west"}
+                   in decimal degrees. If None, a default 300 m boundary is used.
+
+    Returns:
+        List of waypoint dicts: [{sequence_no, latitude, longitude, altitude, action}, ...]
+        Starts with Takeoff (seq 0), ends with RTL.
+    """
+    waypoints: List[Dict[str, Any]] = []
+    seq: int = 0
+
+    # --- Step 1: Compute default bounds if none provided ---
+    if bounds is None:
+        # Default: 300 m boundary box centered on home
+        perimeter_meters: float = 150.0   # half-width = 150 m (→ 300 m total)
+        d_lat: float = perimeter_meters / METERS_PER_DEG_LAT
+        lat_rad: float = math.radians(home_lat)
+        d_lon: float = perimeter_meters / (METERS_PER_DEG_LAT * math.cos(lat_rad))
+
+        north: float = home_lat + d_lat
+        south: float = home_lat - d_lat
+        east:  float = home_lon + d_lon
+        west:  float = home_lon - d_lon
+    else:
+        # Use caller-supplied bounding box
+        north = float(bounds["north"])
+        south = float(bounds["south"])
+        east  = float(bounds["east"])
+        west  = float(bounds["west"])
+
+    # --- Safety guard: avoid empty/inverted bounds crashing the map ---
+    if north <= south or east <= west:
+        # Degenerate bounds — return minimal takeoff + RTL only
+        return [
+            {"sequence_no": 0, "latitude": home_lat, "longitude": home_lon,
+             "altitude": altitude, "action": "takeoff"},
+            {"sequence_no": 1, "latitude": home_lat, "longitude": home_lon,
+             "altitude": altitude, "action": "rtl"}
+        ]
+
+    # --- Step 2: Takeoff at Home Point (Sequence 0) ---
+    waypoints.append({
+        "sequence_no": seq,
+        "latitude":    home_lat,
+        "longitude":   home_lon,
+        "altitude":    altitude,
+        "action":      "takeoff"
+    })
+    seq += 1
+
+    # --- Step 3: Trace the four corners of the bounding box ---
+    # Order: NW → NE → SE → SW (clockwise when viewed on map)
+    perimeter_corners = [
+        (north, west),   # NW
+        (north, east),   # NE
+        (south, east),   # SE
+        (south, west),   # SW
+    ]
+
+    for lat, lon in perimeter_corners:
+        waypoints.append({
+            "sequence_no": seq,
+            "latitude":    lat,
+            "longitude":   lon,
+            "altitude":    altitude,
+            "action":      "waypoint"
+        })
+        seq += 1
+
+    # --- Step 4: Return-to-Launch back at Home (auto-appended) ---
+    waypoints.append({
+        "sequence_no": seq,
+        "latitude":    home_lat,
+        "longitude":   home_lon,
+        "altitude":    altitude,
+        "action":      "rtl"
+    })
+
+    return waypoints
+
 
 def generate_waypoints(
     home_lat: float,
