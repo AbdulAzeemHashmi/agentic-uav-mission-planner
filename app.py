@@ -7,7 +7,7 @@ from streamlit_folium import st_folium
 
 # Configure streamlit page settings (MUST be the first command)
 st.set_page_config(
-    page_title="SkyGuard AI - Agentic UAV Planner",
+    page_title="Agentic UAV Mission Planner",
     page_icon="🛸",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -201,7 +201,7 @@ if not st.session_state.active_waypoints:
 
 # --- SIDEBAR NAVIGATION ---
 st.sidebar.image("https://img.icons8.com/nolan/96/ufo.png", width=70)
-st.sidebar.title("SkyGuard AI")
+st.sidebar.title("Agentic UAV Mission Planner")
 st.sidebar.caption("Agentic UAV Mission Planning and Safety Compliance Assistant")
 st.sidebar.write("---")
 
@@ -218,7 +218,7 @@ st.session_state.current_page = page
 if st.session_state.current_page == "Home":
     st.markdown("""
     <div class="hero-banner">
-        <h1 class="hero-title">🛸 SkyGuard AI</h1>
+        <h1 class="hero-title">🛸 Agentic UAV Mission Planner</h1>
         <p class="hero-subtitle">
             <strong>Agentic UAV Mission Planning and Safety Compliance Assistant</strong><br>
             Convert natural language parameters into structured, compliant flight paths,
@@ -694,7 +694,7 @@ elif st.session_state.current_page == "Export":
 # --- PAGE 6: SAFETY CHECK ---
 elif st.session_state.current_page == "Safety Check":
     st.title("📜 UAV Flight Safety Standards")
-    st.write("SkyGuard AI enforces strict compliance rules to align with civil airspace regulations:")
+    st.write("The Agentic UAV Mission Planner enforces strict compliance rules to align with civil airspace regulations:")
     
     st.markdown("""
     ### 🛡️ Safety Verification Rules

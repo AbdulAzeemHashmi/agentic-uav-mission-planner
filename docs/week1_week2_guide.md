@@ -1,5 +1,5 @@
 # Week 1 and Week 2 Combined Implementation Guide
-## SkyGuard AI - Agentic UAV Mission Planning and Safety Compliance Assistant
+## Agentic UAV Mission Planner — Week 1 & Week 2 Implementation Guide
 
 **Student:** Abdul Azeem Hashmi  
 **Semester:** 5th Semester  
@@ -233,7 +233,7 @@ pip install -r requirements.txt
 
 ```python
 # ============================================================
-# SkyGuard AI - Agentic UAV Mission Planner
+# Agentic UAV Mission Planner
 # app.py - Multi-page Streamlit Application Shell
 # Week 1 + Week 2 Baseline Implementation
 # Author: Abdul Azeem Hashmi
@@ -245,7 +245,7 @@ import pandas as pd
 
 # ---- Page Configuration (must be the very first Streamlit command) ----
 st.set_page_config(
-    page_title="SkyGuard AI - UAV Mission Planner",
+    page_title="Agentic UAV Mission Planner",
     page_icon="UAV",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -268,7 +268,7 @@ if "mock_waypoints" not in st.session_state:
 # ============================================================
 # SIDEBAR NAVIGATION
 # ============================================================
-st.sidebar.title("SkyGuard AI")
+st.sidebar.title("Agentic UAV Mission Planner")
 st.sidebar.caption("UAV Mission Planner - Week 1 and 2 Build")
 st.sidebar.write("---")
 
@@ -286,11 +286,11 @@ st.session_state.current_page = page
 # PAGE 1: HOME
 # ============================================================
 if st.session_state.current_page == "Home":
-    st.title("SkyGuard AI - Agentic UAV Mission Planner")
-    st.subheader("Welcome to SkyGuard AI")
+    st.title("Agentic UAV Mission Planner")
+    st.subheader("Welcome to the Agentic UAV Mission Planner")
     
     st.markdown("""
-    SkyGuard AI is an Agentic UAV Mission Planning and Safety Compliance Assistant
+    The Agentic UAV Mission Planner is an Agentic UAV Mission Planning and Safety Compliance tool
     built for undergraduate research and internship demonstration purposes.
     
     **What this assistant does:**
@@ -303,7 +303,7 @@ if st.session_state.current_page == "Home":
     **Why safety checking matters:**
     UAVs operating without automated pre-flight compliance checks risk flying into
     restricted airspace, exceeding battery capacity, or violating civil aviation rules.
-    SkyGuard AI prevents these failures before a mission is ever launched.
+    The Agentic UAV Mission Planner prevents these failures before a mission is ever launched.
     """)
     
     st.write("---")
@@ -534,7 +534,7 @@ elif st.session_state.current_page == "Mission Input":
 # ============================================================
 elif st.session_state.current_page == "Safety Check":
     st.title("Safety Check - UAV Flight Safety Standards")
-    st.write("SkyGuard AI enforces the following compliance rules on every mission plan:")
+    st.write("The Agentic UAV Mission Planner enforces the following compliance rules on every mission plan:")
     
     st.markdown("""
     ### Safety Verification Rules

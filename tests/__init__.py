@@ -1,1 +1,1 @@
-# Tests package for SkyGuard AI UAV Mission Planner
+# Tests package for Agentic UAV Mission Planner

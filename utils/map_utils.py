@@ -1,7 +1,7 @@
 """
 utils/map_utils.py
 ==================
-Folium map builder utilities for the SkyGuard AI UAV Mission Planner.
+Folium map builder utilities for the Agentic UAV Mission Planner.
 
 Public API
 ----------

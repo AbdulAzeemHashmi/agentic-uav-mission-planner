@@ -1,1 +1,1 @@
-# Agents package for SkyGuard AI UAV Mission Planner
+# Agents package for Agentic UAV Mission Planner

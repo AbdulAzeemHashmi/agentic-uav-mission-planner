@@ -1,6 +1,6 @@
-# Agentic UAV Mission Planning and Safety Compliance Assistant (SkyGuard AI)
+# Agentic UAV Mission Planner
 
-**Agentic UAV Mission Planning and Safety Compliance Assistant** (branded as **SkyGuard AI**) is a Streamlit-based web application for intelligent UAV mission planning, interactive route visualization, and automated safety compliance checking. It combines natural language parsing powered by the Gemini API with robust rule-based safety logic, geofence-aware route generation, and one-click auto-correction to help operators plan safe drone flights quickly and confidently.
+**Agentic UAV Mission Planner** is a Streamlit-based web application for intelligent UAV mission planning, interactive route visualization, and automated safety compliance checking. It combines natural language parsing powered by the Gemini API with robust rule-based safety logic, geofence-aware route generation, and one-click auto-correction to help operators plan safe drone flights quickly and confidently.
 
 ---
 
@@ -58,7 +58,7 @@ agentic-uav-mission-planner/
 
 ## Safety Compliance Rules
 
-SkyGuard AI enforces the following seven rules on every mission plan before approval:
+The Agentic UAV Mission Planner enforces the following seven rules on every mission plan before approval:
 
 | Rule | Description | Limit |
 |------|-------------|-------|
