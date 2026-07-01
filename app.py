@@ -207,7 +207,7 @@ st.sidebar.write("---")
 
 page = st.sidebar.radio(
     "Navigation Menu",
-    ["Home", "Mission Planner", "History & Database", "Safety Compliance Reference"],
+    ["Home", "Mission Input", "Export", "Safety Check"],
     index=0
 )
 
@@ -236,8 +236,8 @@ if st.session_state.current_page == "Home":
         """)
         
         st.write("")
-        if st.button("Proceed to Mission Planner"):
-            st.session_state.current_page = "Mission Planner"
+        if st.button("Proceed to Mission Input"):
+            st.session_state.current_page = "Mission Input"
             st.rerun()
             
     with col2:
@@ -254,8 +254,8 @@ if st.session_state.current_page == "Home":
         m_mini = create_mission_map([], (33.6425, 73.0232))
         st_folium(m_mini, height=250, width=500, key="minimap")
 
-# --- PAGE 2: MISSION PLANNER ---
-elif st.session_state.current_page == "Mission Planner":
+# --- PAGE 2: MISSION INPUT ---
+elif st.session_state.current_page == "Mission Input":
     st.title("🛰️ Agentic UAV Mission Planner")
     st.write("Generate flight plans via Natural Language or manual overrides, assess safety compliance, and adjust path settings.")
     
@@ -403,8 +403,8 @@ elif st.session_state.current_page == "Mission Planner":
     else:
         st.write("No waypoints generated yet.")
 
-# --- PAGE 3: HISTORY & DATABASE ---
-elif st.session_state.current_page == "History & Database":
+# --- PAGE 3: EXPORT ---
+elif st.session_state.current_page == "Export":
     st.title("🗄️ Mission Records Database")
     st.write("Browse previous drone routes stored in SQLite database, view details, export records, or remove items.")
     
@@ -488,8 +488,8 @@ elif st.session_state.current_page == "History & Database":
                 st.success("Mission deleted!")
                 st.rerun()
 
-# --- PAGE 4: SAFETY COMPLIANCE REFERENCE ---
-elif st.session_state.current_page == "Safety Compliance Reference":
+# --- PAGE 4: SAFETY CHECK ---
+elif st.session_state.current_page == "Safety Check":
     st.title("📜 UAV Flight Safety Standards")
     st.write("SkyGuard AI enforces strict compliance rules to align with civil airspace regulations:")
     
