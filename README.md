@@ -1,6 +1,6 @@
 # Agentic UAV Mission Planning and Safety Compliance Assistant
 
-**A two-month software internship project for UAV mission planning, route visualization, safety checking, and agentic workflow development.**
+A two-month software internship project for UAV mission planning, route visualization, safety checking, and agentic workflow development.
 
 ## Project Overview
 
