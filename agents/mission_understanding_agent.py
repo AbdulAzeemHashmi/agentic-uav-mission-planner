@@ -25,129 +25,95 @@ Extract or infer the following parameters from the text:
 5. "return_to_launch": Boolean. True if the user mentions returning, RTL, landing at start, or similar. Default is True.
 6. "avoid_no_fly_zone": Boolean. True if the user mentions avoiding restricted zones, no-fly zones, geofence, or security areas. Default is True.
 7. "route_pattern": One of: "square", "grid", "circle", "perimeter", "manual". Default is "square".
-8. "home_latitude": Latitude coordinate if mentioned (number). Default is null.
-9. "home_longitude": Longitude coordinate if mentioned (number). Default is null.
+8. "home_latitude": Floating point number coordinate. Default is 33.6425.
+9. "home_longitude": Floating point number coordinate. Default is 73.0232.
 
-Provide ONLY the valid JSON object in your response. No explanation, no markdown tags.
+Respond ONLY with a valid JSON block enclosed in ```json and ```. Do not include any other conversational text or markdown.
 """
 
-def parse_with_regex(text: str) -> Dict[str, Any]:
-    """Fallback parser using regex in case Gemini API is not available or fails."""
-    text_lower = text.lower()
-    
-    # Mission type
-    m_type = "surveillance"
-    if "delivery" in text_lower or "drop" in text_lower or "transport" in text_lower:
-        m_type = "delivery"
-    elif "inspect" in text_lower or "check" in text_lower or "monitor" in text_lower:
-        m_type = "inspection"
-    elif "search" in text_lower or "rescue" in text_lower:
-        m_type = "search_and_rescue"
-        
-    # Route pattern
-    pattern = "square"
-    if "grid" in text_lower or "lawnmower" in text_lower or "scan" in text_lower:
-        pattern = "grid"
-    elif "circle" in text_lower or "orbit" in text_lower or "circular" in text_lower:
-        pattern = "circle"
-    elif "perimeter" in text_lower or "boundary" in text_lower or "border" in text_lower:
-        pattern = "perimeter"
-    elif "manual" in text_lower or "custom" in text_lower:
-        pattern = "manual"
-        
-    # Altitude (e.g., "below 80 meters", "at 60m", "altitude of 70 meters")
-    altitude = 50.0
-    alt_match = re.search(r'(?:altitude|alt|height|above)\s*(?:of|below|above|at)?\s*(\d+(?:\.\d+)?)\s*(?:m|meter|meters)?', text_lower)
-    if not alt_match:
-        alt_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:m|meter|meters)\b', text_lower)
-    if alt_match:
-        try:
-            altitude = float(alt_match.group(1))
-        except ValueError:
-            pass
-            
-    # Duration (e.g., "for 20 minutes", "20 mins", "duration 15 min")
-    duration = 15.0
-    dur_match = re.search(r'(?:duration|time|for|fly)\s*(\d+(?:\.\d+)?)\s*(?:min|mins|minute|minutes)', text_lower)
-    if dur_match:
-        try:
-            duration = float(dur_match.group(1))
-        except ValueError:
-            pass
-            
-    # Return to launch
-    rtl = True
-    if "no rtl" in text_lower or "do not return" in text_lower or "land immediately" in text_lower:
-        rtl = False
-        
-    # Avoid no-fly zones
-    avoid_nfz = True
-    if "ignore no fly" in text_lower or "enter restricted" in text_lower:
-        avoid_nfz = False
-        
-    # Coordinates (search for lat, lon coordinates like "33.6425, 73.0232" or "lat 33.64 lon 73.02")
-    lat, lon = None, None
-    coord_match = re.search(r'(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)', text_lower)
-    if coord_match:
-        try:
-            lat = float(coord_match.group(1))
-            lon = float(coord_match.group(2))
-        except ValueError:
-            pass
-            
-    return {
-        "mission_name": f"{m_type.capitalize()} Mission",
-        "mission_type": m_type,
-        "altitude": altitude,
-        "duration": duration,
-        "return_to_launch": rtl,
-        "avoid_no_fly_zone": avoid_nfz,
-        "route_pattern": pattern,
-        "home_latitude": lat,
-        "home_longitude": lon
-    }
 
-def understand_mission(user_input: str) -> Dict[str, Any]:
+def parse_with_regex(user_input: str) -> Dict[str, Any]:
     """
-    Parses natural language user inputs to extract key UAV mission parameters.
-    Uses Gemini 1.5 Flash if available, with a regex fallback for reliability.
+    Parses key parameters from the user request using standard regular expressions
+    as a safe offline backup system.
     """
-    if not user_input or len(user_input.strip()) == 0:
-        return parse_with_regex("")
+    data = {
+        "mission_name": "Surveillance Mission",
+        "mission_type": "surveillance",
+        "altitude": 50.0,
+        "duration": 15.0,
+        "return_to_launch": True,
+        "avoid_no_fly_zone": True,
+        "route_pattern": "square",
+        "home_latitude": 33.6425,
+        "home_longitude": 73.0232
+    }
+    
+    input_lower = user_input.lower()
+    
+    # Extract Altitude
+    alt_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:m|meter)', input_lower)
+    if alt_match:
+        data["altitude"] = float(alt_match.group(1))
         
+    # Extract Duration
+    dur_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:min|minute)', input_lower)
+    if dur_match:
+        data["duration"] = float(dur_match.group(1))
+        
+    # Extract Route Pattern types
+    if "grid" in input_lower:
+        data["route_pattern"] = "grid"
+    elif "perimeter" in input_lower:
+        data["route_pattern"] = "perimeter"
+    elif "circle" in input_lower:
+        data["route_pattern"] = "circle"
+        
+    # Extract Mission Type
+    if "delivery" in input_lower:
+        data["mission_type"] = "delivery"
+        data["mission_name"] = "UAV Delivery Mission"
+    elif "inspection" in input_lower:
+        data["mission_type"] = "inspection"
+        data["mission_name"] = "Infrastructure Inspection"
+    elif "search" in input_lower or "rescue" in input_lower:
+        data["mission_type"] = "search_and_rescue"
+        data["mission_name"] = "Search and Rescue Mission"
+        
+    return data
+
+
+def parse_mission_request(user_input: str) -> Dict[str, Any]:
+    """
+    Translates user requests using Google's generative AI models,
+    falling back on local regex processing if network connections are down.
+    """
     if not api_key:
-        # Fallback if API key is not configured
         return parse_with_regex(user_input)
         
     try:
         model = genai.GenerativeModel("gemini-1.5-flash")
-        
-        # We start chat session or send message directly
         prompt = f"{SYSTEM_PROMPT}\n\nUser request: \"{user_input}\""
         response = model.generate_content(prompt)
         
         text_response = response.text.strip()
-        # Clean markdown wrappers if returned
+        # Clean markdown formatting tags if returned
         if text_response.startswith("```"):
-            # strip off ```json and ```
-            text_response = re.sub(r'^```(?:json)?', '', text_response)
-            text_response = re.sub(r'```$', '', text_response)
-            text_response = text_response.strip()
-            
-        parsed_json = json.loads(text_response)
+            text_response = re.sub(r'^```(?:json)?\n', '', text_response)
+            text_response = re.sub(r'\n```$', '', text_response)
         
-        # Verify schema
-        required_keys = ["mission_name", "mission_type", "altitude", "duration", 
-                         "return_to_launch", "avoid_no_fly_zone", "route_pattern", 
-                         "home_latitude", "home_longitude"]
-        for key in required_keys:
-            if key not in parsed_json:
-                # Add default or fallback value
-                fallback_data = parse_with_regex(user_input)
-                parsed_json[key] = fallback_data[key]
-                
-        return parsed_json
+        # Parse JSON response
+        parsed_data = json.loads(text_response)
+        return parsed_data
         
     except Exception as e:
-        print(f"Gemini understanding error: {e}. Using regex fallback.")
+        print(f"Error parsing mission request: {e}")
         return parse_with_regex(user_input)
+
+
+def understand_mission(user_input: str) -> Dict[str, Any]:
+    """
+    Main entry point for the Mission Understanding Agent.
+    Processes user input and returns structured mission parameters.
+    """
+    return parse_mission_request(user_input)
