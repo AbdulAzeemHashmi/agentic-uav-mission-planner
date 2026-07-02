@@ -344,8 +344,6 @@ python -m unittest tests/test_planner.py
 9. Human approval workflow
 10. Formal verification of UAV constraints
 
-=======
->>>>>>> 5266e32961219fc70da74fe878096f195c6a0dbe
 ## License
 
 This project is developed as part of an internship program for educational and academic demonstration purposes.
