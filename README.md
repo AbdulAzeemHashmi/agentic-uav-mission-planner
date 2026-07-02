@@ -202,7 +202,6 @@ Export + Database Storage
 | **Suggestions** | Issues found, recommended corrections, revised mission values |
 | **Export** | Download mission JSON, waypoint CSV, text report |
 
-<<<<<<< HEAD
 ## Database Schema
 
 ### Missions Table
