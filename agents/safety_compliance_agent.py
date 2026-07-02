@@ -43,69 +43,64 @@ def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
     return False, ""
 
 
-def evaluate_safety_constraints(
-    mission_data: Dict[str, Any],
-    waypoints: List[Dict[str, Any]]
-) -> List[Dict[str, Any]]:
+def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
-    Executes an array verification across structural rules R1 through R7.
+    Executes the 7 core safety rule compliance checks against planned mission parameters and waypoints.
     """
     results = []
-    
-    # Extract structural profile metadata fields safely
-    altitude = float(mission_data.get("altitude", 50.0))
-    duration = float(mission_data.get("duration", 15.0))
-    rtl_needed = bool(mission_data.get("return_to_launch", True))
-    avoid_nfz = bool(mission_data.get("avoid_no_fly_zone", True))
+    altitude = mission_data.get("altitude", 50.0)
+    duration = mission_data.get("duration", 15.0)
 
-    # --- R1: Absolute Operational Ceiling Bounds ---
+    # --- R1: Maximum Altitude Limit ---
     r1_pass = altitude <= 80.0
     results.append({
-        "check_name": "R1: Maximum Operational Ceiling",
+        "check_name": "R1: Maximum Altitude Limit",
         "result": "Pass" if r1_pass else "Fail",
-        "message": f"Requested flight altitude {altitude}m matches safe operating ceiling rules." if r1_pass else f"Requested flight altitude {altitude}m breaches the strict 80m standard ceiling constraint."
+        "message": f"Planned altitude {altitude}m is within the legal 80m limit." if r1_pass else f"Planned altitude {altitude}m exceeds the maximum 80m legal limit."
     })
 
-    # --- R2: Initialization Vector Launch Check ---
+    # --- R2: Takeoff Verification ---
     r2_pass = len(waypoints) > 0 and waypoints[0].get("action") == "takeoff"
     results.append({
-        "check_name": "R2: Initial Takeoff Sequence Verification",
+        "check_name": "R2: Takeoff Verification",
         "result": "Pass" if r2_pass else "Fail",
-        "message": "Launch point initialization vector successfully checked." if r2_pass else "Mission sequence array fails validation rules (missing sequence index 0 Takeoff vector)."
+        "message": "Mission sequence initiates with a proper takeoff command." if r2_pass else "Mission is missing a designated takeoff starting sequence."
     })
 
-    # --- R3: Secure Termination Check ---
+    # --- R3: Landing/RTL Verification ---
     r3_pass = len(waypoints) > 0 and waypoints[-1].get("action") in ["rtl", "land"]
     results.append({
-        "check_name": "R3: Terminal Return Recovery Validation",
+        "check_name": "R3: Landing/RTL Verification",
         "result": "Pass" if r3_pass else "Fail",
-        "message": f"Verified recovery protocol action type: '{waypoints[-1].get('action') if waypoints else 'None'}'" if r3_pass else "Mission structure fails safely ending recovery configuration checks."
+        "message": f"Mission sequence safely terminates with an termination action ({waypoints[-1].get('action') if waypoints else 'None'})." if r3_pass else "Mission sequence lacks a terminal land or return-to-launch (RTL) command."
     })
 
-    # --- R4: No-Fly Zone Boundary Containment Check ---
-    violated_zones = set()
-    if avoid_nfz:
-        for wp in waypoints:
-            violation, zone_name = check_geofence_violation(wp["latitude"], wp["longitude"])
-            if violation:
-                violated_zones.add(zone_name)
-                
+    # --- R4: Geofence Compliance ---
+    violated_zones = []
+    for wp in waypoints:
+        violated, zone_name = check_geofence_violation(wp["latitude"], wp["longitude"])
+        if violated and zone_name not in violated_zones:
+            violated_zones.append(zone_name)
+            
     r4_pass = len(violated_zones) == 0
     results.append({
-        "check_name": "R4: No-Fly Zone Spatial Containment Check",
+        "check_name": "R4: Geofence Compliance Check",
         "result": "Pass" if r4_pass else "Fail",
-        "message": "Spatial routing remains clear of all active hazard polygons." if r4_pass else f"Geofence breached inside: {', '.join(violated_zones)}."
+        "message": "All waypoints successfully clear registered geofenced zones." if r4_pass else f"Route violates restricted airspace: {', '.join(violated_zones)}."
     })
 
-    # --- R5: Inter-Waypoint Distance Cap Check ---
+    # --- R5: Maximum Leg Length ---
     max_dist = 0.0
     violated_wps = []
     for i in range(len(waypoints) - 1):
-        d = calculate_haversine_distance(waypoints[i]["latitude"], waypoints[i]["longitude"], waypoints[i+1]["latitude"], waypoints[i+1]["longitude"])
-        if d > max_dist:
-            max_dist = d
-        if d > 500.0:
-            violated_wps.append(f"Seq {waypoints[i]['sequence_no']}->{waypoints[i+1]['sequence_no']}")
+        dist = calculate_haversine_distance(
+            waypoints[i]["latitude"], waypoints[i]["longitude"],
+            waypoints[i+1]["latitude"], waypoints[i+1]["longitude"]
+        )
+        if dist > max_dist:
+            max_dist = dist
+        if dist > 500.0:
+            violated_wps.append(f"{waypoints[i]['sequence_no']}->{waypoints[i+1]['sequence_no']}")
             
     r5_pass = len(violated_wps) == 0
     results.append({
@@ -125,14 +120,17 @@ def evaluate_safety_constraints(
     # --- R7: Predictive Battery Heuristic Model Check ---
     total_distance = 0.0
     for i in range(len(waypoints) - 1):
-        total_distance += calculate_haversine_distance(waypoints[i]["latitude"], waypoints[i]["longitude"], waypoints[i+1]["latitude"], waypoints[i+1]["longitude"])
+        total_distance += calculate_haversine_distance(
+            waypoints[i]["latitude"], waypoints[i]["longitude"],
+            waypoints[i+1]["latitude"], waypoints[i+1]["longitude"]
+        )
         
     est_battery_used = (duration * 2.0) + (total_distance * 0.04)
     r7_pass = est_battery_used < 80.0
     results.append({
         "check_name": "R7: Battery Heuristic Drainage Model",
         "result": "Pass" if r7_pass else "Fail",
-        "message": f"Calculated drainage load forecast ({est_battery_used:.1f}%) matches power reserve standards." if r7_pass else f"Calculated drainage load profile ({est_battery_used:.1f}%) exceeds the 80% maximum safety threshold limit."
+        "message": f"Estimated battery usage of {est_battery_used:.1f}% is safely under the 80% threshold." if r7_pass else f"Estimated battery consumption ({est_battery_used:.1f}%) exceeds the 80% safety margin safety limit."
     })
 
     return results
