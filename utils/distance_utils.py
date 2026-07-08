@@ -1,4 +1,5 @@
 import math
+from typing import Tuple
 
 def calculate_haversine_distance(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """
@@ -38,3 +39,18 @@ def calculate_bearing(lat1: float, lon1: float, lat2: float, lon2: float) -> flo
     bearing = math.atan2(y, x)
     bearing_degrees = math.degrees(bearing)
     return (bearing_degrees + 360.0) % 360.0
+
+
+def latlon_to_meters(lat: float, lon: float, ref_lat: float, ref_lon: float) -> Tuple[float, float]:
+    """
+    Converts decimal lat/lon coordinates into local Cartesian coordinates (x_meters, y_meters)
+    relative to a reference coordinate point, using a local equirectangular flat-grid projection.
+    This resolves the degree-to-meter aspect-ratio stretching at different latitudes.
+    """
+    METERS_PER_DEG_LAT = 111132.95
+    dy = lat - ref_lat
+    dx = lon - ref_lon
+    y_meters = dy * METERS_PER_DEG_LAT
+    ref_lat_rad = math.radians(ref_lat)
+    x_meters = dx * METERS_PER_DEG_LAT * math.cos(ref_lat_rad)
+    return x_meters, y_meters

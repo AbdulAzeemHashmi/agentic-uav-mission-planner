@@ -1,10 +1,84 @@
-[UAV Mission Planner Project Report - Draft / Placeholder]
+================================================================================
+🛸 SKYGUARD AI: AGENTIC UAV MISSION PLANNING AND AIRSPACE COMPLIANCE AUDITOR
+================================================================================
 Student: Abdul Azeem Hashmi (abdulazeemhashmi29@gmail.com)
-GitHub: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
+Course/Year: 5th Semester Undergraduate Internship Project Report
+GitHub Workspace: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
 
-This document is a placeholder for the final project report. It will detail:
-1. Executive Summary
-2. System Architecture & Agent Workflow
-3. Compliance Checking Algorithms
-4. Database Schemas
-5. Verification Results and Future Enhancements
+--------------------------------------------------------------------------------
+1. EXECUTIVE SUMMARY & OBJECTIVES
+--------------------------------------------------------------------------------
+The SkyGuard AI project is an end-to-end software application designed to solve the challenges of autonomous UAV mission planning, route visualization, and pre-flight compliance auditing. By utilizing a modular multi-agent workflow, the application parses natural language goals, plans geometric search or patrol paths, verifies safety rules (altitude ceiling, takeoff/landing presence, waypoint distance, geofences, and battery capacity), and outputs formatted documentation.
+
+This system guarantees that no flight path is initiated without verification of local airspace compliance standards, protecting drone hardware and preventing illegal airspace violations.
+
+--------------------------------------------------------------------------------
+2. SYSTEM ARCHITECTURE & INTEGRATED AGENTS
+--------------------------------------------------------------------------------
+The software architecture is decoupled into five distinct, specialized agent models implemented in Python:
+
+2.1 Mission Understanding Agent
+------------------------------
+- Purpose: Parses plain text commands (e.g., "Plan a 15 min surveillance at 60 meters") into parameters.
+- Technologies: Google Gemini API (gemini-1.5-flash) with an offline regular expression (regex) fallback parser.
+- Extracted Fields: mission_type, target_altitude, duration_window, route_pattern, home coordinates.
+
+2.2 Waypoint Planner Agent
+-------------------------
+- Purpose: Generates exact geographic nodes (lat/lon/alt) based on target geometric profiles.
+- Profiles: Square patrol, circular orbits, perimeter scans, and lawn-mower grid mapping.
+- Sequence Rules: Automatically injects MAV_CMD_NAV_TAKEOFF at index 0 and MAV_CMD_NAV_RETURN_TO_LAUNCH (RTL) or LAND at the final index.
+
+2.3 Safety Compliance Agent
+--------------------------
+- Purpose: Audits telemetry parameters and coordinates against 7 strict airspace rules.
+- Implementation: Re-projects latitude/longitude coordinates into a localized metric flat Cartesian plane to eliminate the degree-meter aspect distortion at varying latitudes.
+- Intersections: Uses Shapely LineString to detect segment-restricted zone intersections rather than checking point waypoints alone.
+
+2.4 Correction Agent
+--------------------
+- Purpose: Auto-corrects unsafe flight parameters.
+- Polygon Geofences: Employs Shapely boundary projection normal vectors to project waypoints out of polygon no-fly zones by a 15.0m buffer.
+- Circle Geofences: Computes radial vectors from the circle center and shifts points along the outward bearing.
+
+2.5 Report Generation Agent
+--------------------------
+- Purpose: Compiles styled HTML dashboards, CSV waypoint lists, PDF records, and QGroundControl-compatible JSON flight plans.
+
+--------------------------------------------------------------------------------
+3. SAFETY RULES AND MATHEMATICAL FORMULAS
+--------------------------------------------------------------------------------
+The auditor enforces 7 safety compliance standards (R1 to R7):
+
+- R1 (Altitude Limit): Target altitude <= 80.0 meters.
+- R2 (Takeoff Node): Waypoints[0] action == "takeoff".
+- R3 (Landing/RTL Node): Waypoints[-1] action in ["rtl", "land"].
+- R4 (Geofence Check): Waypoint points & line segments must not intersect circular/polygon restricted zones.
+- R5 (Max Leg Length): Distance between consecutive waypoints <= 500 meters.
+- R6 (Flight Duration): Duration <= 30.0 minutes.
+- R7 (Battery Check): Estimated battery consumption < 80.0%.
+
+3.1 Physics-Based Battery Model
+------------------------------
+Unlike static linear models, SkyGuard AI implements a multi-stage energy consumption calculation:
+- UAV Mass: 1.5 kg
+- Battery Capacity: 90 Wh (standard 4S LiPo battery)
+- Cruise Speed: 10 m/s (Cruise Power: 120W)
+- Climb Speed: 4 m/s (Climb Power: 215W)
+- Descent Speed: 2 m/s (Descent Power: 115W)
+- Hover Power: 130W
+The flight phases are calculated individually:
+  - Takeoff Ascent energy: E_climb = P_climb * (Altitude / V_climb) / 3600
+  - Transition Cruise energy: E_cruise = P_cruise * (Haversine_Distance / V_cruise) / 3600
+  - Landing Descent energy: E_descend = P_descend * (Altitude / V_descend) / 3600
+  - Remaining hover time energy: E_hover = P_hover * Max(0, Planned_Duration - Total_Flight_Time) / 3600
+  - Battery Percent = (Total_Energy_Wh / 90.0) * 100
+
+--------------------------------------------------------------------------------
+4. VERIFICATION RESULTS & DELIVERABLES
+--------------------------------------------------------------------------------
+All flight profiles have been validated through a testing suite in `tests/test_planner.py`.
+- Corrected Map View rendering (resolved create_mission_map 4-argument call signature).
+- Proven segment-intersection checks for circular airspaces.
+- Proven Shapely boundary translocation normal offsets.
+- Pushed clean, PEP8 compliant code to origin/main.

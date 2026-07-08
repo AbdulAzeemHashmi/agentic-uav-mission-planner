@@ -21,7 +21,7 @@ from agents.correction_agent import generate_corrections
 from agents.report_agent import generate_mission_summary_html
 from utils.map_utils import create_mission_map
 from utils.database_utils import save_mission, get_all_missions, get_mission_by_id, delete_mission, init_db
-from utils.export_utils import export_mission_json, export_waypoints_csv, generate_text_report, generate_pdf_report
+from utils.export_utils import export_mission_json, export_waypoints_csv, generate_text_report, generate_pdf_report, export_qgc_plan
 
 # Initialize database
 init_db()
@@ -207,5 +207,9 @@ elif st.session_state.current_page == "Export":
         # PDF Report Button Connection
         pdf_bytes = generate_pdf_report(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
         st.download_button("Download Formal PDF Summary Audit Brief", data=pdf_bytes, file_name="mission_report.pdf", mime="application/pdf")
+        
+        # QGroundControl .plan Export Button Connection
+        qgc_plan_str = export_qgc_plan(mission_meta, st.session_state.generated_waypoints)
+        st.download_button("Download QGroundControl .plan File", data=qgc_plan_str, file_name="mission.plan", mime="application/json")
     else:
         st.warning("No mission telemetries generated. Generate path waypoints before executing exports.")

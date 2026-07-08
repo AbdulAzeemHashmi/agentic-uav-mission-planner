@@ -1,7 +1,7 @@
 from typing import List, Dict, Any, Tuple
 import math
 from shapely.geometry import Point, Polygon, LineString
-from utils.distance_utils import calculate_haversine_distance
+from utils.distance_utils import calculate_haversine_distance, latlon_to_meters
 
 # Preconfigured No-Fly Zone Fences
 NO_FLY_ZONES = [
@@ -64,9 +64,14 @@ def check_segment_geofence_violation(wp1: Dict[str, Any], wp2: Dict[str, Any]) -
             c_lat, c_lon = nfz["center"]
             radius_m = nfz["radius_m"]
             
-            # Project circle center onto the segment locally using 2D flat approximation
-            dy = lat2 - lat1
-            dx = lon2 - lon1
+            # Convert coordinates to local meters with respect to (lat1, lon1)
+            # This completely avoids degree-meter aspect-ratio distortion!
+            x1, y1 = 0.0, 0.0
+            x2, y2 = latlon_to_meters(lat2, lon2, lat1, lon1)
+            xc, yc = latlon_to_meters(c_lat, c_lon, lat1, lon1)
+            
+            dy = y2 - y1
+            dx = x2 - x1
             
             if dx == 0 and dy == 0:
                 dist = calculate_haversine_distance(lat1, lon1, c_lat, c_lon)
@@ -74,16 +79,17 @@ def check_segment_geofence_violation(wp1: Dict[str, Any], wp2: Dict[str, Any]) -
                     return True, nfz["name"]
                 continue
                 
-            uy = c_lat - lat1
-            ux = c_lon - lon1
+            uy = yc - y1
+            ux = xc - x1
             
             t = (ux * dx + uy * dy) / (dx * dx + dy * dy)
             t_clamped = max(0.0, min(1.0, t))
             
-            closest_lat = lat1 + t_clamped * dy
-            closest_lon = lon1 + t_clamped * dx
+            closest_x = x1 + t_clamped * dx
+            closest_y = y1 + t_clamped * dy
             
-            dist = calculate_haversine_distance(closest_lat, closest_lon, c_lat, c_lon)
+            # Calculate exact Euclidean distance in local metric space
+            dist = math.sqrt((closest_x - xc)**2 + (closest_y - yc)**2)
             if dist <= radius_m:
                 return True, nfz["name"]
                 
@@ -171,14 +177,68 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
     })
 
     # --- R7: Predictive Battery Heuristic Model Check ---
-    total_distance = 0.0
+    # Realistic physics-based energy model
+    battery_capacity_wh = 90.0  # Wh (standard 4S LiPo drone battery)
+    
+    # Speed parameters
+    v_cruise = 10.0  # m/s
+    v_climb = 4.0  # m/s
+    v_descend = 2.0  # m/s
+    
+    # Power consumption constants (Watts)
+    p_climb = 215.0
+    p_cruise = 120.0
+    p_hover = 130.0
+    p_descend = 115.0
+    
+    t_climb = 0.0
+    t_cruise_all = 0.0
+    t_descend = 0.0
+    
+    energy_climb = 0.0
+    energy_cruise = 0.0
+    energy_descend = 0.0
+    
+    # Iterate over waypoints to compute transition energy
     for i in range(len(waypoints) - 1):
-        total_distance += calculate_haversine_distance(
-            waypoints[i]["latitude"], waypoints[i]["longitude"],
-            waypoints[i+1]["latitude"], waypoints[i+1]["longitude"]
+        wp1 = waypoints[i]
+        wp2 = waypoints[i+1]
+        action2 = wp2.get("action", "").lower()
+        
+        dist = calculate_haversine_distance(
+            wp1["latitude"], wp1["longitude"],
+            wp2["latitude"], wp2["longitude"]
         )
         
-    est_battery_used = (duration * 2.0) + (total_distance * 0.04)
+        # Calculate horizontal cruise energy
+        t_leg = dist / v_cruise
+        t_cruise_all += t_leg
+        energy_cruise += p_cruise * t_leg / 3600.0
+        
+        # Handle takeoff vertical ascent
+        if wp1.get("action", "").lower() == "takeoff":
+            t_asc = altitude / v_climb
+            t_climb += t_asc
+            energy_climb += p_climb * t_asc / 3600.0
+            
+        # Handle land/rtl vertical descent
+        if action2 in ["rtl", "land"]:
+            t_desc = altitude / v_descend
+            t_descend += t_desc
+            energy_descend += p_descend * t_desc / 3600.0
+            
+    # Hover time calculation (remaining mission duration)
+    fly_time_sec = t_climb + t_cruise_all + t_descend
+    planned_time_sec = duration * 60.0
+    t_hover = max(0.0, planned_time_sec - fly_time_sec)
+    energy_hover = p_hover * t_hover / 3600.0
+    
+    total_energy_wh = energy_climb + energy_cruise + energy_descend + energy_hover
+    est_battery_used = (total_energy_wh / battery_capacity_wh) * 100.0
+    
+    # Cap battery percentage at 100%
+    est_battery_used = min(100.0, est_battery_used)
+    
     r7_pass = est_battery_used < 80.0
     results.append({
         "check_name": "R7: Battery Heuristic Drainage Model",
