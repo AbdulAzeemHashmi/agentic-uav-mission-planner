@@ -100,16 +100,16 @@ The system uses **5 specialized agents** working in a sequential pipeline:
 
 ## ✨ Key Features
 
-- 🗣️ **Natural Language Mission Input** — describe your mission in plain text; Gemini AI parses it
-- 📝 **Manual Form Input** — structured form for precise parameter entry
-- 🗺️ **Interactive Map View** — Folium-powered map with waypoints, flight path, and no-fly zones
-- 🛡️ **7-Rule Safety Validation** — altitude, geofence, battery, duration, leg distance, takeoff, RTL
-- 🔧 **Smart Auto-Correction** — normal-vector Shapely projection moves waypoints to safe positions
-- 🔋 **Physics-Based Battery Model** — climb / cruise / descent / hover energy stages (replaces heuristics)
-- 📐 **Metric Geofence Checks** — `latlon_to_meters()` projection eliminates degree distortion
-- 💾 **SQLite Persistence** — all missions, waypoints, and safety results stored locally
-- 📤 **Multi-Format Export** — JSON mission plan, CSV waypoints, PDF report, QGC `.plan` file
-- ✅ **9/9 Unit Tests Passing** — full test coverage for all core modules
+- 🗣️ **Natural Language Mission Input** - describe your mission in plain text; Gemini AI parses it
+- 📝 **Manual Form Input** - structured form for precise parameter entry
+- 🗺️ **Interactive Map View** - Folium-powered map with waypoints, flight path, and no-fly zones
+- 🛡️ **7-Rule Safety Validation** - altitude, geofence, battery, duration, leg distance, takeoff, RTL
+- 🔧 **Smart Auto-Correction** - normal-vector Shapely projection moves waypoints to safe positions
+- 🔋 **Physics-Based Battery Model** - climb / cruise / descent / hover energy stages (replaces heuristics)
+- 📐 **Metric Geofence Checks** - `latlon_to_meters()` projection eliminates degree distortion
+- 💾 **SQLite Persistence** - all missions, waypoints, and safety results stored locally
+- 📤 **Multi-Format Export** - JSON mission plan, CSV waypoints, PDF report, QGC `.plan` file
+- ✅ **9/9 Unit Tests Passing** - full test coverage for all core modules
 
 ---
 
