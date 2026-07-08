@@ -185,10 +185,8 @@ agentic-uav-mission-planner/
 +-- docs/
 |   +-- uav_terms.md                # UAV terminology reference
 |   +-- user_manual.pdf             # Full user manual (ReportLab)
-|   +-- project_report_v2.docx      # Academic project report
+|   +-- project_report.docx      # Academic project report
 |   +-- presentation.pptx           # 7-slide presentation deck
-|   +-- generate_docs.py            # PDF manual generator
-|   +-- generate_office_docs.py     # PPTX + DOCX generator
 |
 +-- data/
 |   +-- no_fly_zones.json           # Default no-fly zone definitions
@@ -200,7 +198,7 @@ agentic-uav-mission-planner/
 |   +-- generated_reports/          # Auto-generated PDF mission reports
 |
 +-- tests/
-    +-- test_planner.py             # Unit tests (9 tests, all passing)
+|    +-- test_planner.py             # Unit tests (9 tests, all passing)
 ```
 
 ---
@@ -216,14 +214,14 @@ agentic-uav-mission-planner/
 
 ### 🚀 Quick Start
 
-**Step 1 — Clone the repository**
+**Step 1 - Clone the repository**
 
 ```bash
 git clone https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner.git
 cd agentic-uav-mission-planner
 ```
 
-**Step 2 — Create and activate a virtual environment**
+**Step 2 - Create and activate a virtual environment**
 
 ```bash
 # Windows
@@ -235,13 +233,13 @@ python -m venv .venv
 source .venv/bin/activate
 ```
 
-**Step 3 — Install dependencies**
+**Step 3 - Install dependencies**
 
 ```bash
 pip install -r requirements.txt
 ```
 
-**Step 4 — Configure Gemini API (optional)**
+**Step 4 - Configure Gemini API (optional)**
 
 Create a `.env` file in the project root:
 
@@ -249,13 +247,13 @@ Create a `.env` file in the project root:
 GEMINI_API_KEY=your_api_key_here
 ```
 
-**Step 5 — Launch the app**
+**Step 5 - Launch the app**
 
 ```bash
 streamlit run app.py
 ```
 
-**Step 6 — Open in browser**
+**Step 6 - Open in browser**
 
 ```
 http://localhost:8501
