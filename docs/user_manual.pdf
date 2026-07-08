@@ -1,0 +1,12 @@
+%PDF-1.4
+%placeholder
+[UAV Mission Planner User Manual - Placeholder]
+Student: Abdul Azeem Hashmi (abdulazeemhashmi29@gmail.com)
+GitHub: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
+
+This document is a placeholder for the final User Manual. It will detail:
+1. System Setup & Installation
+2. Streamlit Web Application Usage Guide
+3. Configuring Flight Parameters (NLP & Manual Modes)
+4. Geofencing & Safety Standards Customization
+5. Exporting Mission Reports (JSON, CSV, PDF)

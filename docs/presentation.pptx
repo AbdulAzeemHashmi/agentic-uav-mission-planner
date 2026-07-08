@@ -1,0 +1,12 @@
+[UAV Mission Planner Presentation Slides - Placeholder]
+Student: Abdul Azeem Hashmi (abdulazeemhashmi29@gmail.com)
+GitHub: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
+
+This document is a placeholder for the final Presentation Slides (.pptx). It will cover:
+1. Project Introduction & Problem Statement
+2. Objectives & Deliverables
+3. Technical Architecture (Streamlit, Folium, SQLite, ReportLab, Shapely, Gemini)
+4. Multi-Agent Workflow details
+5. 7 Core Flight Compliance Standards
+6. Route Patterns and Correction Engine Demo
+7. Challenges and Learning Outcomes

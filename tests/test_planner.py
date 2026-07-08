@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from utils.distance_utils import calculate_haversine_distance
 from agents.waypoint_planner_agent import generate_waypoints
-from agents.safety_compliance_agent import perform_safety_checks, check_geofence_violation
+from agents.safety_compliance_agent import perform_safety_checks, check_geofence_violation, check_segment_geofence_violation
 from agents.correction_agent import generate_corrections
 
 class TestUAVPlanner(unittest.TestCase):
@@ -99,6 +99,21 @@ class TestUAVPlanner(unittest.TestCase):
             
         corrections = generate_corrections(checks, mission_meta, wps)
         self.assertTrue(len(corrections) > 0)
+
+    def test_segment_geofence_violation(self):
+        # Center of Military zone is (33.6438, 73.0210), radius 120m
+        # Let's check a segment that passes directly through it, but ends outside it
+        wp1 = {"latitude": 33.6438, "longitude": 73.0190, "action": "waypoint"} # ~180m West (Outside)
+        wp2 = {"latitude": 33.6438, "longitude": 73.0230, "action": "waypoint"} # ~180m East (Outside)
+        
+        violated, zone = check_segment_geofence_violation(wp1, wp2)
+        self.assertTrue(violated)
+        self.assertIn("Zone A", zone)
+        
+        wp1_safe = {"latitude": 33.6410, "longitude": 73.0190, "action": "waypoint"}
+        wp2_safe = {"latitude": 33.6410, "longitude": 73.0230, "action": "waypoint"}
+        violated_safe, zone_safe = check_segment_geofence_violation(wp1_safe, wp2_safe)
+        self.assertFalse(violated_safe)
 
 if __name__ == "__main__":
     unittest.main()

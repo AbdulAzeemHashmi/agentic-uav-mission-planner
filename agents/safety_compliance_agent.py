@@ -1,5 +1,6 @@
 from typing import List, Dict, Any, Tuple
-from shapely.geometry import Point, Polygon
+import math
+from shapely.geometry import Point, Polygon, LineString
 from utils.distance_utils import calculate_haversine_distance
 
 # Preconfigured No-Fly Zone Fences
@@ -38,6 +39,52 @@ def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
         elif nfz["type"] == "polygon":
             poly = Polygon(nfz["coords"])
             if poly.contains(p):
+                return True, nfz["name"]
+                
+    return False, ""
+
+
+def check_segment_geofence_violation(wp1: Dict[str, Any], wp2: Dict[str, Any]) -> Tuple[bool, str]:
+    """
+    Checks if the flight path segment between wp1 and wp2 violates any registered no-fly zone fences.
+    """
+    lat1, lon1 = wp1["latitude"], wp1["longitude"]
+    lat2, lon2 = wp2["latitude"], wp2["longitude"]
+    
+    # Create LineString for polygon checks (using latitude, longitude order to match Polygon coords)
+    line = LineString([(lat1, lon1), (lat2, lon2)])
+    
+    for nfz in NO_FLY_ZONES:
+        if nfz["type"] == "polygon":
+            poly = Polygon(nfz["coords"])
+            if poly.intersects(line):
+                return True, nfz["name"]
+                
+        elif nfz["type"] == "circle":
+            c_lat, c_lon = nfz["center"]
+            radius_m = nfz["radius_m"]
+            
+            # Project circle center onto the segment locally using 2D flat approximation
+            dy = lat2 - lat1
+            dx = lon2 - lon1
+            
+            if dx == 0 and dy == 0:
+                dist = calculate_haversine_distance(lat1, lon1, c_lat, c_lon)
+                if dist <= radius_m:
+                    return True, nfz["name"]
+                continue
+                
+            uy = c_lat - lat1
+            ux = c_lon - lon1
+            
+            t = (ux * dx + uy * dy) / (dx * dx + dy * dy)
+            t_clamped = max(0.0, min(1.0, t))
+            
+            closest_lat = lat1 + t_clamped * dy
+            closest_lon = lon1 + t_clamped * dx
+            
+            dist = calculate_haversine_distance(closest_lat, closest_lon, c_lat, c_lon)
+            if dist <= radius_m:
                 return True, nfz["name"]
                 
     return False, ""
@@ -82,11 +129,17 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
         if violated and zone_name not in violated_zones:
             violated_zones.append(zone_name)
             
+    # Check flight path segments between consecutive waypoints
+    for i in range(len(waypoints) - 1):
+        violated, zone_name = check_segment_geofence_violation(waypoints[i], waypoints[i+1])
+        if violated and zone_name not in violated_zones:
+            violated_zones.append(zone_name)
+            
     r4_pass = len(violated_zones) == 0
     results.append({
         "check_name": "R4: Geofence Compliance Check",
         "result": "Pass" if r4_pass else "Fail",
-        "message": "All waypoints successfully clear registered geofenced zones." if r4_pass else f"Route violates restricted airspace: {', '.join(violated_zones)}."
+        "message": "All waypoints and flight path segments successfully clear registered geofenced zones." if r4_pass else f"Route violates restricted airspace: {', '.join(violated_zones)}."
     })
 
     # --- R5: Maximum Leg Length ---

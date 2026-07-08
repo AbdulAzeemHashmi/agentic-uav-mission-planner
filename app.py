@@ -120,7 +120,7 @@ elif st.session_state.current_page == "Map View":
     st.title("🗺️ Interactive Geospatial Map Display")
     
     if st.session_state.generated_waypoints:
-        m = create_mission_map(st.session_state.home_lat, st.session_state.home_lon, st.session_state.generated_waypoints, NO_FLY_ZONES)
+        m = create_mission_map(st.session_state.generated_waypoints, (st.session_state.home_lat, st.session_state.home_lon))
         st_folium(m, width=1100, height=550)
     else:
         st.warning("Generate trajectory waypoints on the Mission Plan page first to display the path map.")
