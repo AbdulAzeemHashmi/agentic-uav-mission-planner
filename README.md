@@ -1,7 +1,6 @@
 <div align="center">
 
-# 🛸 SkyGuard AI
-### Agentic UAV Mission Planning and Safety Compliance Assistant
+# 🛸 Agentic UAV Mission Planning and Safety Compliance Assistant
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -59,7 +58,7 @@ UAV mission planning requires careful definition of waypoints, altitude limits, 
 | 🔴 Routes crossing restricted zones | Collision or legal penalty |
 | 🔴 Incomplete mission instructions | Mission abort mid-flight |
 
-SkyGuard AI solves these problems through a modular, AI-driven agentic pipeline that validates every mission before export.
+Agentic UAV Mission Planning and Safety Compliance Assistant solves these problems through a modular, AI-driven agentic pipeline that validates every mission before export.
 
 ---
 

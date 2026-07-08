@@ -51,7 +51,7 @@ if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
 
 # --- SIDEBAR INTERFACE NAVIGATOR ---
-st.sidebar.title("🛸 SkyGuard AI Control Panel")
+st.sidebar.title("🛸 Agentic UAV Mission Planning and Safety Compliance Assistant Control Panel")
 pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Database History", "Export"]
 
 for page in pages:
@@ -64,7 +64,7 @@ st.sidebar.info("🚀 AI-Driven Mission Planner & Compliance Auditor")
 # --- PAGE 1: HOME PANEL ---
 if st.session_state.current_page == "Home":
     st.title("🛸 Agentic UAV Mission Planner & Safety Auditor")
-    st.write("Welcome to SkyGuard AI. This application uses an agentic AI workflow to parse natural language mission goals, construct optimized flight paths, and audit paths against airspace compliance rules.")
+    st.write("Welcome to Agentic UAV Mission Planning and Safety Compliance Assistant. This application uses an agentic AI workflow to parse natural language mission goals, construct optimized flight paths, and audit paths against airspace compliance rules.")
     
     col1, col2, col3 = st.columns(3)
     with col1:
