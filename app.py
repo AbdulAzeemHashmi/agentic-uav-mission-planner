@@ -22,25 +22,25 @@ st.markdown("""
         height: 0px;
     }
     
-    /* Remove default padding from main content block */
+    /* Set default padding from main content block */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 4rem !important;
         padding-bottom: 1rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
     }
     
-    /* Remove top padding from sidebar */
+    /* Set top padding from sidebar */
     [data-testid="stSidebarUserContent"] {
-        padding-top: 1.5rem !important;
+        padding-top: 4rem !important;
     }
     section[data-testid="stSidebar"] .block-container {
-        padding-top: 1.5rem !important;
+        padding-top: 4rem !important;
     }
     
-    /* Adjust spacing above main title */
+    /* Reset spacing above main title */
     h1 {
-        margin-top: -1.5rem !important;
+        margin-top: 0rem !important;
         padding-top: 0rem !important;
     }
     </style>
