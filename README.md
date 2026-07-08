@@ -22,7 +22,8 @@
 > Accepts natural language mission requests, generates waypoints, validates airspace safety rules,
 > applies physics-based corrections, and produces exportable flight plans and compliance reports.
 
-> 🔒 **No physical UAV hardware required.** This is a fully software-based simulation project.
+> 🔒 **No physical UAV hardware required.** 
+> This is a fully software-based simulation project.
 
 </div>
 
