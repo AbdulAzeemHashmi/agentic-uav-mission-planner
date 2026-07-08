@@ -13,6 +13,39 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+# Custom styling to reduce top spacing / margin
+st.markdown("""
+    <style>
+    /* Hide top header bar (Deploy, hamburger menu etc) */
+    header[data-testid="stHeader"] {
+        visibility: hidden;
+        height: 0px;
+    }
+    
+    /* Remove default padding from main content block */
+    .block-container {
+        padding-top: 1rem !important;
+        padding-bottom: 1rem !important;
+        padding-left: 2rem !important;
+        padding-right: 2rem !important;
+    }
+    
+    /* Remove top padding from sidebar */
+    [data-testid="stSidebarUserContent"] {
+        padding-top: 1.5rem !important;
+    }
+    section[data-testid="stSidebar"] .block-container {
+        padding-top: 1.5rem !important;
+    }
+    
+    /* Adjust spacing above main title */
+    h1 {
+        margin-top: -1.5rem !important;
+        padding-top: 0rem !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
+
 # Custom Imports from local modules
 from agents.mission_understanding_agent import understand_mission
 from agents.waypoint_planner_agent import generate_waypoints
