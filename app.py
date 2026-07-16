@@ -205,51 +205,40 @@ col_left, col_right = st.columns([11, 13], gap="large")
 with col_left:
     # Page 1: Home
     if st.session_state.current_page == "Home":
-        st.subheader("🏠 Welcome to Agentic UAV Mission Planner")
-        st.write(
-            "This application uses an **agentic AI workflow** to help you plan safe UAV missions. "
-            "Enter your mission request in natural language or use the form to configure a mission manually. "
-            "The system will generate waypoints, check safety rules, suggest corrections, and produce "
-            "an exportable mission report."
-        )
+        st.subheader("🏠 Agentic UAV Mission Planner")
+        st.caption("AI-driven mission planning - generate waypoints, check airspace rules, and export mission data.")
         st.markdown("""
-            <div style="background-color:#1E1E1E;padding:1.5rem;border-radius:8px;border:1px solid #333333;margin-top:1rem">
-                <h4 style="margin-top:0;color:#1E90FF">Safety Regulations in Effect</h4>
-                <ul style="margin-bottom:0">
-                    <li><b>R1 - Max Altitude:</b> 80 metres</li>
-                    <li><b>R2 - Takeoff point must be defined</b></li>
-                    <li><b>R3 - RTL or landing point must be defined</b></li>
-                    <li><b>R4 - Waypoints must not enter no-fly zones</b></li>
-                    <li><b>R5 - Max waypoint separation:</b> 500 metres</li>
-                    <li><b>R6 - Max flight duration:</b> 30 minutes</li>
-                    <li><b>R7 - Estimated battery usage must stay below 80%</b></li>
+            <div style="background-color:#1E1E1E;padding:1.2rem 1.5rem;border-radius:8px;border:1px solid #333333;margin-top:0.5rem">
+                <h4 style="margin-top:0;color:#1E90FF;font-size:0.95rem">Active Safety Regulations</h4>
+                <ul style="margin-bottom:0;padding-left:1.2rem;font-size:0.88rem">
+                    <li><b>R1</b> - Max altitude 80 m</li>
+                    <li><b>R2</b> - Takeoff point required</li>
+                    <li><b>R3</b> - RTL or landing point required</li>
+                    <li><b>R4</b> - No entry into no-fly zones</li>
+                    <li><b>R5</b> - Max waypoint separation 500 m</li>
+                    <li><b>R6</b> - Max flight duration 30 min</li>
+                    <li><b>R7</b> - Battery usage below 80%</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("<br>", unsafe_allow_html=True)
-        col_s1, col_s2, col_s3 = st.columns(3)
-        with col_s1:
-            st.markdown("""
-                <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
-                    <b style="color:#1E90FF">Step 1 - Mission Input</b><br>
-                    Enter mission request in natural language or fill the form.
+        st.markdown("<div style='height:0.75rem'></div>", unsafe_allow_html=True)
+        st.markdown("""
+            <div style="display:flex;gap:12px;align-items:stretch">
+                <div style="flex:1;background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #1E90FF33">
+                    <div style="color:#1E90FF;font-weight:700;font-size:0.88rem;margin-bottom:0.4rem">Step 1 - Mission Input</div>
+                    <div style="font-size:0.83rem;color:#CCCCCC">Enter a natural language request or fill the manual form.</div>
                 </div>
-            """, unsafe_allow_html=True)
-        with col_s2:
-            st.markdown("""
-                <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
-                    <b style="color:#1E90FF">Step 2 - Mission Plan</b><br>
-                    Generate waypoints and view the route table.
+                <div style="flex:1;background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #1E90FF33">
+                    <div style="color:#1E90FF;font-weight:700;font-size:0.88rem;margin-bottom:0.4rem">Step 2 - Mission Plan</div>
+                    <div style="font-size:0.83rem;color:#CCCCCC">Generate waypoints and review the mission route table.</div>
                 </div>
-            """, unsafe_allow_html=True)
-        with col_s3:
-            st.markdown("""
-                <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
-                    <b style="color:#1E90FF">Step 3 - Map View</b><br>
-                    Visualize flight path and no-fly zones on an interactive map.
+                <div style="flex:1;background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #1E90FF33">
+                    <div style="color:#1E90FF;font-weight:700;font-size:0.88rem;margin-bottom:0.4rem">Step 3 - Map View</div>
+                    <div style="font-size:0.83rem;color:#CCCCCC">Visualize flight path and no-fly zones on the live map.</div>
                 </div>
-            """, unsafe_allow_html=True)
+            </div>
+        """, unsafe_allow_html=True)
 
     # Page 2: Mission Input
     elif st.session_state.current_page == "Mission Input":
