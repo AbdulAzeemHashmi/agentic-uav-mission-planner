@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🛸 Agentic UAV Mission Planning and Safety Compliance Assistant
+# 🛸 Agentic UAV Mission Planner
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.x-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -58,7 +58,7 @@ UAV mission planning requires careful definition of waypoints, altitude limits, 
 | 🔴 Routes crossing restricted zones | Collision or legal penalty |
 | 🔴 Incomplete mission instructions | Mission abort mid-flight |
 
-Agentic UAV Mission Planning and Safety Compliance Assistant solves these problems through a modular, AI-driven agentic pipeline that validates every mission before export.
+Agentic UAV Mission Planner solves these problems through a modular, AI-driven agentic pipeline that validates every mission before export.
 
 ---
 
@@ -263,12 +263,14 @@ http://localhost:8501
 
 ## 🖥️ Application Pages
 
+> [!NOTE]
+> The **Interactive Map View** is persistent on the right side of all pages, providing real-time flight path visualization alongside page-specific controls.
+
 | Page | Icon | Content |
 |---|---|---|
 | **Home** | 🏠 | Project title, description, and navigation |
 | **Mission Input** | 📝 | Mission name, type, NLP input, home location, altitude, duration, route pattern |
 | **Mission Plan** | 📋 | Extracted mission details, waypoint table, generated route parameters |
-| **Map View** | 🗺️ | Home marker, waypoint markers, flight path polyline, no-fly zone polygons |
 | **Safety Check** | 🛡️ | Safety checklist, passed checks, failed checks, final safety status |
 | **Suggestions** | 💡 | Issues found, recommended corrections, revised mission values |
 | **History** | 🗄️ | All saved missions, filter by status, download PDF reports |
