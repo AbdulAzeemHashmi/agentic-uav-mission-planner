@@ -39,7 +39,7 @@ def initialize_mission_map(
     """
     Creates and returns a blank base Folium map centered on the home point.
 
-    This is the foundation layer — think of it like a blank canvas before
+    This is the foundation layer - think of it like a blank canvas before
     drawing. All other draw_*() functions accept this map and paint onto it.
 
     Tile Layer:
@@ -180,7 +180,7 @@ def draw_flight_path(
     if len(path_coords) > 1:
         folium.PolyLine(
             locations=path_coords,
-            color="#1E90FF",        # Dodger Blue — clear but not aggressive
+            color="#1E90FF",        # Dodger Blue - clear but not aggressive
             weight=4,               # Line thickness in pixels
             opacity=0.85,
             dash_array="8, 6",      # Dashed pattern: 8px dash, 6px gap

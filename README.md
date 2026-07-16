@@ -91,7 +91,7 @@ The system uses **5 specialized agents**, initially implemented as Python module
 |---|---|---|
 | 🧠 **Mission Understanding** | `agents/mission_understanding_agent.py` | Parses natural language via Gemini API (regex fallback), extracts mission type, altitude, duration, route pattern, and safety constraints |
 | 📍 **Waypoint Planner** | `agents/waypoint_planner_agent.py` | Generates takeoff, route waypoints, altitude values, sequence numbers, and RTL point for 4 flight patterns |
-| 🛡️ **Safety Compliance** | `agents/safety_compliance_agent.py` | Enforces 7 airspace rules — altitude, RTL, geofence, waypoint distance, duration, and battery estimate |
+| 🛡️ **Safety Compliance** | `agents/safety_compliance_agent.py` | Enforces 7 airspace rules - altitude, RTL, geofence, waypoint distance, duration, and battery estimate |
 | 🔧 **Correction** | `agents/correction_agent.py` | Suggests corrections for failed safety checks: altitude clipping, waypoint relocation outside no-fly zones, duration reduction |
 | 📄 **Report Generation** | `agents/report_agent.py` | Generates HTML mission summary with safety checklist, flight metrics, and approval status |
 
@@ -120,15 +120,15 @@ and return to launch after completion.
 
 ## ✨ Key Features
 
-- 🗣️ **Natural language mission input** — parsed by Google Gemini API with regex fallback
-- 📝 **Manual input form** — mission name, type, altitude, duration, route pattern, home coordinates
-- 📍 **Waypoint generation** — square, grid, circle, and perimeter route patterns
-- 🗺️ **Interactive map view** — home point, waypoint markers, flight path, no-fly zone overlays (Folium)
-- 🛡️ **7-rule safety checker** — altitude, RTL, takeoff, geofence, leg distance, duration, battery
-- 💡 **Correction suggestions** — actionable fixes for every failed safety rule
-- 📄 **Mission summary report** — inline HTML report with checklist and approval status
-- 💾 **SQLite database** — stores missions, waypoints, and safety check results
-- 📥 **Export** — Mission JSON, Waypoints CSV, PDF report
+- 🗣️ **Natural language mission input** - parsed by Google Gemini API with regex fallback
+- 📝 **Manual input form** - mission name, type, altitude, duration, route pattern, home coordinates
+- 📍 **Waypoint generation** - square, grid, circle, and perimeter route patterns
+- 🗺️ **Interactive map view** - home point, waypoint markers, flight path, no-fly zone overlays (Folium)
+- 🛡️ **7-rule safety checker** - altitude, RTL, takeoff, geofence, leg distance, duration, battery
+- 💡 **Correction suggestions** - actionable fixes for every failed safety rule
+- 📄 **Mission summary report** - inline HTML report with checklist and approval status
+- 💾 **SQLite database** - stores missions, waypoints, and safety check results
+- 📥 **Export** - Mission JSON, Waypoints CSV, PDF report
 
 ---
 
@@ -270,7 +270,7 @@ The app will open at `http://localhost:8501`
 | **Mission Input** | Natural language input + manual form (name, type, altitude, duration, pattern, coordinates) |
 | **Mission Plan** | Extracted mission details, generated waypoint table, mission summary report |
 | **Map View** | Home point, UAV waypoints with markers, route path line, no-fly zone polygons |
-| **Safety Check** | Safety checklist (R1–R7), pass/fail per rule, final mission status, save to DB |
+| **Safety Check** | Safety checklist (R1-R7), pass/fail per rule, final mission status, save to DB |
 | **Suggestions** | Issues found and recommended corrections |
 | **Export** | Download Mission JSON, Waypoints CSV, PDF Report |
 
