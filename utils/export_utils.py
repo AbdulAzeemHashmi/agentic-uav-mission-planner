@@ -2,7 +2,8 @@ import json
 import csv
 import io
 import os
-from typing import List, Dict, Any
+from typing import Any, Dict, List
+
 
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -190,63 +191,3 @@ def generate_pdf_report(mission: Dict[str, Any], waypoints: List[Dict[str, Any]]
     
     doc.build(story)
     return pdf_buffer.getvalue()
-
-def export_qgc_plan(mission_meta: Dict[str, Any], waypoints: List[Dict[str, Any]]) -> str:
-    """
-    Export the mission plan as a standard QGroundControl .plan JSON format structure.
-    """
-    home_lat = waypoints[0]["latitude"] if waypoints else 33.6425
-    home_lon = waypoints[0]["longitude"] if waypoints else 73.0232
-    home_alt = mission_meta.get("altitude", 50.0)
-    
-    qgc_items = []
-    
-    # Map actions to MAVLink Command IDs
-    # 16 = MAV_CMD_NAV_WAYPOINT
-    # 22 = MAV_CMD_NAV_TAKEOFF
-    # 20 = MAV_CMD_NAV_RETURN_TO_LAUNCH
-    # 21 = MAV_CMD_NAV_LAND
-    for idx, wp in enumerate(waypoints):
-        action = wp.get("action", "waypoint").lower()
-        lat = wp["latitude"]
-        lon = wp["longitude"]
-        alt = wp.get("altitude", home_alt)
-        
-        if action == "takeoff":
-            cmd = 22
-            params = [0.0, 0.0, 0.0, 0.0, lat, lon, alt]
-        elif action == "rtl":
-            cmd = 20
-            params = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-        elif action == "land":
-            cmd = 21
-            params = [0.0, 0.0, 0.0, 0.0, lat, lon, 0.0]
-        else:
-            cmd = 16
-            params = [0.0, 0.0, 0.0, 0.0, lat, lon, alt]
-            
-        qgc_items.append({
-            "autoContinue": True,
-            "command": cmd,
-            "frame": 3,  # MAV_FRAME_GLOBAL_RELATIVE_ALT
-            "params": params,
-            "type": "SimpleItem"
-        })
-        
-    plan_dict = {
-        "fileType": "Plan",
-        "version": 1,
-        "groundStation": "QGroundControl",
-        "mission": {
-            "plannedHomePosition": [
-                home_lat,
-                home_lon,
-                0.0
-            ],
-            "hoverSpeed": 5.0,
-            "flightSpeed": 10.0,
-            "items": qgc_items
-        }
-    }
-    
-    return json.dumps(plan_dict, indent=4)

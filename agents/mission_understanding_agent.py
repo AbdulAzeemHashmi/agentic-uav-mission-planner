@@ -1,7 +1,7 @@
 import os
 import json
 import re
-from typing import Dict, Any
+from typing import Any
 import google.generativeai as genai
 from dotenv import load_dotenv
 
@@ -32,7 +32,7 @@ Respond ONLY with a valid JSON block enclosed in ```json and ```. Do not include
 """
 
 
-def parse_with_regex(user_input: str) -> Dict[str, Any]:
+def parse_with_regex(user_input: str) -> dict[str, Any]:
     """
     Parses key parameters from the user request using standard regular expressions
     as a safe offline backup system.
@@ -83,7 +83,7 @@ def parse_with_regex(user_input: str) -> Dict[str, Any]:
     return data
 
 
-def parse_mission_request(user_input: str) -> Dict[str, Any]:
+def parse_mission_request(user_input: str) -> dict[str, Any]:
     """
     Translates user requests using Google's generative AI models,
     falling back on local regex processing if network connections are down.
@@ -111,7 +111,7 @@ def parse_mission_request(user_input: str) -> Dict[str, Any]:
         return parse_with_regex(user_input)
 
 
-def understand_mission(user_input: str) -> Dict[str, Any]:
+def understand_mission(user_input: str) -> dict[str, Any]:
     """
     Main entry point for the Mission Understanding Agent.
     Processes user input and returns structured mission parameters.

@@ -13,43 +13,59 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom styling to reduce top spacing / margin and customize HUD elements
+# Inline custom CSS for dark HUD theme
 st.markdown("""
     <style>
-    /* Hide top header bar (Deploy, hamburger menu etc) */
     header[data-testid="stHeader"] {
         visibility: hidden;
         height: 0px;
     }
-    
-    /* Set default padding from main content block to 1rem (~0.4cm) */
     .block-container {
         padding-top: 1rem !important;
         padding-bottom: 1rem !important;
         padding-left: 2rem !important;
         padding-right: 2rem !important;
     }
-    
-    /* Set top padding from sidebar to 1rem (~0.4cm) */
     [data-testid="stSidebarUserContent"] {
         padding-top: 1rem !important;
     }
     section[data-testid="stSidebar"] .block-container {
         padding-top: 1rem !important;
     }
-    
-    /* Reset spacing above titles and headers */
-    h1, h2, h3, h4, h5, h6 {
+    h1 {
         margin-top: 0rem !important;
         padding-top: 0rem !important;
+        font-size: 1.8rem !important;
+        font-weight: 700 !important;
         color: #FAFAFA !important;
     }
-
-    /* Custom styles for HUD metrics */
+    h2 {
+        font-size: 1.35rem !important;
+        font-weight: 600 !important;
+        color: #FAFAFA !important;
+    }
+    h3 {
+        font-size: 1.15rem !important;
+        font-weight: 600 !important;
+        color: #FAFAFA !important;
+    }
+    h4, h5, h6 {
+        font-size: 1.0rem !important;
+        font-weight: 600 !important;
+        color: #FAFAFA !important;
+    }
+    .stMarkdown p, .stMarkdown li, p, li, label {
+        font-size: 0.92rem !important;
+        line-height: 1.5 !important;
+    }
+    [data-testid="stSidebar"] h1, [data-testid="stSidebar"] h2 {
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+    }
     div[data-testid="stMetric"] {
         background-color: #1E1E1E;
         border: 1px solid #333333;
-        padding: 0.8rem 1.2rem;
+        padding: 0.6rem 1.0rem;
         border-radius: 8px;
         box-shadow: 0 4px 6px rgba(0,0,0,0.3);
     }
@@ -57,44 +73,47 @@ st.markdown("""
         color: #1E90FF !important;
         font-family: 'Courier New', Courier, monospace;
         font-weight: bold;
+        font-size: 1.2rem !important;
+        white-space: nowrap !important;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     [data-testid="stMetricLabel"] {
         color: #FAFAFA !important;
-        font-size: 0.9rem !important;
+        font-size: 0.8rem !important;
+        white-space: nowrap !important;
     }
-
-    /* Style the sidebar buttons */
     section[data-testid="stSidebar"] div.stButton > button {
         background-color: #1E1E1E;
         color: #FAFAFA;
         border: 1px solid #333333;
+        font-size: 0.88rem !important;
+        padding: 0.3rem 0.6rem !important;
         transition: all 0.3s ease;
     }
     section[data-testid="stSidebar"] div.stButton > button:hover {
         border-color: #1E90FF;
         color: #1E90FF;
     }
-    
-    /* Style main buttons to look professional blue */
     div.stButton > button {
         background-color: #1E90FF;
         color: white;
         border: none;
-        padding: 0.5rem 1rem;
+        padding: 0.4rem 0.8rem;
         border-radius: 4px;
         font-weight: bold;
+        font-size: 0.9rem !important;
         transition: background-color 0.3s ease;
     }
     div.stButton > button:hover {
         background-color: #00BFFF;
         color: white;
     }
-
-    /* Style dataframes for dark theme contrast */
     .dataframe {
         background-color: #1E1E1E !important;
         color: #FAFAFA !important;
         border: 1px solid #333333 !important;
+        font-size: 0.85rem !important;
     }
     .dataframe th {
         background-color: #2D2D2D !important;
@@ -104,20 +123,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Custom Imports from local modules
+# Imports from local modules
 from agents.mission_understanding_agent import understand_mission
 from agents.waypoint_planner_agent import generate_waypoints
-from agents.safety_compliance_agent import perform_safety_checks, NO_FLY_ZONES
+from agents.safety_compliance_agent import perform_safety_checks
 from agents.correction_agent import generate_corrections
-from agents.report_agent import generate_mission_summary_html
 from utils.map_utils import create_mission_map
-from utils.database_utils import save_mission, get_all_missions, get_mission_by_id, delete_mission, init_db
-from utils.export_utils import export_mission_json, export_waypoints_csv, generate_text_report, generate_pdf_report, export_qgc_plan
+from utils.database_utils import save_mission, init_db
+from utils.export_utils import export_mission_json, export_waypoints_csv, generate_pdf_report
+from agents.report_agent import generate_mission_summary_html
 
 # Initialize database
 init_db()
 
-# --- PREVENT RELOAD RESET ---
+# Session state defaults (prevent reload reset)
 if "mission_name" not in st.session_state:
     st.session_state.mission_name = "FAST Surveillance"
 if "mission_type" not in st.session_state:
@@ -141,199 +160,271 @@ if "corrections" not in st.session_state:
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
 
-# --- SIDEBAR INTERFACE NAVIGATOR ---
+# Navigation pages (matches brief Section 14)
+pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export"]
+
+# Ensure current page is valid
+if st.session_state.current_page not in pages:
+    st.session_state.current_page = "Home"
+
+# Sidebar navigation
 st.sidebar.title("🛸 Agentic UAV Mission Planner")
-pages = ["Home", "Mission Input", "Mission Plan", "Safety Check", "Suggestions", "History", "Export"]
-
-# Ensure current page is valid after page-list update
-if "current_page" not in st.session_state or st.session_state.current_page not in pages:
-    if st.session_state.get("current_page") == "Database History":
-        st.session_state.current_page = "History"
-    else:
-        st.session_state.current_page = "Home"
-
 for page in pages:
-    label = f"▶️ {page}" if st.session_state.current_page == page else page
+    label = f"▶️  {page}" if st.session_state.current_page == page else page
     if st.sidebar.button(label, use_container_width=True, key=f"nav_{page}"):
         st.session_state.current_page = page
 
-st.sidebar.write("---")
+st.sidebar.markdown("<hr style='border:1px solid #333;margin:0.5rem 0'>", unsafe_allow_html=True)
 st.sidebar.info("🚀 AI-Driven Mission Planner & Compliance Auditor")
 
-# --- HEADER TITLE & TELEMETRY DASHBOARD ---
+# Global header
 st.title("🛸 Agentic UAV Mission Planner")
 
-# Calculate safety compliance status
+# Telemetry HUD metrics bar
 if st.session_state.safety_checks:
-    all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
-    status_text = "🟢 SAFE" if all_passed else "🔴 REJECTED"
+    all_passed_hud = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
+    status_text = "🟢 SAFE" if all_passed_hud else "🔴 REJECTED"
 else:
     status_text = "⚪ UNCHECKED"
 
-header_col1, header_col2, header_col3, header_col4 = st.columns(4)
-with header_col1:
+hc1, hc2, hc3, hc4 = st.columns(4)
+with hc1:
     st.metric("Target Altitude", f"{st.session_state.altitude} m")
-with header_col2:
+with hc2:
     st.metric("Flight Duration", f"{st.session_state.duration} mins")
-with header_col3:
+with hc3:
     st.metric("Compliance Status", status_text)
-with header_col4:
+with hc4:
     st.metric("Flight Profile", st.session_state.pattern.upper())
 
-st.markdown("---")
+st.markdown("<hr style='border:1px solid #333;margin:0.5rem 0'>", unsafe_allow_html=True)
 
-# --- MAIN CONTENT LAYOUT ---
-col_left, col_right = st.columns([5, 7])
+# Page 1: Home
+if st.session_state.current_page == "Home":
+    st.subheader("🏠 Welcome to Agentic UAV Mission Planner")
+    st.write(
+        "This application uses an **agentic AI workflow** to help you plan safe UAV missions. "
+        "Enter your mission request in natural language or use the form to configure a mission manually. "
+        "The system will generate waypoints, visualize the route on a map, check safety rules, "
+        "suggest corrections, and produce an exportable mission report."
+    )
+    st.markdown("""
+        <div style="background-color:#1E1E1E;padding:1.5rem;border-radius:8px;border:1px solid #333333;margin-top:1rem">
+            <h4 style="margin-top:0;color:#1E90FF">Safety Regulations in Effect</h4>
+            <ul style="margin-bottom:0">
+                <li><b>R1 — Max Altitude:</b> 80 metres</li>
+                <li><b>R2 — Takeoff point must be defined</b></li>
+                <li><b>R3 — RTL or landing point must be defined</b></li>
+                <li><b>R4 — Waypoints must not enter no-fly zones</b></li>
+                <li><b>R5 — Max waypoint separation:</b> 500 metres</li>
+                <li><b>R6 — Max flight duration:</b> 30 minutes</li>
+                <li><b>R7 — Estimated battery usage must stay below 80%</b></li>
+            </ul>
+        </div>
+    """, unsafe_allow_html=True)
 
-with col_left:
-    # --- PAGE 1: HOME PANEL ---
-    if st.session_state.current_page == "Home":
-        st.subheader("🏠 Mission Overview")
-        st.write("Welcome to the **Agentic UAV Mission Planner**. This application uses an agentic AI workflow to parse natural language mission goals, construct optimized flight paths, and audit paths against airspace compliance rules.")
-        
+    st.markdown("<br>", unsafe_allow_html=True)
+    col_s1, col_s2, col_s3 = st.columns(3)
+    with col_s1:
         st.markdown("""
-            <div style="background-color: #1E1E1E; padding: 1.5rem; border-radius: 8px; border: 1px solid #333333; margin-top: 1rem; margin-bottom: 1rem;">
-                <h4 style="margin-top: 0; color: #1E90FF;">Safety Regulations & Scope</h4>
-                <ul style="margin-bottom: 0;">
-                    <li><b>Max Regulated Ceiling:</b> 80 meters</li>
-                    <li><b>Max Operation Range:</b> 500 meters</li>
-                    <li><b>Max Flight Window:</b> 30 minutes</li>
-                </ul>
+            <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
+                <b style="color:#1E90FF">Step 1 — Mission Input</b><br>
+                Enter mission request in natural language or fill the form.
+            </div>
+        """, unsafe_allow_html=True)
+    with col_s2:
+        st.markdown("""
+            <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
+                <b style="color:#1E90FF">Step 2 — Mission Plan</b><br>
+                Generate waypoints and view the route table.
+            </div>
+        """, unsafe_allow_html=True)
+    with col_s3:
+        st.markdown("""
+            <div style="background-color:#1E1E1E;padding:1rem;border-radius:8px;border:1px solid #333">
+                <b style="color:#1E90FF">Step 3 — Map View</b><br>
+                Visualize flight path and no-fly zones on an interactive map.
             </div>
         """, unsafe_allow_html=True)
 
-    # --- PAGE 2: MISSION INPUT ---
-    elif st.session_state.current_page == "Mission Input":
-        st.subheader("📝 Design a Flight Mission")
-        
-        prompt = st.text_area("Enter your mission profile objective in plain natural language:", 
-                              value="Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern layout.")
-        
-        if st.button("Process Command via Gemini Agent"):
-            with st.spinner("Extracting parameters..."):
-                extracted = understand_mission(prompt)
-                st.session_state.mission_name = extracted.get("mission_name", "FAST Surveillance")
-                st.session_state.mission_type = extracted.get("mission_type", "surveillance")
-                st.session_state.altitude = float(extracted.get("altitude", 50.0))
-                st.session_state.duration = float(extracted.get("duration", 15.0))
-                st.session_state.pattern = extracted.get("pattern", "square")
-                st.success("Parameters successfully mapped!")
-                
-        st.write("---")
-        st.subheader("Configured Flight Options")
-        st.session_state.mission_name = st.text_input("Mission Name Reference", st.session_state.mission_name)
-        st.session_state.mission_type = st.selectbox("Mission Profile", ["surveillance", "mapping", "search_rescue", "inspection"], index=0)
-        st.session_state.altitude = st.slider("Target Flight Altitude Ceiling (meters)", 10.0, 150.0, st.session_state.altitude)
-        st.session_state.duration = st.slider("Target Operation Window (minutes)", 5.0, 60.0, st.session_state.duration)
-        st.session_state.pattern = st.selectbox("Geometric Flight Profile Layout", ["square", "grid", "circle", "perimeter"], index=["square", "grid", "circle", "perimeter"].index(st.session_state.pattern))
+# Page 2: Mission Input
+elif st.session_state.current_page == "Mission Input":
+    st.subheader("📝 Mission Input")
 
-    # --- PAGE 3: MISSION PLAN ---
-    elif st.session_state.current_page == "Mission Plan":
-        st.subheader("⚙️ Route Plan Strategy Matrix")
-        
-        if st.button("Calculate Trajectory Waypoints"):
-            wps = generate_waypoints(st.session_state.home_lat, st.session_state.home_lon, st.session_state.altitude, st.session_state.pattern)
-            st.session_state.generated_waypoints = wps
-            
-            meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
-            st.session_state.safety_checks = perform_safety_checks(meta, wps)
-            st.session_state.corrections = generate_corrections(st.session_state.safety_checks, meta, wps)
-            st.success(f"Successfully generated {len(wps)} flight nodes.")
-            
-        if st.session_state.generated_waypoints:
-            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True)
+    st.write("**Option A — Natural Language Request**")
+    prompt = st.text_area(
+        "Enter your mission request in plain English:",
+        value="Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern layout."
+    )
+    if st.button("Process with Gemini AI Agent"):
+        with st.spinner("Extracting mission parameters..."):
+            extracted = understand_mission(prompt)
+            st.session_state.mission_name = extracted.get("mission_name", "FAST Surveillance")
+            st.session_state.mission_type = extracted.get("mission_type", "surveillance")
+            st.session_state.altitude = float(extracted.get("altitude", 50.0))
+            st.session_state.duration = float(extracted.get("duration", 15.0))
+            st.session_state.pattern = extracted.get("pattern", "square")
+            st.success("Parameters extracted and applied to the form below!")
 
-    # --- PAGE 4: SAFETY CHECK ---
-    elif st.session_state.current_page == "Safety Check":
-        st.subheader("📜 UAV Flight Safety Standards Audit")
-        
-        if st.session_state.safety_checks:
-            all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
-            st.write(f"**Overall Audit Status:** {'🟢 SAFE' if all_passed else '🔴 REJECTED COMPLIANCE'}")
-            
-            for c in st.session_state.safety_checks:
-                icon = "✅" if c["result"] == "Pass" else "❌"
-                st.markdown(f"**{icon} {c['check_name']}**: {c['message']}")
-                
-            if st.button("Save Current Mission Logs to Database"):
-                mission_row = {
-                    "mission_name": st.session_state.mission_name,
-                    "mission_type": st.session_state.mission_type,
-                    "altitude": st.session_state.altitude,
-                    "duration": st.session_state.duration,
-                    "status": "Safe" if all_passed else "Unsafe",
-                    "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                }
-                save_mission(mission_row, st.session_state.generated_waypoints, st.session_state.safety_checks)
-                st.success("Successfully logged all flight records to database records history!")
-        else:
-            st.warning("No compliance checks exist. Please trigger flight path nodes first.")
+    st.markdown("<hr style='border:1px solid #333;margin:1rem 0'>", unsafe_allow_html=True)
+    st.write("**Option B — Manual Input Form**")
 
-    # --- PAGE 5: SUGGESTIONS ---
-    elif st.session_state.current_page == "Suggestions":
-        st.subheader("🤖 Intelligent Agent Auto-Correction Recommendations")
-        
-        if st.session_state.corrections:
-            for corr in st.session_state.corrections:
-                st.info(f"💡 {corr}")
-        else:
-            st.success("Perfect alignment! No correction suggestions required for this route.")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.session_state.mission_name = st.text_input("Mission Name", st.session_state.mission_name)
+        st.session_state.mission_type = st.selectbox(
+            "Mission Type",
+            ["surveillance", "mapping", "search_rescue", "inspection"],
+            index=["surveillance", "mapping", "search_rescue", "inspection"].index(st.session_state.mission_type)
+        )
+        st.session_state.pattern = st.selectbox(
+            "Route Pattern",
+            ["square", "grid", "circle", "perimeter"],
+            index=["square", "grid", "circle", "perimeter"].index(st.session_state.pattern)
+        )
+    with col_b:
+        st.session_state.altitude = st.slider("Altitude (metres)", 10.0, 150.0, st.session_state.altitude)
+        st.session_state.duration = st.slider("Duration (minutes)", 5.0, 60.0, st.session_state.duration)
+        st.session_state.home_lat = st.number_input("Home Latitude", value=st.session_state.home_lat, format="%.6f")
+        st.session_state.home_lon = st.number_input("Home Longitude", value=st.session_state.home_lon, format="%.6f")
 
-    # --- PAGE 6: DATABASE HISTORY ---
-    elif st.session_state.current_page == "History":
-        st.subheader("🗄️ Database Historical Records")
-        
-        records = get_all_missions()
-        if records:
-            df = pd.DataFrame(records)
-            st.dataframe(df, use_container_width=True)
-            
-            st.write("---")
-            del_id = st.number_input("Enter Mission ID to delete reference record:", min_value=1, step=1)
-            if st.button("Delete Target Record"):
-                delete_mission(del_id)
-                st.success("Mission deleted!")
-                st.rerun()
-        else:
-            st.write("No historical mission tracking records found.")
+# Page 3: Mission Plan
+elif st.session_state.current_page == "Mission Plan":
+    st.subheader("⚙️ Mission Plan")
 
-    # --- PAGE 7: EXPORT ---
-    elif st.session_state.current_page == "Export":
-        st.subheader("📥 Export Options & Reports")
-        
-        if st.session_state.generated_waypoints:
-            mission_meta = {
+    st.write(f"**Mission:** {st.session_state.mission_name} | **Type:** {st.session_state.mission_type} | **Pattern:** {st.session_state.pattern} | **Altitude:** {st.session_state.altitude} m | **Duration:** {st.session_state.duration} min")
+
+    if st.button("Generate Waypoints"):
+        wps = generate_waypoints(
+            st.session_state.home_lat, st.session_state.home_lon,
+            st.session_state.altitude, st.session_state.pattern
+        )
+        st.session_state.generated_waypoints = wps
+        meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
+        st.session_state.safety_checks = perform_safety_checks(meta, wps)
+        st.session_state.corrections = generate_corrections(st.session_state.safety_checks, meta, wps)
+        st.success(f"Generated {len(wps)} waypoints. Navigate to Map View to see the route.")
+
+    if st.session_state.generated_waypoints:
+        st.write(f"**Total Waypoints:** {len(st.session_state.generated_waypoints)}")
+        st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True)
+
+        # Report Agent — mission summary HTML (brief Section 7.5)
+        st.markdown("### 📄 Mission Summary Report")
+        mission_meta_rpt = {
+            "mission_name": st.session_state.mission_name,
+            "mission_type": st.session_state.mission_type,
+            "altitude": st.session_state.altitude,
+            "duration": st.session_state.duration,
+            "status": "Safe" if (st.session_state.safety_checks and all(c["result"] == "Pass" for c in st.session_state.safety_checks)) else "Needs Revision",
+        }
+        summary_html = generate_mission_summary_html(
+            mission_meta_rpt,
+            st.session_state.generated_waypoints,
+            st.session_state.safety_checks
+        )
+        st.markdown(summary_html, unsafe_allow_html=True)
+    else:
+        st.info("Click **Generate Waypoints** to create the mission route.")
+
+# Page 4: Map View
+elif st.session_state.current_page == "Map View":
+    st.subheader("🗺️ Mission Map View")
+
+    if st.session_state.generated_waypoints:
+        st.write(f"Displaying route for **{st.session_state.mission_name}** — {len(st.session_state.generated_waypoints)} waypoints")
+    else:
+        st.info("No waypoints generated yet. Go to **Mission Plan** to generate waypoints first. Showing home point and no-fly zones.")
+
+    m = create_mission_map(
+        st.session_state.generated_waypoints,
+        (st.session_state.home_lat, st.session_state.home_lon)
+    )
+    st_folium(m, use_container_width=True, height=550)
+
+# Page 5: Safety Check
+elif st.session_state.current_page == "Safety Check":
+    st.subheader("🛡️ Safety Compliance Check")
+
+    if st.session_state.safety_checks:
+        all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
+        status_label = "🟢 MISSION SAFE" if all_passed else "🔴 COMPLIANCE FAILED"
+        st.markdown(f"### Overall Status: {status_label}")
+        st.markdown("<hr style='border:1px solid #333;margin:0.5rem 0'>", unsafe_allow_html=True)
+
+        for c in st.session_state.safety_checks:
+            icon = "✅" if c["result"] == "Pass" else "❌"
+            st.markdown(f"**{icon} {c['check_name']}**: {c['message']}")
+
+        st.markdown("<hr style='border:1px solid #333;margin:0.5rem 0'>", unsafe_allow_html=True)
+        if st.button("Save Mission to Database"):
+            mission_row = {
                 "mission_name": st.session_state.mission_name,
                 "mission_type": st.session_state.mission_type,
                 "altitude": st.session_state.altitude,
                 "duration": st.session_state.duration,
-                "status": "Unchecked",
+                "status": "Safe" if all_passed else "Unsafe",
                 "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             }
-            if st.session_state.safety_checks:
-                all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
-                mission_meta["status"] = "Safe" if all_passed else "Unsafe"
-                
-            # JSON Export Button Connection
-            json_str = export_mission_json(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
-            st.download_button("Download System JSON Dataset", data=json_str, file_name="flight_plan.json", mime="application/json")
-            
-            # CSV Export Button Connection
-            csv_str = export_waypoints_csv(st.session_state.generated_waypoints)
-            st.download_button("Download Waypoints CSV Array Table", data=csv_str, file_name="waypoints.csv", mime="text/csv")
-            
-            # PDF Report Button Connection
-            pdf_bytes = generate_pdf_report(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
-            st.download_button("Download Formal PDF Summary Audit Brief", data=pdf_bytes, file_name="mission_report.pdf", mime="application/pdf")
-            
-            # QGroundControl .plan Export Button Connection
-            qgc_plan_str = export_qgc_plan(mission_meta, st.session_state.generated_waypoints)
-            st.download_button("Download QGroundControl .plan File", data=qgc_plan_str, file_name="mission.plan", mime="application/json")
-        else:
-            st.warning("No mission telemetries generated. Generate path waypoints before executing exports.")
+            save_mission(mission_row, st.session_state.generated_waypoints, st.session_state.safety_checks)
+            st.success("Mission saved to database!")
+    else:
+        st.warning("No safety checks available. Please generate waypoints on the **Mission Plan** page first.")
 
-with col_right:
-    st.subheader("🛰️ Live Geospatial View")
-    # Render map persistently using st_folium
-    m = create_mission_map(st.session_state.generated_waypoints, (st.session_state.home_lat, st.session_state.home_lon))
-    st_folium(m, use_container_width=True, height=600)
+# Page 6: Suggestions
+elif st.session_state.current_page == "Suggestions":
+    st.subheader("💡 Correction Suggestions")
+
+    if st.session_state.corrections:
+        st.write("The following corrections are recommended for this mission:")
+        for i, corr in enumerate(st.session_state.corrections, 1):
+            st.info(f"**Suggestion {i}:** {corr}")
+    elif st.session_state.safety_checks:
+        st.success("✅ All safety checks passed. No corrections required!")
+    else:
+        st.warning("No suggestions available. Generate waypoints and run safety checks first.")
+
+# Page 7: Export
+elif st.session_state.current_page == "Export":
+    st.subheader("📥 Export Mission Data")
+
+    if st.session_state.generated_waypoints:
+        mission_meta = {
+            "mission_name": st.session_state.mission_name,
+            "mission_type": st.session_state.mission_type,
+            "altitude": st.session_state.altitude,
+            "duration": st.session_state.duration,
+            "status": "Unchecked",
+            "created_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+        if st.session_state.safety_checks:
+            all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
+            mission_meta["status"] = "Safe" if all_passed else "Unsafe"
+
+        st.write(f"**Mission:** {mission_meta['mission_name']} | **Status:** {mission_meta['status']}")
+        st.markdown("<hr style='border:1px solid #333;margin:0.5rem 0'>", unsafe_allow_html=True)
+
+        col_e1, col_e2, col_e3 = st.columns(3)
+        with col_e1:
+            json_str = export_mission_json(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
+            st.download_button(
+                "⬇️  Download Mission JSON",
+                data=json_str, file_name="mission.json", mime="application/json",
+                use_container_width=True
+            )
+        with col_e2:
+            csv_str = export_waypoints_csv(st.session_state.generated_waypoints)
+            st.download_button(
+                "⬇️  Download Waypoints CSV",
+                data=csv_str, file_name="waypoints.csv", mime="text/csv",
+                use_container_width=True
+            )
+        with col_e3:
+            pdf_bytes = generate_pdf_report(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
+            st.download_button(
+                "⬇️  Download PDF Report",
+                data=pdf_bytes, file_name="mission_report.pdf", mime="application/pdf",
+                use_container_width=True
+            )
+    else:
+        st.warning("No waypoints generated yet. Complete Mission Plan before exporting.")

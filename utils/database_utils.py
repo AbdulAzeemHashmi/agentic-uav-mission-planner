@@ -1,7 +1,7 @@
 import sqlite3
 import os
 from datetime import datetime
-from typing import List, Dict, Any, Tuple
+from typing import Any
 
 DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "database")
 DB_PATH = os.path.join(DB_DIR, "missions.db")
@@ -54,7 +54,7 @@ def init_db():
     conn.commit()
     conn.close()
 
-def save_mission(mission_data: Dict[str, Any], waypoints: List[Dict[str, Any]], safety_results: List[Dict[str, Any]]) -> int:
+def save_mission(mission_data: dict[str, Any], waypoints: list[dict[str, Any]], safety_results: list[dict[str, Any]]) -> int:
     """
     Saves a complete mission (mission metadata, waypoints, and safety check results) to the database.
     Returns the newly created mission_id.
@@ -114,7 +114,7 @@ def save_mission(mission_data: Dict[str, Any], waypoints: List[Dict[str, Any]], 
     finally:
         conn.close()
 
-def get_all_missions() -> List[Dict[str, Any]]:
+def get_all_missions() -> list[dict[str, Any]]:
     """Retrieve all missions from the database."""
     init_db()
     conn = sqlite3.connect(DB_PATH)
@@ -131,7 +131,7 @@ def get_all_missions() -> List[Dict[str, Any]]:
     conn.close()
     return missions
 
-def get_mission_by_id(mission_id: int) -> Tuple[Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]]]:
+def get_mission_by_id(mission_id: int) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Retrieve a specific mission, its waypoints, and its safety checks from the database.
     """

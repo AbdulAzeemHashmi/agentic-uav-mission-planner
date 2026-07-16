@@ -1,5 +1,5 @@
 import math
-from typing import List, Dict, Any, Optional
+from typing import Any, Optional
 
 # Meters per degree of latitude (constant, because latitude lines are parallel)
 METERS_PER_DEG_LAT: float = 111_000.0
@@ -10,7 +10,7 @@ def generate_square_route(
     home_lon: float,
     altitude: float,
     side_length_meters: float = 100.0
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Generates a square patrol route centered on the home (takeoff) point.
     """
@@ -51,7 +51,7 @@ def generate_waypoints(
     altitude: float,
     pattern: str,
     rtl_enabled: bool = True
-) -> List[Dict[str, Any]]:
+) -> list[dict[str, Any]]:
     """
     Main orchestration entry point to map out dynamic UAV flight routes.
     """
