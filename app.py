@@ -28,19 +28,27 @@ st.markdown("""
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
 
-    /* Hide Header Toolbar */
-    header[data-testid="stHeader"] {
-        visibility: hidden;
-        height: 0px;
+    /* Hide Header Toolbar & eliminate top gap */
+    header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {
+        display: none !important;
+        height: 0px !important;
+        padding: 0px !important;
+        margin: 0px !important;
     }
 
-    /* Page Bounding Container - Minimized top gap while keeping balanced distance from top URL link */
-    .block-container {
-        padding-top: 0.3rem !important;
+    /* Page Bounding Container - Minimized top gap */
+    .block-container, [data-testid="stMainBlockContainer"] {
+        padding-top: 0.4rem !important;
         padding-bottom: 1.5rem !important;
         padding-left: 1.8rem !important;
         padding-right: 1.8rem !important;
         max-width: 100% !important;
+    }
+
+    /* Top Title Spacing */
+    .stApp h1, h1 {
+        margin-top: 0rem !important;
+        padding-top: 0rem !important;
     }
 
     /* Sidebar - Black Background & White Navigation Labels */
@@ -49,7 +57,7 @@ st.markdown("""
         border-right: 1px solid #222222 !important;
     }
     section[data-testid="stSidebar"] .block-container {
-        padding-top: 0.6rem !important;
+        padding-top: 0.4rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
@@ -58,9 +66,14 @@ st.markdown("""
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] caption {
+    section[data-testid="stSidebar"] label {
         color: #FFFFFF !important;
+    }
+
+    /* Captions globally across main page and sidebar - Crisp Light Gray Text */
+    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, section[data-testid="stSidebar"] caption, caption, small {
+        color: #E2E8F0 !important;
+        font-weight: 500 !important;
     }
 
     /* Sidebar Navigation Buttons */
