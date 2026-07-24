@@ -51,13 +51,21 @@ st.markdown("""
         padding-top: 0rem !important;
     }
 
-    /* Sidebar - Black Background & White Navigation Labels */
+    /* Sidebar - Black Background & White Navigation Labels with zero top gap */
     section[data-testid="stSidebar"] {
         background-color: #050505 !important;
         border-right: 1px solid #222222 !important;
     }
-    section[data-testid="stSidebar"] .block-container {
-        padding-top: 0.4rem !important;
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
+    section[data-testid="stSidebar"] header {
+        padding-top: 0rem !important;
+        padding-bottom: 0rem !important;
+        height: auto !important;
+        min-height: 0px !important;
+    }
+    section[data-testid="stSidebar"] .block-container,
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
+        padding-top: 0.2rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
@@ -66,8 +74,41 @@ st.markdown("""
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label {
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] .stMarkdown h1,
+    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
         color: #FFFFFF !important;
+        margin-top: 0rem !important;
+        padding-top: 0rem !important;
+    }
+
+    /* Form & Input Field Labels - Crisp White Text for Max Visibility */
+    label,
+    .stWidgetLabel,
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] span,
+    .stTextArea label,
+    .stTextInput label,
+    .stSelectbox label,
+    .stNumberInput label,
+    .stSlider label,
+    .stMultiSelect label,
+    .stRadio label,
+    .stCheckbox label {
+        color: #FFFFFF !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Slider values & min/max numbers readability */
+    .stSlider [data-testid="stTickBarMin"],
+    .stSlider [data-testid="stTickBarMax"],
+    .stSlider div[data-testid="stMarkdownContainer"] p,
+    .stSlider span,
+    div[data-testid="stSliderTickBar"] * {
+        color: #FFFFFF !important;
+        font-weight: 500 !important;
     }
 
     /* Captions globally across main page and sidebar - Crisp Light Gray Text */
