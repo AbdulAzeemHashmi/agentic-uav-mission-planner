@@ -21,7 +21,7 @@ st.markdown("""
         box-sizing: border-box !important;
     }
     
-    /* Root Page Background - Pure Black & White Page Text */
+    /* Root Page Background - Pure Black & White Default Page Text */
     body, .stApp {
         background-color: #000000 !important;
         color: #FFFFFF !important;
@@ -43,7 +43,7 @@ st.markdown("""
         max-width: 100% !important;
     }
 
-    /* Sidebar - Black Background */
+    /* Sidebar - Black Background & White Navigation Labels */
     section[data-testid="stSidebar"] {
         background-color: #050505 !important;
         border-right: 1px solid #222222 !important;
@@ -58,9 +58,8 @@ st.markdown("""
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] div,
-    section[data-testid="stSidebar"] caption,
-    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] caption {
         color: #FFFFFF !important;
     }
 
@@ -85,66 +84,56 @@ st.markdown("""
     }
 
     /* Global Typography Outside Boxes - Crisp White Text */
-    h1 {
-        margin-top: 0rem !important;
-        padding-top: 0rem !important;
-        font-size: 1.85rem !important;
-        font-weight: 800 !important;
-        color: #FFFFFF !important;
-        letter-spacing: -0.01em !important;
-    }
-    h2 {
-        font-size: 1.35rem !important;
-        font-weight: 700 !important;
+    .stApp > div h1, .stApp > div h2, .stApp > div h3, .stApp > div h4, .stApp > div h5, .stApp > div h6 {
         color: #FFFFFF !important;
     }
-    h3 {
-        font-size: 1.15rem !important;
-        font-weight: 700 !important;
-        color: #FFFFFF !important;
-    }
-    h4, h5, h6 {
-        font-size: 1.0rem !important;
-        font-weight: 700 !important;
-        color: #FFFFFF !important;
-    }
-    p, li, label, div, span {
-        color: #FFFFFF !important;
-        line-height: 1.55 !important;
-    }
-    [data-testid="stCaptionContainer"] {
-        color: #E2E8F0 !important;
+    h1, h2, h3, h4, h5, h6 {
+        color: #FFFFFF;
     }
 
-    /* Telemetry HUD Metrics Cards - White Background & Black Text */
-    div[data-testid="stMetric"] {
+    /* Telemetry HUD Metrics Cards - WHITE BOX BACKGROUND & BLACK TEXT */
+    div[data-testid="stMetric"],
+    [data-testid="stMetric"] {
         background-color: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1px solid #CBD5E1 !important;
         padding: 0.75rem 1rem !important;
         border-radius: 10px !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
         overflow: hidden !important;
         min-width: 0 !important;
     }
-    [data-testid="stMetricValue"] {
+    div[data-testid="stMetric"] *,
+    [data-testid="stMetric"] *,
+    [data-testid="stMetricValue"], 
+    [data-testid="stMetricLabel"],
+    div[data-testid="stMetric"] div,
+    div[data-testid="stMetric"] span,
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] p {
         color: #000000 !important;
-        font-family: 'Fira Code', 'Courier New', monospace !important;
-        font-weight: 800 !important;
-        font-size: 1.25rem !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-    }
-    [data-testid="stMetricLabel"] {
-        color: #000000 !important;
-        font-size: 0.78rem !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.05em !important;
-        font-weight: 700 !important;
-        white-space: nowrap !important;
     }
 
-    /* Primary Buttons */
+    /* Streamlit Alert Boxes (st.info, st.warning, st.error, st.success, st.sidebar.info) - WHITE BOX BACKGROUND & BLACK TEXT */
+    div[data-testid="stAlert"],
+    .stAlert,
+    div[data-baseweb="notification"],
+    div[kind="info"],
+    div[kind="warning"] {
+        background-color: #FFFFFF !important;
+        color: #000000 !important;
+        border: 1px solid #CBD5E1 !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+    }
+    div[data-testid="stAlert"] *,
+    .stAlert *,
+    div[data-baseweb="notification"] *,
+    div[kind="info"] *,
+    div[kind="warning"] * {
+        color: #000000 !important;
+    }
+
+    /* Primary Action Buttons */
     div.stButton > button {
         background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
         color: #FFFFFF !important;
@@ -178,7 +167,7 @@ st.markdown("""
         box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
     }
 
-    /* Form Controls & Input Boxes - White Theme & Black Text */
+    /* Form Controls & Input Boxes - WHITE BOX BACKGROUND & BLACK TEXT */
     div[data-baseweb="input"], div[data-baseweb="select"], textarea, input {
         background-color: #FFFFFF !important;
         color: #000000 !important;
@@ -190,7 +179,7 @@ st.markdown("""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }
     
-    /* Select Dropdown Popups */
+    /* Select Dropdown Popups - WHITE BOX BACKGROUND & BLACK TEXT */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
         background-color: #FFFFFF !important;
         color: #000000 !important;
@@ -205,7 +194,7 @@ st.markdown("""
         color: #0072FF !important;
     }
 
-    /* Dataframe Container & Table - White Background & Black Text */
+    /* Dataframe Container & Table - WHITE BOX BACKGROUND & BLACK TEXT */
     .dataframe, [data-testid="stDataFrame"] {
         background-color: #FFFFFF !important;
         color: #000000 !important;
@@ -229,31 +218,23 @@ st.markdown("""
         font-weight: 600 !important;
     }
 
-    /* Custom Card Containers (White Background & Black Text) */
+    /* Custom Card Containers - WHITE BOX BACKGROUND & BLACK TEXT */
     .uav-card {
         background-color: #FFFFFF !important;
-        border: 1px solid #E2E8F0 !important;
+        border: 1px solid #CBD5E1 !important;
         border-radius: 12px !important;
         padding: 1.25rem 1.5rem !important;
         margin-bottom: 1rem !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
         color: #000000 !important;
     }
-    .uav-card-title {
-        color: #000000 !important;
-        font-weight: 700 !important;
-        font-size: 1.05rem !important;
-        margin-top: 0 !important;
-        margin-bottom: 0.6rem !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 8px !important;
-    }
-    .uav-card p, .uav-card li, .uav-card div, .uav-card span, .uav-card b {
+    .uav-card *,
+    .uav-card-title,
+    .uav-card-title * {
         color: #000000 !important;
     }
 
-    /* Map Background Container - White Background */
+    /* Map Background Container - WHITE BACKGROUND */
     .leaflet-container {
         background-color: #FFFFFF !important;
     }
