@@ -34,39 +34,18 @@ from agents.safety_compliance_agent import NO_FLY_ZONES
 def initialize_mission_map(
     home_lat: float,
     home_lon: float,
-    zoom_start: int = 16
+    zoom_start: int = 16,
+    dark_map: bool = False
 ) -> folium.Map:
-    """
-    Creates and returns a blank base Folium map centered on the home point.
-
-    This is the foundation layer - think of it like a blank canvas before
-    drawing. All other draw_*() functions accept this map and paint onto it.
-
-    Tile Layer:
-    -----------
-    We use OpenStreetMap (the Folium default). It shows roads, buildings,
-    and landmarks that help a UAV operator orient the flight area visually.
-
-    Args:
-        home_lat   : Latitude of the home / takeoff point (decimal degrees)
-        home_lon   : Longitude of the home / takeoff point (decimal degrees)
-        zoom_start : Initial map zoom level (16 = neighbourhood level, good for UAVs)
-
-    Returns:
-        A folium.Map object centered on (home_lat, home_lon).
-    """
-    # folium.Map(location=[lat, lon]) centers the map viewport on that coordinate.
-    # control_scale=True adds a distance scale bar to the bottom-left corner.
+    tile_url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' if dark_map else 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
     mission_map = folium.Map(
         location=[home_lat, home_lon],
         zoom_start=zoom_start,
         control_scale=True,
-        tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        tiles=tile_url,
         attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     )
 
-    # Place a blue "home" marker at the takeoff point so the operator always
-    # knows where ground zero is, even before any waypoints are drawn.
     folium.Marker(
         location=[home_lat, home_lon],
         popup=f"🏠 Home Point<br>Lat: {home_lat:.6f}<br>Lon: {home_lon:.6f}",
@@ -249,31 +228,13 @@ def draw_no_fly_zones(
 
 def create_mission_map(
     waypoints: List[Dict[str, Any]],
-    home_coords: Tuple[float, float] = (33.6425, 73.0232)
+    home_coords: Tuple[float, float] = (33.6425, 73.0232),
+    dark_map: bool = False
 ) -> folium.Map:
-    """
-    Convenience wrapper that composes all three helper functions into one call.
-
-    Build order:
-      1. initialize_mission_map()  → blank base map at home point
-      2. draw_no_fly_zones()       → red restricted area overlays
-      3. draw_flight_path()        → waypoint markers + PolyLine
-
-    This function signature is unchanged from the original, so all existing
-    app.py calls (create_mission_map(waypoints, (lat, lon))) work without
-    any modification.
-
-    Args:
-        waypoints    : List of waypoint dicts (may be empty list [])
-        home_coords  : (lat, lon) tuple for the home point
-
-    Returns:
-        A fully decorated folium.Map ready for st_folium() rendering.
-    """
     home_lat, home_lon = home_coords
 
     # Step 1: Blank canvas map centered on home
-    mission_map = initialize_mission_map(home_lat, home_lon)
+    mission_map = initialize_mission_map(home_lat, home_lon, dark_map=dark_map)
 
     # Step 2: Paint no-fly zones in red so they are always visible
     draw_no_fly_zones(mission_map, NO_FLY_ZONES)

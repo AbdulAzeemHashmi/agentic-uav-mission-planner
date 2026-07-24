@@ -13,299 +13,6 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# High-Contrast Theme CSS (Black Page Background, White Page Text, White Boxes, Black Box Text, White Map)
-st.markdown("""
-    <style>
-    /* Reset & Box Sizing */
-    * {
-        box-sizing: border-box !important;
-    }
-    
-    /* Root Page Background - Pure Black & White Default Page Text */
-    body, .stApp {
-        background-color: #000000 !important;
-        color: #FFFFFF !important;
-        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
-    }
-
-    /* Hide Header Toolbar & eliminate top gap */
-    header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {
-        display: none !important;
-        height: 0px !important;
-        padding: 0px !important;
-        margin: 0px !important;
-    }
-
-    /* Page Bounding Container - Minimized top gap */
-    .block-container, [data-testid="stMainBlockContainer"] {
-        padding-top: 0.4rem !important;
-        padding-bottom: 1.5rem !important;
-        padding-left: 1.8rem !important;
-        padding-right: 1.8rem !important;
-        max-width: 100% !important;
-    }
-
-    /* Top Title Spacing */
-    .stApp h1, h1 {
-        margin-top: 0rem !important;
-        padding-top: 0rem !important;
-    }
-
-    /* Sidebar - Black Background & White Navigation Labels with zero top gap */
-    section[data-testid="stSidebar"] {
-        background-color: #050505 !important;
-        border-right: 1px solid #222222 !important;
-    }
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
-    section[data-testid="stSidebar"] header {
-        padding-top: 0rem !important;
-        padding-bottom: 0rem !important;
-        height: auto !important;
-        min-height: 0px !important;
-    }
-    section[data-testid="stSidebar"] .block-container,
-    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {
-        padding-top: 0.2rem !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] .stMarkdown h1,
-    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {
-        color: #FFFFFF !important;
-        margin-top: 0rem !important;
-        padding-top: 0rem !important;
-    }
-
-    /* Form & Input Field Labels - Crisp White Text for Max Visibility */
-    label,
-    .stWidgetLabel,
-    [data-testid="stWidgetLabel"],
-    [data-testid="stWidgetLabel"] p,
-    [data-testid="stWidgetLabel"] span,
-    .stTextArea label,
-    .stTextInput label,
-    .stSelectbox label,
-    .stNumberInput label,
-    .stSlider label,
-    .stMultiSelect label,
-    .stRadio label,
-    .stCheckbox label {
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-        font-size: 0.9rem !important;
-    }
-
-    /* Slider values & min/max numbers readability */
-    .stSlider [data-testid="stTickBarMin"],
-    .stSlider [data-testid="stTickBarMax"],
-    .stSlider div[data-testid="stMarkdownContainer"] p,
-    .stSlider span,
-    div[data-testid="stSliderTickBar"] * {
-        color: #FFFFFF !important;
-        font-weight: 500 !important;
-    }
-
-    /* Captions globally across main page and sidebar - Crisp Light Gray Text */
-    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, section[data-testid="stSidebar"] caption, caption, small {
-        color: #E2E8F0 !important;
-        font-weight: 500 !important;
-    }
-
-    /* Sidebar Navigation Buttons */
-    section[data-testid="stSidebar"] div.stButton > button {
-        background-color: #0F0F0F !important;
-        color: #FFFFFF !important;
-        border: 1px solid #2A2A2A !important;
-        border-radius: 8px !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        padding: 0.55rem 0.9rem !important;
-        margin-bottom: 0.25rem !important;
-        transition: all 0.2s ease-in-out !important;
-        width: 100% !important;
-    }
-    section[data-testid="stSidebar"] div.stButton > button:hover {
-        background: #1A1A1A !important;
-        border-color: #0072FF !important;
-        color: #0072FF !important;
-        transform: translateX(3px);
-    }
-
-    /* Global Typography Outside Boxes - Crisp White Text */
-    .stApp > div h1, .stApp > div h2, .stApp > div h3, .stApp > div h4, .stApp > div h5, .stApp > div h6 {
-        color: #FFFFFF !important;
-    }
-    h1, h2, h3, h4, h5, h6 {
-        color: #FFFFFF;
-    }
-
-    /* Telemetry HUD Metrics Cards - WHITE BOX BACKGROUND & BLACK TEXT, COMPACT SIZE */
-    div[data-testid="stMetric"],
-    [data-testid="stMetric"] {
-        background-color: #FFFFFF !important;
-        border: 1px solid #CBD5E1 !important;
-        padding: 0.45rem 0.75rem !important;
-        border-radius: 10px !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
-        overflow: hidden !important;
-        min-width: 0 !important;
-    }
-    div[data-testid="stMetric"] *,
-    [data-testid="stMetric"] *,
-    [data-testid="stMetricValue"], 
-    [data-testid="stMetricLabel"],
-    div[data-testid="stMetric"] div,
-    div[data-testid="stMetric"] span,
-    div[data-testid="stMetric"] label,
-    div[data-testid="stMetric"] p {
-        color: #000000 !important;
-    }
-    /* Shrink HUD metric value font size */
-    [data-testid="stMetricValue"] {
-        font-size: 1.1rem !important;
-        font-weight: 700 !important;
-        line-height: 1.3 !important;
-    }
-    [data-testid="stMetricLabel"] {
-        font-size: 0.72rem !important;
-        font-weight: 500 !important;
-        line-height: 1.2 !important;
-    }
-
-    /* Streamlit Alert Boxes (st.info, st.warning, st.error, st.success, st.sidebar.info) - WHITE BOX BACKGROUND & BLACK TEXT */
-    div[data-testid="stAlert"],
-    .stAlert,
-    div[data-baseweb="notification"],
-    div[kind="info"],
-    div[kind="warning"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 10px !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-    }
-    div[data-testid="stAlert"] *,
-    .stAlert *,
-    div[data-baseweb="notification"] *,
-    div[kind="info"] *,
-    div[kind="warning"] * {
-        color: #000000 !important;
-    }
-
-    /* Primary Action Buttons */
-    div.stButton > button {
-        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        padding: 0.55rem 1.25rem !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        font-size: 0.9rem !important;
-        box-shadow: 0 4px 16px rgba(0, 198, 255, 0.25) !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    div.stButton > button:hover {
-        box-shadow: 0 6px 22px rgba(0, 198, 255, 0.4) !important;
-        color: #FFFFFF !important;
-        transform: translateY(-1px);
-    }
-
-    /* Download Buttons */
-    div.stDownloadButton > button {
-        background: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #0072FF !important;
-        border-radius: 8px !important;
-        font-weight: 700 !important;
-        padding: 0.6rem 1rem !important;
-        transition: all 0.2s ease-in-out !important;
-    }
-    div.stDownloadButton > button:hover {
-        background: #0072FF !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
-    }
-
-    /* Form Controls & Input Boxes - WHITE BOX BACKGROUND & BLACK TEXT */
-    div[data-baseweb="input"], div[data-baseweb="select"], textarea, input {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 8px !important;
-    }
-    textarea:focus, input:focus, div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {
-        border-color: #0072FF !important;
-        box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
-    }
-    
-    /* Select Dropdown Popups - WHITE BOX BACKGROUND & BLACK TEXT */
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #CBD5E1 !important;
-    }
-    li[role="option"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-    }
-    li[role="option"]:hover, li[aria-selected="true"] {
-        background-color: #F1F5F9 !important;
-        color: #0072FF !important;
-    }
-
-    /* Dataframe Container & Table - WHITE BOX BACKGROUND & BLACK TEXT */
-    .dataframe, [data-testid="stDataFrame"] {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #E2E8F0 !important;
-        border-radius: 8px !important;
-        font-size: 0.88rem !important;
-    }
-    .dataframe th, [data-testid="stDataFrame"] th {
-        background-color: #F8FAFC !important;
-        color: #000000 !important;
-        font-weight: 700 !important;
-    }
-    .dataframe td, [data-testid="stDataFrame"] td {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-    }
-
-    /* Slider Styling */
-    .stSlider label {
-        color: #FFFFFF !important;
-        font-weight: 600 !important;
-    }
-
-    /* Custom Card Containers - WHITE BOX BACKGROUND & BLACK TEXT */
-    .uav-card {
-        background-color: #FFFFFF !important;
-        border: 1px solid #CBD5E1 !important;
-        border-radius: 12px !important;
-        padding: 1.25rem 1.5rem !important;
-        margin-bottom: 1rem !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-        color: #000000 !important;
-    }
-    .uav-card *,
-    .uav-card-title,
-    .uav-card-title * {
-        color: #000000 !important;
-    }
-
-    /* Map Background Container - WHITE BACKGROUND */
-    .leaflet-container {
-        background-color: #FFFFFF !important;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
 # Imports from local modules
 from agents.mission_understanding_agent import understand_mission
 from agents.waypoint_planner_agent import generate_waypoints
@@ -320,6 +27,8 @@ from agents.report_agent import generate_mission_summary_html
 init_db()
 
 # Session state defaults (prevent reload reset)
+if "theme" not in st.session_state:
+    st.session_state.theme = "Dark"
 if "mission_name" not in st.session_state:
     st.session_state.mission_name = "FAST Surveillance"
 if "mission_type" not in st.session_state:
@@ -343,17 +52,333 @@ if "corrections" not in st.session_state:
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
 
-# Navigation pages (matches brief Section 14)
+# Navigation pages
 pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export"]
 
 # Ensure current page is valid
 if st.session_state.current_page not in pages:
     st.session_state.current_page = "Home"
 
-# Sidebar navigation
+# Define Theme Tokens based on user specification:
+# Dark Mode: Page BG = Black, Page Text = White, Box BG = White, Box Text = Black, Map BG = White (Light Map)
+# Light Mode: Page BG = White, Page Text = Black, Box BG = Black, Box Text = White, Map BG = Black (Dark Map)
+is_dark = (st.session_state.theme == "Dark")
+
+page_bg        = "#000000" if is_dark else "#FFFFFF"
+page_text      = "#FFFFFF" if is_dark else "#000000"
+box_bg         = "#FFFFFF" if is_dark else "#000000"
+box_text       = "#000000" if is_dark else "#FFFFFF"
+sidebar_bg     = "#050505" if is_dark else "#F8FAFC"
+sidebar_border = "#222222" if is_dark else "#CBD5E1"
+sidebar_text   = "#FFFFFF" if is_dark else "#000000"
+btn_bg         = "#0F0F0F" if is_dark else "#FFFFFF"
+btn_border     = "#2A2A2A" if is_dark else "#CBD5E1"
+border_col     = "#CBD5E1" if is_dark else "#333333"
+th_bg          = "#F8FAFC" if is_dark else "#18181B"
+caption_col    = "#E2E8F0" if is_dark else "#475569"
+map_bg_col     = "#FFFFFF" if is_dark else "#000000"
+map_badge_text = "CARTO Positron (Light Map)" if is_dark else "CARTO Dark Matter (Dark Map)"
+map_badge_bg   = "#F1F5F9" if is_dark else "#1E1E1E"
+map_badge_fg   = "#000000" if is_dark else "#FFFFFF"
+
+# High-Contrast Theme CSS with strict 0.5cm top gap measurement
+st.markdown(f"""
+    <style>
+    * {{
+        box-sizing: border-box !important;
+    }}
+    
+    /* Root Page Background & Text Color */
+    body, .stApp {{
+        background-color: {page_bg} !important;
+        color: {page_text} !important;
+        font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+    }}
+
+    /* Hide Header Toolbar & zero out default header margin */
+    header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {{
+        display: none !important;
+        height: 0px !important;
+        padding: 0px !important;
+        margin: 0px !important;
+    }}
+
+    /* Top Boundary Gap: Strictly set to 0.5cm (in 0.3cm - 0.7cm range) */
+    .block-container, [data-testid="stMainBlockContainer"] {{
+        padding-top: 0.5cm !important;
+        padding-bottom: 1.5rem !important;
+        padding-left: 1.8rem !important;
+        padding-right: 1.8rem !important;
+        max-width: 100% !important;
+    }}
+
+    .stApp h1, h1 {{
+        margin-top: 0rem !important;
+        padding-top: 0rem !important;
+        color: {page_text} !important;
+    }}
+    h2, h3, h4, h5, h6 {{
+        color: {page_text} !important;
+    }}
+
+    /* Sidebar Theme & Top Boundary Gap (0.5cm) */
+    section[data-testid="stSidebar"] {{
+        background-color: {sidebar_bg} !important;
+        border-right: 1px solid {sidebar_border} !important;
+    }}
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
+    section[data-testid="stSidebar"] header {{
+        padding-top: 0.5cm !important;
+        padding-bottom: 0rem !important;
+        height: auto !important;
+        min-height: 0px !important;
+    }}
+    section[data-testid="stSidebar"] .block-container,
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
+        padding-top: 0.5cm !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }}
+    section[data-testid="stSidebar"] h1, 
+    section[data-testid="stSidebar"] h2, 
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] .stMarkdown h1,
+    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {{
+        color: {sidebar_text} !important;
+        margin-top: 0rem !important;
+        padding-top: 0rem !important;
+    }}
+
+    /* Sidebar Navigation Buttons */
+    section[data-testid="stSidebar"] div.stButton > button {{
+        background-color: {btn_bg} !important;
+        color: {sidebar_text} !important;
+        border: 1px solid {btn_border} !important;
+        border-radius: 8px !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        padding: 0.55rem 0.9rem !important;
+        margin-bottom: 0.25rem !important;
+        transition: all 0.2s ease-in-out !important;
+        width: 100% !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button:hover {{
+        background: #0072FF !important;
+        color: #FFFFFF !important;
+        border-color: #0072FF !important;
+        transform: translateX(3px);
+    }}
+
+    /* Form & Input Field Labels Outside Boxes - Matches Page Text */
+    label,
+    .stWidgetLabel,
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stWidgetLabel"] span,
+    .stTextArea label,
+    .stTextInput label,
+    .stSelectbox label,
+    .stNumberInput label,
+    .stSlider label,
+    .stMultiSelect label,
+    .stRadio label,
+    .stCheckbox label {{
+        color: {page_text} !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+    }}
+
+    /* Slider values & min/max numbers readability */
+    .stSlider [data-testid="stTickBarMin"],
+    .stSlider [data-testid="stTickBarMax"],
+    .stSlider div[data-testid="stMarkdownContainer"] p,
+    .stSlider span,
+    div[data-testid="stSliderTickBar"] * {{
+        color: {page_text} !important;
+        font-weight: 500 !important;
+    }}
+
+    /* Captions globally across main page and sidebar */
+    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, section[data-testid="stSidebar"] caption, caption, small {{
+        color: {caption_col} !important;
+        font-weight: 500 !important;
+    }}
+
+    /* Telemetry HUD Metrics Cards - BOX BACKGROUND & BOX TEXT COLOR */
+    div[data-testid="stMetric"],
+    [data-testid="stMetric"] {{
+        background-color: {box_bg} !important;
+        border: 1px solid {border_col} !important;
+        padding: 0.45rem 0.75rem !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
+        overflow: hidden !important;
+        min-width: 0 !important;
+    }}
+    div[data-testid="stMetric"] *,
+    [data-testid="stMetric"] *,
+    [data-testid="stMetricValue"], 
+    [data-testid="stMetricLabel"],
+    div[data-testid="stMetric"] div,
+    div[data-testid="stMetric"] span,
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] p {{
+        color: {box_text} !important;
+    }}
+    [data-testid="stMetricValue"] {{
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.3 !important;
+    }}
+    [data-testid="stMetricLabel"] {{
+        font-size: 0.72rem !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
+    }}
+
+    /* Streamlit Alert Boxes - BOX BACKGROUND & BOX TEXT COLOR */
+    div[data-testid="stAlert"],
+    .stAlert,
+    div[data-baseweb="notification"],
+    div[kind="info"],
+    div[kind="warning"] {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+        border-radius: 10px !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
+    }}
+    div[data-testid="stAlert"] *,
+    .stAlert *,
+    div[data-baseweb="notification"] *,
+    div[kind="info"] *,
+    div[kind="warning"] * {{
+        color: {box_text} !important;
+    }}
+
+    /* Primary Action Buttons */
+    div.stButton > button {{
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        padding: 0.55rem 1.25rem !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        box-shadow: 0 4px 16px rgba(0, 198, 255, 0.25) !important;
+        transition: all 0.2s ease-in-out !important;
+    }}
+    div.stButton > button:hover {{
+        box-shadow: 0 6px 22px rgba(0, 198, 255, 0.4) !important;
+        color: #FFFFFF !important;
+        transform: translateY(-1px);
+    }}
+
+    /* Download Buttons */
+    div.stDownloadButton > button {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid #0072FF !important;
+        border-radius: 8px !important;
+        font-weight: 700 !important;
+        padding: 0.6rem 1rem !important;
+        transition: all 0.2s ease-in-out !important;
+    }}
+    div.stDownloadButton > button:hover {{
+        background: #0072FF !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
+    }}
+
+    /* Form Controls & Input Boxes - BOX BACKGROUND & BOX TEXT COLOR */
+    div[data-baseweb="input"], div[data-baseweb="select"], textarea, input {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+        border-radius: 8px !important;
+    }}
+    textarea:focus, input:focus, div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {{
+        border-color: #0072FF !important;
+        box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
+    }}
+    
+    /* Select Dropdown Popups - BOX BACKGROUND & BOX TEXT COLOR */
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+    }}
+    li[role="option"] {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+    }}
+    li[role="option"]:hover, li[aria-selected="true"] {{
+        background-color: #F1F5F9 !important;
+        color: #0072FF !important;
+    }}
+
+    /* Dataframe Container & Table - BOX BACKGROUND & BOX TEXT COLOR */
+    .dataframe, [data-testid="stDataFrame"] {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+        border-radius: 8px !important;
+        font-size: 0.88rem !important;
+    }}
+    .dataframe th, [data-testid="stDataFrame"] th {{
+        background-color: {th_bg} !important;
+        color: {box_text} !important;
+        font-weight: 700 !important;
+    }}
+    .dataframe td, [data-testid="stDataFrame"] td {{
+        background-color: {box_bg} !important;
+        color: {box_text} !important;
+    }}
+
+    /* Custom Card Containers - BOX BACKGROUND & BOX TEXT COLOR */
+    .uav-card {{
+        background-color: {box_bg} !important;
+        border: 1px solid {border_col} !important;
+        border-radius: 12px !important;
+        padding: 1.25rem 1.5rem !important;
+        margin-bottom: 1rem !important;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+        color: {box_text} !important;
+    }}
+    .uav-card *,
+    .uav-card-title,
+    .uav-card-title * {{
+        color: {box_text} !important;
+    }}
+
+    /* Map Background Container */
+    .leaflet-container {{
+        background-color: {map_bg_col} !important;
+    }}
+    </style>
+""", unsafe_allow_html=True)
+
+# Sidebar Navigation Header
 st.sidebar.title("🛸 UAV Mission Planner")
 st.sidebar.caption("Agentic AI Airspace Planner & Auditor")
-st.sidebar.markdown("<hr style='border:1px solid #E2E8F0;margin:0.5rem 0 1rem 0'>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='border:1px solid #888888;margin:0.4rem 0 0.8rem 0'>", unsafe_allow_html=True)
+
+# Mode Toggle Radio Control
+theme_mode = st.sidebar.radio(
+    "🎨 Display Mode",
+    ["Dark Mode", "Light Mode"],
+    index=0 if st.session_state.theme == "Dark" else 1,
+    key="theme_toggle_radio"
+)
+new_theme = "Dark" if "Dark" in theme_mode else "Light"
+if new_theme != st.session_state.theme:
+    st.session_state.theme = new_theme
+    st.rerun()
+
+st.sidebar.markdown("<hr style='border:1px solid #888888;margin:0.6rem 0'>", unsafe_allow_html=True)
 
 for page in pages:
     is_active = (st.session_state.current_page == page)
@@ -361,8 +386,8 @@ for page in pages:
     if st.sidebar.button(label, use_container_width=True, key=f"nav_{page}"):
         st.session_state.current_page = page
 
-st.sidebar.markdown("<hr style='border:1px solid #E2E8F0;margin:1rem 0'>", unsafe_allow_html=True)
-st.sidebar.markdown("<div style='font-size:0.78rem;color:#AAAAAA;text-align:center;padding:0.3rem 0'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='border:1px solid #888888;margin:1rem 0'>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='font-size:0.78rem;opacity:0.8;text-align:center;padding:0.3rem 0'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
 
 # Global header
 st.title("🛸 Agentic UAV Mission Planner")
@@ -384,7 +409,7 @@ with hc3:
 with hc4:
     st.metric("Flight Profile", st.session_state.pattern.upper())
 
-st.markdown("<hr style='border:1px solid #E2E8F0;margin:0.8rem 0 1.2rem 0'>", unsafe_allow_html=True)
+st.markdown("<hr style='border:1px solid #888888;margin:0.8rem 0 1.2rem 0'>", unsafe_allow_html=True)
 
 # Create GCS split-screen layout (12:12 balanced split)
 col_left, col_right = st.columns([12, 12], gap="large")
@@ -395,10 +420,10 @@ with col_left:
         st.subheader("🏠 Ground Control Station Dashboard")
         st.caption("AI-driven mission planning system: generate waypoints, enforce safety rules, and export mission plans.")
         
-        st.markdown("""
+        st.markdown(f"""
             <div class="uav-card" style="margin-top:0.4rem;margin-bottom:0.6rem;padding:0.85rem 1.1rem">
                 <div class="uav-card-title" style="margin-bottom:0.4rem;font-size:0.9rem">🛡️ Active Airspace Safety Regulations</div>
-                <ul style="margin-bottom:0;padding-left:1.1rem;font-size:0.82rem;color:#000000;line-height:1.55">
+                <ul style="margin-bottom:0;padding-left:1.1rem;font-size:0.82rem;color:{box_text};line-height:1.55">
                     <li><b>R1</b>: Maximum Altitude Ceiling: <b>80 metres</b></li>
                     <li><b>R2</b>: Takeoff Command: Mandatory initial sequence</li>
                     <li><b>R3</b>: Return-to-Launch (RTL) / Landing point required</li>
@@ -410,19 +435,19 @@ with col_left:
             </div>
         """, unsafe_allow_html=True)
 
-        st.markdown("""
+        st.markdown(f"""
             <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:12px;margin-top:1rem">
                 <div class="uav-card" style="margin-bottom:0;padding:1rem">
-                    <div style="color:#000000;font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">1️⃣ Mission Input</div>
-                    <div style="font-size:0.83rem;color:#000000">Describe mission in natural language or fill out parameters manually.</div>
+                    <div style="color:{box_text};font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">1️⃣ Mission Input</div>
+                    <div style="font-size:0.83rem;color:{box_text}">Describe mission in natural language or fill out parameters manually.</div>
                 </div>
                 <div class="uav-card" style="margin-bottom:0;padding:1rem">
-                    <div style="color:#000000;font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">2️⃣ Mission Plan</div>
-                    <div style="font-size:0.83rem;color:#000000">Generate 4 flight patterns with automatic takeoff & RTL points.</div>
+                    <div style="color:{box_text};font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">2️⃣ Mission Plan</div>
+                    <div style="font-size:0.83rem;color:{box_text}">Generate 4 flight patterns with automatic takeoff & RTL points.</div>
                 </div>
                 <div class="uav-card" style="margin-bottom:0;padding:1rem">
-                    <div style="color:#000000;font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">3️⃣ Map & Safety</div>
-                    <div style="font-size:0.83rem;color:#000000">Audit airspace rules on live dark map and export JSON/CSV/PDF.</div>
+                    <div style="color:{box_text};font-weight:700;font-size:0.9rem;margin-bottom:0.4rem">3️⃣ Map & Safety</div>
+                    <div style="font-size:0.83rem;color:{box_text}">Audit airspace rules on live map and export JSON/CSV/PDF.</div>
                 </div>
             </div>
         """, unsafe_allow_html=True)
@@ -431,10 +456,10 @@ with col_left:
     elif st.session_state.current_page == "Mission Input":
         st.subheader("📝 Mission Parameter Input")
 
-        st.markdown("""
+        st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
-                <div style="font-size:0.85rem;color:#000000;margin-bottom:0.5rem">Enter mission details in plain English and let the Gemini AI Agent extract coordinates and parameters.</div>
+                <div style="font-size:0.85rem;color:{box_text};margin-bottom:0.5rem">Enter mission details in plain English and let the Gemini AI Agent extract coordinates and parameters.</div>
             </div>
         """, unsafe_allow_html=True)
         
@@ -454,7 +479,7 @@ with col_left:
                 st.session_state.pattern = extracted.get("pattern", "square")
                 st.success("✅ Parameters successfully extracted and applied!")
 
-        st.markdown("<hr style='border:1px solid #E2E8F0;margin:1.2rem 0'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border:1px solid #888888;margin:1.2rem 0'>", unsafe_allow_html=True)
 
         st.markdown("""
             <div class="uav-card">
@@ -489,7 +514,7 @@ with col_left:
         st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">📌 Active Mission Setup</div>
-                <div style="font-size:0.9rem;color:#000000">
+                <div style="font-size:0.9rem;color:{box_text}">
                     <b>Mission:</b> {st.session_state.mission_name} &nbsp;|&nbsp; 
                     <b>Type:</b> {st.session_state.mission_type} &nbsp;|&nbsp; 
                     <b>Pattern:</b> {st.session_state.pattern.upper()} &nbsp;|&nbsp; 
@@ -526,7 +551,8 @@ with col_left:
             summary_html = generate_mission_summary_html(
                 mission_meta_rpt,
                 st.session_state.generated_waypoints,
-                st.session_state.safety_checks
+                st.session_state.safety_checks,
+                theme=st.session_state.theme
             )
             st.markdown(summary_html, unsafe_allow_html=True)
         else:
@@ -539,7 +565,7 @@ with col_left:
         st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">🛰️ Flight Telemetry Summary</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.88rem;color:#000000">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.88rem;color:{box_text}">
                     <div><b>Mission:</b> {st.session_state.mission_name}</div>
                     <div><b>Profile:</b> {st.session_state.pattern.upper()}</div>
                     <div><b>Home Lat:</b> {st.session_state.home_lat:.6f}</div>
@@ -566,7 +592,7 @@ with col_left:
             
             st.markdown(f"""
                 <div class="uav-card" style="border-left:4px solid {'#10B981' if all_passed else '#EF4444'}">
-                    <div style="font-size:1.15rem;font-weight:800;color:#000000">{status_label}</div>
+                    <div style="font-size:1.15rem;font-weight:800;color:{box_text}">{status_label}</div>
                 </div>
             """, unsafe_allow_html=True)
 
@@ -574,8 +600,8 @@ with col_left:
                 icon = "✅" if c["result"] == "Pass" else "❌"
                 col_c = "#10B981" if c["result"] == "Pass" else "#EF4444"
                 st.markdown(f"""
-                    <div style="background:#FFFFFF;border:1px solid #E2E8F0;padding:0.7rem 1rem;border-radius:8px;margin-bottom:0.4rem;display:flex;align-items:center;justify-content:space-between">
-                        <span style="font-weight:700;color:#000000">{icon} {c['check_name']}</span>
+                    <div style="background:{box_bg};border:1px solid {border_col};padding:0.7rem 1rem;border-radius:8px;margin-bottom:0.4rem;display:flex;align-items:center;justify-content:space-between">
+                        <span style="font-weight:700;color:{box_text}">{icon} {c['check_name']}</span>
                         <span style="color:{col_c};font-weight:600;font-size:0.85rem">{c['message']}</span>
                     </div>
                 """, unsafe_allow_html=True)
@@ -605,7 +631,7 @@ with col_left:
                 st.markdown(f"""
                     <div class="uav-card" style="border-left:4px solid #0072FF">
                         <div style="color:#0072FF;font-weight:700;font-size:0.9rem">Correction #{i}</div>
-                        <div style="color:#000000;margin-top:0.3rem">{corr}</div>
+                        <div style="color:{box_text};margin-top:0.3rem">{corr}</div>
                     </div>
                 """, unsafe_allow_html=True)
         elif st.session_state.safety_checks:
@@ -632,7 +658,7 @@ with col_left:
 
             st.markdown(f"""
                 <div class="uav-card">
-                    <div style="font-size:0.95rem;color:#000000">
+                    <div style="font-size:0.95rem;color:{box_text}">
                         <b>Mission Package:</b> {mission_meta['mission_name']} &nbsp;|&nbsp; 
                         <b>Status:</b> <span style="color:{'#10B981' if mission_meta['status']=='Safe' else '#EF4444'};font-weight:700">{mission_meta['status']}</span>
                     </div>
@@ -665,15 +691,16 @@ with col_left:
             st.warning("⚠️ No waypoints generated yet. Complete Mission Plan before exporting.")
 
 with col_right:
-    st.markdown("""
-        <div style="background-color:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
-            <span style="font-weight:700;color:#000000;font-size:1rem">🗺️ Live GCS Mission Radar & Airspace</span>
-            <span style="font-size:0.78rem;background:#F1F5F9;color:#000000;padding:3px 8px;border-radius:6px;font-weight:600">CARTO Positron (Light)</span>
+    st.markdown(f"""
+        <div style="background-color:{box_bg};border:1px solid {border_col};border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
+            <span style="font-weight:700;color:{box_text};font-size:1rem">🗺️ Live GCS Mission Radar & Airspace</span>
+            <span style="font-size:0.78rem;background:{map_badge_bg};color:{map_badge_fg};padding:3px 8px;border-radius:6px;font-weight:600">{map_badge_text}</span>
         </div>
     """, unsafe_allow_html=True)
 
     m = create_mission_map(
         st.session_state.generated_waypoints,
-        (st.session_state.home_lat, st.session_state.home_lon)
+        (st.session_state.home_lat, st.session_state.home_lon),
+        dark_map=(not is_dark)
     )
-    st_folium(m, use_container_width=True, height=620, key=f"gcs_map_{st.session_state.current_page}_{len(st.session_state.generated_waypoints)}")
+    st_folium(m, use_container_width=True, height=620, key=f"gcs_map_{st.session_state.current_page}_{len(st.session_state.generated_waypoints)}_{st.session_state.theme}")
