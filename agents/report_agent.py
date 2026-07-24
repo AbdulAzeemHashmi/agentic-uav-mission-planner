@@ -26,17 +26,17 @@ def generate_mission_summary_html(
     failed_checks = [c for c in safety_checks if c["result"] != "Pass"]
 
     # Status badge colours (inlined)
-    badge_bg    = "#1a4731" if is_safe else "#4a1919"
-    badge_color = "#4ade80" if is_safe else "#f87171"
+    badge_bg    = "#D1FAE5" if is_safe else "#FEE2E2"
+    badge_color = "#065F46" if is_safe else "#991B1B"
     badge_text  = "SAFE" if is_safe else "NEEDS REVISION"
 
-    # Metric card template (dark theme, no external class)
+    # Metric card template (white theme, white card background, black text)
     def metric_card(label: str, value: str) -> str:
         return (
-            f'<div style="flex:1;min-width:120px;background:#1E1E1E;padding:0.8rem 1rem;'
-            f'border-radius:8px;border:1px solid #2a2a2a;border-left:4px solid #1E90FF">'
-            f'<div style="font-size:0.7rem;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{label}</div>'
-            f'<div style="font-size:1.2rem;font-weight:700;color:#FAFAFA">{value}</div>'
+            f'<div style="flex:1;min-width:120px;background:#FFFFFF;padding:0.9rem 1.1rem;'
+            f'border-radius:10px;border:1px solid #E2E8F0;border-left:4px solid #0072FF;box-shadow:0 2px 8px rgba(0,0,0,0.05)">'
+            f'<div style="font-size:0.72rem;color:#000000;text-transform:uppercase;letter-spacing:0.06em;font-weight:700;margin-bottom:4px">{label}</div>'
+            f'<div style="font-size:1.25rem;font-weight:800;color:#000000">{value}</div>'
             f'</div>'
         )
 
@@ -52,56 +52,56 @@ def generate_mission_summary_html(
     for check in safety_checks:
         if check["result"] == "Pass":
             icon     = "✅"
-            row_bg   = "#1a2a1a"
-            name_col = "#FAFAFA"
-            msg_col  = "#aaaaaa"
+            row_bg   = "#F8FAFC"
+            name_col = "#000000"
+            msg_col  = "#000000"
         else:
             icon     = "❌"
-            row_bg   = "#2a1a1a"
-            name_col = "#f87171"
-            msg_col  = "#cc8888"
+            row_bg   = "#FEF2F2"
+            name_col = "#991B1B"
+            msg_col  = "#7F1D1D"
 
         checklist_rows += (
-            f'<tr style="background:{row_bg}">'
-            f'<td style="padding:7px 10px;font-size:0.9rem;width:28px">{icon}</td>'
-            f'<td style="padding:7px 10px;font-weight:600;color:{name_col};font-size:0.82rem;white-space:nowrap">'
+            f'<tr style="background:{row_bg};border-bottom:1px solid #E2E8F0">'
+            f'<td style="padding:8px 12px;font-size:0.95rem;width:28px">{icon}</td>'
+            f'<td style="padding:8px 12px;font-weight:700;color:{name_col};font-size:0.85rem;white-space:nowrap">'
             f'{check["check_name"]}</td>'
-            f'<td style="padding:7px 10px;color:{msg_col};font-size:0.82rem">{check["message"]}</td>'
+            f'<td style="padding:8px 12px;color:{msg_col};font-size:0.85rem">{check["message"]}</td>'
             f'</tr>'
         )
 
     # Bottom approval notice
     if failed_checks:
         notice_html = (
-            '<div style="margin-top:12px;padding:10px 14px;background:#2a1a1a;border:1px solid #7f1d1d;'
-            'border-radius:6px;color:#f87171;font-size:0.82rem">'
-            '<b>Notice:</b> This mission has failed safety constraints and is not approved for flight. '
-            'Review the Suggestions page for corrections.'
+            '<div style="margin-top:14px;padding:12px 16px;background:#FEF2F2;border:1px solid #FCA5A5;'
+            'border-radius:8px;color:#991B1B;font-size:0.85rem;font-weight:500">'
+            '<b style="color:#7F1D1D">Notice:</b> Mission failed safety constraints and is not approved for flight. '
+            'Review the Suggestions page for recommended corrections.'
             '</div>'
         )
     else:
         notice_html = (
-            '<div style="margin-top:12px;padding:10px 14px;background:#1a2a1a;border:1px solid #14532d;'
-            'border-radius:6px;color:#4ade80;font-size:0.82rem">'
-            '<b>Approved:</b> This mission passes all rule-based safety checks and is cleared for planning.'
+            '<div style="margin-top:14px;padding:12px 16px;background:#ECFDF5;border:1px solid #A7F3D0;'
+            'border-radius:8px;color:#065F46;font-size:0.85rem;font-weight:500">'
+            '<b style="color:#064E3B">Approved:</b> Mission passed all safety rules and is cleared for execution.'
             '</div>'
         )
 
-    html = f"""<div style="font-family:'Segoe UI',Arial,sans-serif;padding:16px;border-radius:10px;background:#141414;border:1px solid #2a2a2a;margin-top:10px">
-    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #2a2a2a;padding-bottom:10px;margin-bottom:14px">
-        <div style="font-size:1rem;font-weight:700;color:#FAFAFA">{mission.get('mission_name', 'UAV Mission Plan')}</div>
-        <span style="padding:4px 12px;border-radius:20px;font-weight:700;font-size:0.72rem;letter-spacing:0.06em;background:{badge_bg};color:{badge_color}">{badge_text}</span>
+    html = f"""<div style="font-family:'Segoe UI',Roboto,Arial,sans-serif;padding:20px;border-radius:12px;background:#FFFFFF;border:1px solid #E2E8F0;margin-top:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06)">
+    <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #E2E8F0;padding-bottom:12px;margin-bottom:16px">
+        <div style="font-size:1.1rem;font-weight:700;color:#000000;letter-spacing:-0.01em">{mission.get('mission_name', 'UAV Mission Plan')}</div>
+        <span style="padding:5px 14px;border-radius:20px;font-weight:700;font-size:0.75rem;letter-spacing:0.08em;background:{badge_bg};color:{badge_color};border:1px solid {badge_color}44">{badge_text}</span>
     </div>
-    <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px">
         {metrics_html}
     </div>
-    <div style="font-size:0.78rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Safety Checklist</div>
-    <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden">
+    <div style="font-size:0.8rem;font-weight:700;color:#000000;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px">Rule Compliance Checklist</div>
+    <table style="width:100%;border-collapse:collapse;border-radius:8px;overflow:hidden;border:1px solid #E2E8F0">
         <thead>
-            <tr style="background:#1E1E1E">
-                <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:#555;font-weight:600;width:28px"></th>
-                <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:#555;font-weight:600">Rule</th>
-                <th style="padding:7px 10px;text-align:left;font-size:0.75rem;color:#555;font-weight:600">Details</th>
+            <tr style="background:#F8FAFC">
+                <th style="padding:9px 12px;text-align:left;font-size:0.78rem;color:#000000;font-weight:700;width:28px"></th>
+                <th style="padding:9px 12px;text-align:left;font-size:0.78rem;color:#000000;font-weight:700">Rule</th>
+                <th style="padding:9px 12px;text-align:left;font-size:0.78rem;color:#000000;font-weight:700">Details</th>
             </tr>
         </thead>
         <tbody>
@@ -110,5 +110,7 @@ def generate_mission_summary_html(
     </table>
     {notice_html}
 </div>"""
+
+    return html
 
     return html

@@ -60,7 +60,9 @@ def initialize_mission_map(
     mission_map = folium.Map(
         location=[home_lat, home_lon],
         zoom_start=zoom_start,
-        control_scale=True
+        control_scale=True,
+        tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+        attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     )
 
     # Place a blue "home" marker at the takeoff point so the operator always
