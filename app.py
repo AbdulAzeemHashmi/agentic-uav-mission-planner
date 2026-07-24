@@ -36,7 +36,7 @@ st.markdown("""
 
     /* Page Bounding Container - Minimized top gap while keeping balanced distance from top URL link */
     .block-container {
-        padding-top: 0.6rem !important;
+        padding-top: 0.3rem !important;
         padding-bottom: 1.5rem !important;
         padding-left: 1.8rem !important;
         padding-right: 1.8rem !important;
@@ -91,12 +91,12 @@ st.markdown("""
         color: #FFFFFF;
     }
 
-    /* Telemetry HUD Metrics Cards - WHITE BOX BACKGROUND & BLACK TEXT */
+    /* Telemetry HUD Metrics Cards - WHITE BOX BACKGROUND & BLACK TEXT, COMPACT SIZE */
     div[data-testid="stMetric"],
     [data-testid="stMetric"] {
         background-color: #FFFFFF !important;
         border: 1px solid #CBD5E1 !important;
-        padding: 0.75rem 1rem !important;
+        padding: 0.45rem 0.75rem !important;
         border-radius: 10px !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
         overflow: hidden !important;
@@ -111,6 +111,17 @@ st.markdown("""
     div[data-testid="stMetric"] label,
     div[data-testid="stMetric"] p {
         color: #000000 !important;
+    }
+    /* Shrink HUD metric value font size */
+    [data-testid="stMetricValue"] {
+        font-size: 1.1rem !important;
+        font-weight: 700 !important;
+        line-height: 1.3 !important;
+    }
+    [data-testid="stMetricLabel"] {
+        font-size: 0.72rem !important;
+        font-weight: 500 !important;
+        line-height: 1.2 !important;
     }
 
     /* Streamlit Alert Boxes (st.info, st.warning, st.error, st.success, st.sidebar.info) - WHITE BOX BACKGROUND & BLACK TEXT */
@@ -297,7 +308,7 @@ for page in pages:
         st.session_state.current_page = page
 
 st.sidebar.markdown("<hr style='border:1px solid #E2E8F0;margin:1rem 0'>", unsafe_allow_html=True)
-st.sidebar.info("💡 Powered by Google Gemini AI & Rule Engine")
+st.sidebar.markdown("<div style='font-size:0.78rem;color:#AAAAAA;text-align:center;padding:0.3rem 0'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
 
 # Global header
 st.title("🛸 Agentic UAV Mission Planner")
@@ -331,9 +342,9 @@ with col_left:
         st.caption("AI-driven mission planning system: generate waypoints, enforce safety rules, and export mission plans.")
         
         st.markdown("""
-            <div class="uav-card">
-                <div class="uav-card-title">🛡️ Active Airspace Safety Regulations</div>
-                <ul style="margin-bottom:0;padding-left:1.2rem;font-size:0.9rem;color:#000000">
+            <div class="uav-card" style="margin-top:0.4rem;margin-bottom:0.6rem;padding:0.85rem 1.1rem">
+                <div class="uav-card-title" style="margin-bottom:0.4rem;font-size:0.9rem">🛡️ Active Airspace Safety Regulations</div>
+                <ul style="margin-bottom:0;padding-left:1.1rem;font-size:0.82rem;color:#000000;line-height:1.55">
                     <li><b>R1</b>: Maximum Altitude Ceiling: <b>80 metres</b></li>
                     <li><b>R2</b>: Takeoff Command: Mandatory initial sequence</li>
                     <li><b>R3</b>: Return-to-Launch (RTL) / Landing point required</li>
@@ -397,7 +408,7 @@ with col_left:
             </div>
         """, unsafe_allow_html=True)
 
-        col_a, col_b = st.columns(2)
+        col_a, col_b, col_c = st.columns(3)
         with col_a:
             st.session_state.mission_name = st.text_input("Mission Name", st.session_state.mission_name)
             st.session_state.mission_type = st.selectbox(
@@ -413,6 +424,7 @@ with col_left:
         with col_b:
             st.session_state.altitude = st.slider("Target Altitude (metres)", 10.0, 150.0, st.session_state.altitude)
             st.session_state.duration = st.slider("Target Duration (minutes)", 5.0, 60.0, st.session_state.duration)
+        with col_c:
             st.session_state.home_lat = st.number_input("Home Latitude", value=st.session_state.home_lat, format="%.6f")
             st.session_state.home_lon = st.number_input("Home Longitude", value=st.session_state.home_lon, format="%.6f")
 
@@ -448,6 +460,7 @@ with col_left:
             st.write(f"**Generated Waypoint Count:** `{len(st.session_state.generated_waypoints)}`")
             st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True)
 
+            st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
             st.markdown("### 📄 Mission Summary Report")
             mission_meta_rpt = {
                 "mission_name": st.session_state.mission_name,
