@@ -13,7 +13,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clean High-Contrast Light Theme CSS (White Map & Boxes Background, Black Text)
+# High-Contrast Theme CSS (Black Page Background, White Page Text, White Boxes, Black Box Text, White Map)
 st.markdown("""
     <style>
     /* Reset & Box Sizing */
@@ -21,10 +21,10 @@ st.markdown("""
         box-sizing: border-box !important;
     }
     
-    /* Root Page Background - Pure White */
+    /* Root Page Background - Pure Black & White Page Text */
     body, .stApp {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
+        background-color: #000000 !important;
+        color: #FFFFFF !important;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }
 
@@ -34,22 +34,22 @@ st.markdown("""
         height: 0px;
     }
 
-    /* Page Bounding Container */
+    /* Page Bounding Container - Minimized top gap while keeping balanced distance from top URL link */
     .block-container {
-        padding-top: 1rem !important;
+        padding-top: 0.6rem !important;
         padding-bottom: 1.5rem !important;
         padding-left: 1.8rem !important;
         padding-right: 1.8rem !important;
         max-width: 100% !important;
     }
 
-    /* Sidebar - White Background */
+    /* Sidebar - Black Background */
     section[data-testid="stSidebar"] {
-        background-color: #FFFFFF !important;
-        border-right: 1px solid #E2E8F0 !important;
+        background-color: #050505 !important;
+        border-right: 1px solid #222222 !important;
     }
     section[data-testid="stSidebar"] .block-container {
-        padding-top: 1.2rem !important;
+        padding-top: 0.6rem !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }
@@ -58,15 +58,17 @@ st.markdown("""
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] div {
-        color: #000000 !important;
+    section[data-testid="stSidebar"] div,
+    section[data-testid="stSidebar"] caption,
+    [data-testid="stSidebar"] [data-testid="stCaptionContainer"] {
+        color: #FFFFFF !important;
     }
 
     /* Sidebar Navigation Buttons */
     section[data-testid="stSidebar"] div.stButton > button {
-        background-color: #FFFFFF !important;
-        color: #000000 !important;
-        border: 1px solid #CBD5E1 !important;
+        background-color: #0F0F0F !important;
+        color: #FFFFFF !important;
+        border: 1px solid #2A2A2A !important;
         border-radius: 8px !important;
         font-size: 0.9rem !important;
         font-weight: 600 !important;
@@ -76,39 +78,42 @@ st.markdown("""
         width: 100% !important;
     }
     section[data-testid="stSidebar"] div.stButton > button:hover {
-        background: #F1F5F9 !important;
+        background: #1A1A1A !important;
         border-color: #0072FF !important;
         color: #0072FF !important;
         transform: translateX(3px);
     }
 
-    /* Global Typography - Black Text */
+    /* Global Typography Outside Boxes - Crisp White Text */
     h1 {
         margin-top: 0rem !important;
         padding-top: 0rem !important;
         font-size: 1.85rem !important;
         font-weight: 800 !important;
-        color: #000000 !important;
+        color: #FFFFFF !important;
         letter-spacing: -0.01em !important;
     }
     h2 {
         font-size: 1.35rem !important;
         font-weight: 700 !important;
-        color: #000000 !important;
+        color: #FFFFFF !important;
     }
     h3 {
         font-size: 1.15rem !important;
         font-weight: 700 !important;
-        color: #000000 !important;
+        color: #FFFFFF !important;
     }
     h4, h5, h6 {
         font-size: 1.0rem !important;
         font-weight: 700 !important;
-        color: #000000 !important;
+        color: #FFFFFF !important;
     }
     p, li, label, div, span {
-        color: #000000 !important;
+        color: #FFFFFF !important;
         line-height: 1.55 !important;
+    }
+    [data-testid="stCaptionContainer"] {
+        color: #E2E8F0 !important;
     }
 
     /* Telemetry HUD Metrics Cards - White Background & Black Text */
@@ -220,11 +225,11 @@ st.markdown("""
 
     /* Slider Styling */
     .stSlider label {
-        color: #000000 !important;
+        color: #FFFFFF !important;
         font-weight: 600 !important;
     }
 
-    /* Custom Card Containers for UI Consistency (White Background & Black Text) */
+    /* Custom Card Containers (White Background & Black Text) */
     .uav-card {
         background-color: #FFFFFF !important;
         border: 1px solid #E2E8F0 !important;
@@ -232,6 +237,7 @@ st.markdown("""
         padding: 1.25rem 1.5rem !important;
         margin-bottom: 1rem !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
+        color: #000000 !important;
     }
     .uav-card-title {
         color: #000000 !important;
@@ -242,6 +248,9 @@ st.markdown("""
         display: flex !important;
         align-items: center !important;
         gap: 8px !important;
+    }
+    .uav-card p, .uav-card li, .uav-card div, .uav-card span, .uav-card b {
+        color: #000000 !important;
     }
 
     /* Map Background Container - White Background */
@@ -344,13 +353,13 @@ with col_left:
             <div class="uav-card">
                 <div class="uav-card-title">🛡️ Active Airspace Safety Regulations</div>
                 <ul style="margin-bottom:0;padding-left:1.2rem;font-size:0.9rem;color:#000000">
-                    <li><b>R1</b> — Maximum Altitude Ceiling: <b>80 metres</b></li>
-                    <li><b>R2</b> — Takeoff Command: Mandatory initial sequence</li>
-                    <li><b>R3</b> — Return-to-Launch (RTL) / Landing point required</li>
-                    <li><b>R4</b> — No-Fly Zone Clearance: Zero entry into restricted airspace</li>
-                    <li><b>R5</b> — Maximum Waypoint Leg Separation: <b>500 metres</b></li>
-                    <li><b>R6</b> — Maximum Mission Duration: <b>30 minutes</b></li>
-                    <li><b>R7</b> — Battery Consumption Reserve: Under <b>80%</b> capacity</li>
+                    <li><b>R1</b>: Maximum Altitude Ceiling: <b>80 metres</b></li>
+                    <li><b>R2</b>: Takeoff Command: Mandatory initial sequence</li>
+                    <li><b>R3</b>: Return-to-Launch (RTL) / Landing point required</li>
+                    <li><b>R4</b>: No-Fly Zone Clearance: Zero entry into restricted airspace</li>
+                    <li><b>R5</b>: Maximum Waypoint Leg Separation: <b>500 metres</b></li>
+                    <li><b>R6</b>: Maximum Mission Duration: <b>30 minutes</b></li>
+                    <li><b>R7</b>: Battery Consumption Reserve: Under <b>80%</b> capacity</li>
                 </ul>
             </div>
         """, unsafe_allow_html=True)
@@ -378,7 +387,7 @@ with col_left:
 
         st.markdown("""
             <div class="uav-card">
-                <div class="uav-card-title">🤖 Option A — Natural Language Request</div>
+                <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
                 <div style="font-size:0.85rem;color:#000000;margin-bottom:0.5rem">Enter mission details in plain English and let the Gemini AI Agent extract coordinates and parameters.</div>
             </div>
         """, unsafe_allow_html=True)
@@ -403,7 +412,7 @@ with col_left:
 
         st.markdown("""
             <div class="uav-card">
-                <div class="uav-card-title">⚙️ Option B — Manual Parameter Override</div>
+                <div class="uav-card-title">⚙️ Option B: Manual Parameter Override</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -505,7 +514,7 @@ with col_left:
 
         if st.session_state.safety_checks:
             all_passed = all(c["result"] == "Pass" for c in st.session_state.safety_checks)
-            status_label = "🟢 MISSION CLEARED & SAFE" if all_passed else "🔴 REJECTED — SAFETY VIOLATION"
+            status_label = "🟢 MISSION CLEARED & SAFE" if all_passed else "🔴 REJECTED: SAFETY VIOLATION"
             
             st.markdown(f"""
                 <div class="uav-card" style="border-left:4px solid {'#10B981' if all_passed else '#EF4444'}">
