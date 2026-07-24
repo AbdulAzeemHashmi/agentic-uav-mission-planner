@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0f2027,100:00c6ff&height=200&section=header&text=Agentic%20UAV%20Mission%20Planner&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Plan%2C%20Validate%2C%20and%20Export%20UAV%20Flight%20Missions&descAlignY=55&descSize=16" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=200&section=header&text=Agentic%20UAV%20Mission%20Planner&fontSize=32&fontColor=ffffff&animation=fadeIn&fontAlignY=35&desc=Plan%2C%20Validate%2C%20and%20Export%20UAV%20Flight%20Missions&descAlignY=55&descSize=16" width="100%"/>
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
 [![Streamlit](https://img.shields.io/badge/Streamlit-1.32-FF4B4B?style=for-the-badge&logo=streamlit&logoColor=white)](https://streamlit.io/)
@@ -44,6 +44,7 @@
 - [🗄️ Database Schema](#️-database-schema)
 - [📅 8 Week Internship Plan](#-8-week-internship-plan)
 - [🔮 Future Enhancements](#-future-enhancements)
+- [📬 Contact](#-contact)
 
 ---
 
@@ -423,7 +424,7 @@ erDiagram
 
 1. 🗺️ QGroundControl `.plan` file export
 2. 🛩️ PX4 SITL simulation
-3. 🛸🛸 Multi UAV mission planning
+3. 🛸 Multi UAV mission planning
 4. 🚁 Real drone integration
 5. 🔋 Battery consumption model (detailed physics)
 6. ⛈️ Weather aware mission planning
@@ -455,6 +456,6 @@ erDiagram
 
 Made with 🛸 and agentic intelligence by Abdul Azeem Hashmi.
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0f2027&height=100&section=footer" width="100%"/>
+<img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=100&section=footer" width="100%"/>
 
 </div>
