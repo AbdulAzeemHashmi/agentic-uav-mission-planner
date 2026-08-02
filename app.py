@@ -29,6 +29,9 @@ init_db()
 # Session state defaults (prevent reload reset)
 if "theme" not in st.session_state:
     st.session_state.theme = "Dark"
+if "sidebar_open" not in st.session_state:
+    st.session_state.sidebar_open = True
+
 if "mission_name" not in st.session_state:
     st.session_state.mission_name = "FAST Surveillance"
 if "mission_type" not in st.session_state:
@@ -95,22 +98,42 @@ st.markdown(f"""
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }}
 
-    /* Hide Header Toolbar & zero out default header margin */
+    /* Shrink Streamlit header to zero height but keep it in DOM
+       so the native sidebar collapse button still functions */
     header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {{
-        display: none !important;
         height: 0px !important;
+        min-height: 0px !important;
+        overflow: hidden !important;
         padding: 0px !important;
         margin: 0px !important;
+        visibility: hidden !important;
     }}
 
-    /* Always show the sidebar collapse/expand toggle button */
+    /* Hide the NATIVE Streamlit sidebar collapse arrow (we use our own toggle) */
     button[data-testid="collapsedControl"],
-    button[kind="headerNoPadding"],
     [data-testid="stSidebarCollapsedControl"] {{
-        display: flex !important;
-        visibility: visible !important;
-        opacity: 1 !important;
-        z-index: 9999 !important;
+        display: none !important;
+    }}
+
+    /* Our custom sidebar toggle button - fixed top-left */
+    .sidebar-toggle-btn {{
+        position: fixed !important;
+        top: 0.5rem !important;
+        left: 0.5rem !important;
+        z-index: 99999 !important;
+        background: #0072FF !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 6px !important;
+        padding: 4px 10px !important;
+        font-size: 1.1rem !important;
+        cursor: pointer !important;
+        box-shadow: 0 2px 8px rgba(0,114,255,0.4) !important;
+    }}
+
+    /* When sidebar is hidden: slide it off-screen */
+    .sidebar-hidden section[data-testid="stSidebar"] {{
+        display: none !important;
     }}
 
     /* Hide Leaflet scale bar & attribution footer below map */
@@ -386,6 +409,10 @@ st.markdown(f"""
     .leaflet-container {{
         background-color: {map_bg_col} !important;
     }}
+    /* Hide native collapse arrow */
+    button[kind="secondary"][data-testid="base_web_button"] {
+        display: none !important;
+    }
     </style>
 """, unsafe_allow_html=True)
 
@@ -417,8 +444,26 @@ for page in pages:
 st.sidebar.markdown("<hr style='border:1px solid #888888;margin:1rem 0'>", unsafe_allow_html=True)
 st.sidebar.markdown(f"<div style='font-size:0.78rem;color:{sidebar_text};opacity:1;text-align:center;padding:0.3rem 0;font-weight:600'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
 
-# Global header
-st.title("🛸 Agentic UAV Mission Planner")
+# Custom sidebar toggle button (reliable across cloud + localhost)
+col_toggle, col_title = st.columns([1, 20])
+with col_toggle:
+    toggle_icon = "x" if st.session_state.sidebar_open else "☰"
+    if st.button(toggle_icon, key="sidebar_toggle_btn", help="Toggle navigation panel"):
+        st.session_state.sidebar_open = not st.session_state.sidebar_open
+        st.rerun()
+
+# Hide or show sidebar via CSS based on session state
+if not st.session_state.sidebar_open:
+    st.markdown("""
+        <style>
+        section[data-testid="stSidebar"] {
+            display: none !important;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+with col_title:
+    st.title("🛸 Agentic UAV Mission Planner")
 
 # Telemetry HUD metrics bar
 if st.session_state.safety_checks:
