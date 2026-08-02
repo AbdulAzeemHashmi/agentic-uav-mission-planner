@@ -37,15 +37,52 @@ def initialize_mission_map(
     zoom_start: int = 16,
     dark_map: bool = False
 ) -> folium.Map:
-    tile_url = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png' if dark_map else 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+    # Set default tile based on dark_map parameter
+    # dark_map=False (Black UI theme) -> Light/White map tile default
+    # dark_map=True  (White UI theme) -> Dark/Black map tile default
+    if dark_map:
+        primary_tile = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+        primary_name = 'Dark Canvas'
+    else:
+        primary_tile = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
+        primary_name = 'Light Canvas'
+
     mission_map = folium.Map(
         location=[home_lat, home_lon],
         zoom_start=zoom_start,
         control_scale=True,
-        tiles=tile_url,
+        tiles=primary_tile,
+        name=primary_name,
         attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
     )
 
+    # Add alternative basemaps for user flexibility
+    folium.TileLayer(
+        tiles='https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        name='OpenStreetMap (Standard)',
+        attr='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    ).add_to(mission_map)
+
+    folium.TileLayer(
+        tiles='https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        name='Satellite View (Esri)',
+        attr='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+    ).add_to(mission_map)
+
+    if dark_map:
+        folium.TileLayer(
+            tiles='https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+            name='Light Canvas',
+            attr='&copy; CARTO'
+        ).add_to(mission_map)
+    else:
+        folium.TileLayer(
+            tiles='https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
+            name='Dark Canvas',
+            attr='&copy; CARTO'
+        ).add_to(mission_map)
+
+    # Add Home marker
     folium.Marker(
         location=[home_lat, home_lon],
         popup=f"🏠 Home Point<br>Lat: {home_lat:.6f}<br>Lon: {home_lon:.6f}",
@@ -53,7 +90,11 @@ def initialize_mission_map(
         icon=folium.Icon(color="blue", icon="home", prefix="glyphicon")
     ).add_to(mission_map)
 
+    # Add layer control to toggle basemaps easily
+    folium.LayerControl(position="topright").add_to(mission_map)
+
     return mission_map
+
 
 
 # ---------------------------------------------------------------------------
