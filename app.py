@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Agentic UAV Mission Planner",
     page_icon="🛸",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="auto"
 )
 
 # Imports from local modules
@@ -101,6 +101,16 @@ st.markdown(f"""
         height: 0px !important;
         padding: 0px !important;
         margin: 0px !important;
+    }}
+
+    /* Always show the sidebar collapse/expand toggle button */
+    button[data-testid="collapsedControl"],
+    button[kind="headerNoPadding"],
+    [data-testid="stSidebarCollapsedControl"] {{
+        display: flex !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+        z-index: 9999 !important;
     }}
 
     /* Hide Leaflet scale bar & attribution footer below map */
@@ -213,9 +223,16 @@ st.markdown(f"""
     }}
 
     /* Captions globally across main page and sidebar */
-    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, section[data-testid="stSidebar"] caption, caption, small {{
+    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, caption, small {{
         color: {caption_col} !important;
         font-weight: 500 !important;
+    }}
+    /* Sidebar caption text – must be explicitly visible */
+    section[data-testid="stSidebar"] .stCaption,
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {{
+        color: {sidebar_text} !important;
+        opacity: 0.85 !important;
     }}
 
     /* Telemetry HUD Metrics Cards - BOX BACKGROUND & BOX TEXT COLOR */
@@ -398,7 +415,7 @@ for page in pages:
         st.session_state.current_page = page
 
 st.sidebar.markdown("<hr style='border:1px solid #888888;margin:1rem 0'>", unsafe_allow_html=True)
-st.sidebar.markdown("<div style='font-size:0.78rem;opacity:0.8;text-align:center;padding:0.3rem 0'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
+st.sidebar.markdown(f"<div style='font-size:0.78rem;color:{sidebar_text};opacity:1;text-align:center;padding:0.3rem 0;font-weight:600'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
 
 # Global header
 st.title("🛸 Agentic UAV Mission Planner")
