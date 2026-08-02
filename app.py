@@ -103,6 +103,17 @@ st.markdown(f"""
         margin: 0px !important;
     }}
 
+    /* Hide Leaflet scale bar & attribution footer below map */
+    .leaflet-control-attribution,
+    .leaflet-control-scale,
+    .leaflet-bottom.leaflet-left,
+    .leaflet-bottom.leaflet-right {{
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        height: 0px !important;
+    }}
+
     /* Top Boundary Gap: Strictly set to 0.5cm (in 0.3cm - 0.7cm range) */
     .block-container, [data-testid="stMainBlockContainer"] {{
         padding-top: 0.5cm !important;
