@@ -10,7 +10,7 @@ st.set_page_config(
     page_title="Agentic UAV Mission Planner",
     page_icon="🛸",
     layout="wide",
-    initial_sidebar_state="auto"
+    initial_sidebar_state="expanded"
 )
 
 # Imports from local modules
@@ -109,26 +109,106 @@ st.markdown(f"""
         visibility: hidden !important;
     }}
 
-    /* Hide the NATIVE Streamlit sidebar collapse arrow (we use our own toggle) */
+    /* Hide the native Streamlit sidebar collapse controls so our own toggle remains authoritative */
     button[data-testid="collapsedControl"],
-    [data-testid="stSidebarCollapsedControl"] {{
+    [data-testid="stSidebarCollapsedControl"],
+    button[aria-label="Collapse sidebar"],
+    button[aria-label="Expand sidebar"] {{
         display: none !important;
+    }}
+
+    /* Persistent app branding panel that stays visible even when the sidebar is collapsed */
+    .app-branding-card {{
+        background: linear-gradient(135deg, rgba(0, 114, 255, 0.14), rgba(0, 198, 255, 0.08));
+        border: 1px solid rgba(0, 114, 255, 0.18);
+        border-radius: 14px;
+        padding: 1rem 1.2rem;
+        margin: 0.85rem 0 1rem 0;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+        animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }}
+    .app-branding-card:hover {{
+        transform: translateY(-3px);
+        box-shadow: 0 26px 68px rgba(0, 0, 0, 0.28);
+    }}
+    .app-branding-kicker {{
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #00C6FF;
+        margin-bottom: 0.35rem;
+    }}
+    .app-branding-title {{
+        font-size: 1.35rem;
+        font-weight: 800;
+        color: {page_text};
+        margin-bottom: 0.2rem;
+    }}
+    .app-branding-subtitle {{
+        font-size: 0.95rem;
+        color: {page_text};
+        opacity: 0.9;
+        margin-bottom: 0.2rem;
+    }}
+    .app-branding-footer {{
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: {page_text};
+        opacity: 0.82;
+    }}
+    @keyframes fadeInUp {{
+        from {{ opacity: 0; transform: translateY(6px); }}
+        to {{ opacity: 1; transform: translateY(0); }}
     }}
 
     /* Our custom sidebar toggle button - fixed top-left */
     .sidebar-toggle-btn {{
         position: fixed !important;
-        top: 0.5rem !important;
-        left: 0.5rem !important;
+        top: 0.6rem !important;
+        left: 0.6rem !important;
         z-index: 99999 !important;
         background: #0072FF !important;
         color: #FFFFFF !important;
         border: none !important;
-        border-radius: 6px !important;
-        padding: 4px 10px !important;
+        border-radius: 8px !important;
+        padding: 6px 10px !important;
+        width: 44px !important;
+        height: 44px !important;
         font-size: 1.1rem !important;
         cursor: pointer !important;
-        box-shadow: 0 2px 8px rgba(0,114,255,0.4) !important;
+        box-shadow: 0 6px 20px rgba(0,114,255,0.25) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }}
+
+    /* Style the Streamlit-generated button (uses title/help attribute) so residual white square becomes themed
+       Position it at the top-right of the branding card area */
+    button[title="Toggle navigation panel"],
+    button[aria-label="Toggle navigation panel"] {{
+        position: fixed !important;
+        top: 1.0rem !important;
+        right: 1.2rem !important;
+        left: auto !important;
+        z-index: 99998 !important;
+        width: 44px !important;
+        height: 44px !important;
+        padding: 0 !important;
+        border-radius: 10px !important;
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        box-shadow: 0 8px 28px rgba(0,114,255,0.28) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.05rem !important;
+    }}
+    button[title="Toggle navigation panel"]:focus, button[aria-label="Toggle navigation panel"]:focus {{
+        outline: none !important;
+        box-shadow: 0 10px 36px rgba(0,114,255,0.36) !important;
     }}
 
     /* When sidebar is hidden: slide it off-screen */
@@ -410,9 +490,9 @@ st.markdown(f"""
         background-color: {map_bg_col} !important;
     }}
     /* Hide native collapse arrow */
-    button[kind="secondary"][data-testid="base_web_button"] {
+    button[kind="secondary"][data-testid="base_web_button"] {{
         display: none !important;
-    }
+    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -444,14 +524,6 @@ for page in pages:
 st.sidebar.markdown("<hr style='border:1px solid #888888;margin:1rem 0'>", unsafe_allow_html=True)
 st.sidebar.markdown(f"<div style='font-size:0.78rem;color:{sidebar_text};opacity:1;text-align:center;padding:0.3rem 0;font-weight:600'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
 
-# Custom sidebar toggle button (reliable across cloud + localhost)
-col_toggle, col_title = st.columns([1, 20])
-with col_toggle:
-    toggle_icon = "x" if st.session_state.sidebar_open else "☰"
-    if st.button(toggle_icon, key="sidebar_toggle_btn", help="Toggle navigation panel"):
-        st.session_state.sidebar_open = not st.session_state.sidebar_open
-        st.rerun()
-
 # Hide or show sidebar via CSS based on session state
 if not st.session_state.sidebar_open:
     st.markdown("""
@@ -462,8 +534,20 @@ if not st.session_state.sidebar_open:
         </style>
     """, unsafe_allow_html=True)
 
-with col_title:
-    st.title("🛸 Agentic UAV Mission Planner")
+col_branding, col_toggle = st.columns([12, 1])
+with col_branding:
+    st.markdown(f"""
+        <div class="app-branding-card">
+            <div class="app-branding-kicker">🛸 UAV Mission Planner</div>
+            <div class="app-branding-title">Agentic AI Airspace Planner and Auditor</div>
+            <div class="app-branding-subtitle">Mission planning, safety validation, and live route auditing in one place</div>
+            <div class="app-branding-footer">💡 Powered by Google Gemini AI</div>
+        </div>
+    """, unsafe_allow_html=True)
+with col_toggle:
+    if st.button("☰", key="sidebar_toggle_btn", help="Toggle navigation panel", use_container_width=True):
+        st.session_state.sidebar_open = not st.session_state.sidebar_open
+        st.rerun()
 
 # Telemetry HUD metrics bar
 if st.session_state.safety_checks:
