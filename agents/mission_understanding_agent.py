@@ -2,15 +2,23 @@ import os
 import json
 import re
 from typing import Any
-import google.generativeai as genai
 from dotenv import load_dotenv
+
+# Gracefully handle broken gRPC / cygrpc installs (issue #17).
+# If the import fails the whole app still launches and uses regex fallback.
+try:
+    import google.generativeai as genai
+    GENAI_AVAILABLE = True
+except Exception:
+    genai = None  # type: ignore[assignment]
+    GENAI_AVAILABLE = False
 
 # Find .env inside the current app directory or root
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(APP_DIR, ".env"))
 
 api_key = os.getenv("GEMINI_API_KEY")
-if api_key:
+if api_key and GENAI_AVAILABLE:
     genai.configure(api_key=api_key)
 
 SYSTEM_PROMPT = """
@@ -86,29 +94,33 @@ def parse_with_regex(user_input: str) -> dict[str, Any]:
 def parse_mission_request(user_input: str) -> dict[str, Any]:
     """
     Translates user requests using Google's generative AI models,
-    falling back on local regex processing if network connections are down.
+    falling back on local regex processing if network connections or API endpoints fail.
     """
-    if not api_key:
+    if not api_key or not GENAI_AVAILABLE:
         return parse_with_regex(user_input)
         
-    try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
-        prompt = f"{SYSTEM_PROMPT}\n\nUser request: \"{user_input}\""
-        response = model.generate_content(prompt)
-        
-        text_response = response.text.strip()
-        # Clean markdown formatting tags if returned
-        if text_response.startswith("```"):
-            text_response = re.sub(r'^```(?:json)?\n', '', text_response)
-            text_response = re.sub(r'\n```$', '', text_response)
-        
-        # Parse JSON response
-        parsed_data = json.loads(text_response)
-        return parsed_data
-        
-    except Exception as e:
-        print(f"Error parsing mission request: {e}")
-        return parse_with_regex(user_input)
+    models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
+    prompt = f"{SYSTEM_PROMPT}\n\nUser request: \"{user_input}\""
+
+    for model_name in models_to_try:
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(prompt)
+            
+            text_response = response.text.strip()
+            # Clean markdown formatting tags if returned
+            if text_response.startswith("```"):
+                text_response = re.sub(r'^```(?:json)?\n', '', text_response)
+                text_response = re.sub(r'\n```$', '', text_response)
+            
+            # Parse JSON response
+            parsed_data = json.loads(text_response)
+            return parsed_data
+        except Exception as e:
+            continue
+
+    # Safe fallback if API calls failed or model not found
+    return parse_with_regex(user_input)
 
 
 def understand_mission(user_input: str) -> dict[str, Any]:

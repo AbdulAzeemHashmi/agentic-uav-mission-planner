@@ -15,9 +15,10 @@ Public API
   draw_no_fly_zones(folium_map, nfz_list)             -> folium.Map
       Renders all no-fly zone polygons/circles in red on the map.
 
-  create_mission_map(waypoints, home_coords)          -> folium.Map
+  create_mission_map(waypoints, home_coords)          -> tuple[folium.Map, tuple | None]
       Convenience wrapper: calls all three helpers above in sequence.
-      Kept for backward compatibility with existing app.py calls.
+      Returns (map, bounds) where bounds = (min_lat, min_lon, max_lat, max_lon)
+      or None when there are no waypoints. Kept for backward compatibility.
 """
 
 import folium
@@ -52,31 +53,48 @@ def initialize_mission_map(
         primary_tile = 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png'
         primary_name = 'Light Canvas'
 
+    bg_color = "#0D0D14" if dark_map else "#F8FAFC"
+
     mission_map = folium.Map(
         location=[home_lat, home_lon],
         zoom_start=zoom_start,
         control_scale=False,
         tiles=primary_tile,
         name=primary_name,
-        attr="CARTO"
+        attr=" "
     )
 
-
-    # Inject CSS to completely hide Leaflet scale bar and attribution text below the map
-    hide_controls_css = """
+    # Inject CSS into iframe <head> to eliminate white background and Leaflet attribution bar
+    hide_controls_css = f"""
     <style>
+    html, body, #map, .leaflet-container, .folium-map {{
+        background-color: {bg_color} !important;
+        background: {bg_color} !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        border-radius: 12px !important;
+    }}
     .leaflet-control-attribution,
     .leaflet-control-scale,
-    .leaflet-bottom.leaflet-left,
-    .leaflet-bottom.leaflet-right {
+    .leaflet-bottom,
+    .leaflet-bottom *,
+    .leaflet-control-attribution * {{
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
-        height: 0 !important;
-    }
+        height: 0px !important;
+        max-height: 0px !important;
+        width: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        border: none !important;
+        background: transparent !important;
+        background-color: transparent !important;
+        box-shadow: none !important;
+    }}
     </style>
     """
-    mission_map.get_root().html.add_child(folium.Element(hide_controls_css))
+    mission_map.get_root().header.add_child(folium.Element(hide_controls_css))
 
     # Add Home marker
     folium.Marker(
@@ -265,7 +283,10 @@ def create_mission_map(
     waypoints: List[Dict[str, Any]],
     home_coords: Tuple[float, float] = (33.6425, 73.0232),
     dark_map: bool = False
-) -> folium.Map:
+) -> tuple:
+    """Returns (folium.Map, bounds_tuple | None).
+    bounds_tuple = (min_lat, min_lon, max_lat, max_lon) when waypoints exist.
+    """
     home_lat, home_lon = home_coords
 
     # Step 1: Blank canvas map centered on home
@@ -277,4 +298,15 @@ def create_mission_map(
     # Step 3: Draw the flight path (markers + PolyLine) on top
     draw_flight_path(mission_map, waypoints)
 
-    return mission_map
+    # Step 4: Compute bounding box so the caller can auto-fit the map
+    if waypoints:
+        lats = [wp["latitude"]  for wp in waypoints]
+        lons = [wp["longitude"] for wp in waypoints]
+        # Include home point in the bounding box
+        lats.append(home_lat)
+        lons.append(home_lon)
+        bounds = (min(lats), min(lons), max(lats), max(lons))
+    else:
+        bounds = None
+
+    return mission_map, bounds

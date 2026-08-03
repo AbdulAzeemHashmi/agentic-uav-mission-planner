@@ -131,6 +131,50 @@ def get_all_missions() -> list[dict[str, Any]]:
     conn.close()
     return missions
 
+
+def search_missions(
+    name_filter: str = "",
+    status_filter: str = "All",
+    type_filter: str = "All"
+) -> list[dict[str, Any]]:
+    """
+    Search missions with optional filters.
+
+    Args:
+        name_filter:   Case-insensitive substring match on mission_name.
+        status_filter: Exact match on status ('Safe', 'Unsafe', or 'All').
+        type_filter:   Exact match on mission_type (or 'All').
+
+    Returns:
+        List of mission dicts ordered by created_at DESC.
+    """
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    query = "SELECT * FROM missions WHERE 1=1"
+    params: list[Any] = []
+
+    if name_filter.strip():
+        query += " AND LOWER(mission_name) LIKE ?"
+        params.append(f"%{name_filter.strip().lower()}%")
+
+    if status_filter and status_filter != "All":
+        query += " AND status = ?"
+        params.append(status_filter)
+
+    if type_filter and type_filter != "All":
+        query += " AND mission_type = ?"
+        params.append(type_filter)
+
+    query += " ORDER BY created_at DESC"
+    cursor.execute(query, params)
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
+
 def get_mission_by_id(mission_id: int) -> tuple[dict[str, Any], list[dict[str, Any]], list[dict[str, Any]]]:
     """
     Retrieve a specific mission, its waypoints, and its safety checks from the database.

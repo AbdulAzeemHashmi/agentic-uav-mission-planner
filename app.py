@@ -8,7 +8,7 @@ from streamlit_folium import st_folium
 # Configure streamlit page settings (MUST be the first command)
 st.set_page_config(
     page_title="Agentic UAV Mission Planner",
-    page_icon="🛸",
+    page_icon="🚁",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -19,16 +19,19 @@ from agents.waypoint_planner_agent import generate_waypoints
 from agents.safety_compliance_agent import perform_safety_checks
 from agents.correction_agent import generate_corrections
 from utils.map_utils import create_mission_map
-from utils.database_utils import save_mission, init_db
+from utils.database_utils import save_mission, init_db, search_missions, get_mission_by_id
 from utils.export_utils import export_mission_json, export_waypoints_csv, generate_pdf_report
 from agents.report_agent import generate_mission_summary_html
+from agents.mission_understanding_agent import understand_mission, GENAI_AVAILABLE
 
 # Initialize database
 init_db()
 
 # Session state defaults (prevent reload reset)
+# Theme persistence: read from query params first, fall back to session state
+_qp_theme = st.query_params.get("theme", None)
 if "theme" not in st.session_state:
-    st.session_state.theme = "Dark"
+    st.session_state.theme = "Dark" if _qp_theme != "Light" else "Light"
 if "sidebar_open" not in st.session_state:
     st.session_state.sidebar_open = True
 
@@ -54,35 +57,40 @@ if "corrections" not in st.session_state:
     st.session_state.corrections = []
 if "current_page" not in st.session_state:
     st.session_state.current_page = "Home"
+if "map_bounds" not in st.session_state:
+    st.session_state.map_bounds = None
+if "nl_extracted" not in st.session_state:
+    st.session_state.nl_extracted = None  # stores last NL extraction result for feedback card
 
 # Navigation pages
-pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export"]
+pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export", "Mission History"]
 
 # Ensure current page is valid
 if st.session_state.current_page not in pages:
     st.session_state.current_page = "Home"
 
-# Define Theme Tokens based on user specification:
-# Dark Mode: Page BG = Black, Page Text = White, Box BG = White, Box Text = Black, Map BG = White (Light Map)
-# Light Mode: Page BG = White, Page Text = Black, Box BG = Black, Box Text = White, Map BG = Black (Dark Map)
+# Define Theme Tokens:
+# Dark Mode: deep navy page, soft slate boxes, dark map tiles (match page)
+# Light Mode: off-white page, white boxes, light map tiles (match page)
 is_dark = (st.session_state.theme == "Dark")
 
-page_bg        = "#000000" if is_dark else "#FFFFFF"
-page_text      = "#FFFFFF" if is_dark else "#000000"
-box_bg         = "#FFFFFF" if is_dark else "#000000"
-box_text       = "#000000" if is_dark else "#FFFFFF"
-sidebar_bg     = "#050505" if is_dark else "#F8FAFC"
-sidebar_border = "#222222" if is_dark else "#CBD5E1"
-sidebar_text   = "#FFFFFF" if is_dark else "#000000"
-btn_bg         = "#0F0F0F" if is_dark else "#FFFFFF"
-btn_border     = "#2A2A2A" if is_dark else "#CBD5E1"
-border_col     = "#CBD5E1" if is_dark else "#333333"
-th_bg          = "#F8FAFC" if is_dark else "#18181B"
-caption_col    = "#E2E8F0" if is_dark else "#475569"
-map_bg_col     = "#FFFFFF" if is_dark else "#000000"
-map_badge_text = "CARTO Positron (Light Map)" if is_dark else "CARTO Dark Matter (Dark Map)"
-map_badge_bg   = "#F1F5F9" if is_dark else "#1E1E1E"
-map_badge_fg   = "#000000" if is_dark else "#FFFFFF"
+page_bg        = "#0D0D14" if is_dark else "#F8FAFC"
+page_text      = "#E8EAF0" if is_dark else "#1A1A2E"
+box_bg         = "#1C1C2E" if is_dark else "#FFFFFF"
+box_text       = "#E8EAF0" if is_dark else "#1A1A2E"
+sidebar_bg     = "#080810" if is_dark else "#F1F5F9"
+sidebar_border = "#22223A" if is_dark else "#CBD5E1"
+sidebar_text   = "#E8EAF0" if is_dark else "#1A1A2E"
+btn_bg         = "#13131F" if is_dark else "#F8FAFC"
+btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
+border_col     = "#2A2A44" if is_dark else "#CBD5E1"
+th_bg          = "#252540" if is_dark else "#F1F5F9"
+caption_col    = "#8890AA" if is_dark else "#64748B"
+# Map tiles MATCH the page theme: dark page → dark map tiles, light page → light map tiles
+map_bg_col     = "#0D0D14" if is_dark else "#F8FAFC"
+map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
+map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
+map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
 
 # High-Contrast Theme CSS with strict 0.5cm top gap measurement
 st.markdown(f"""
@@ -219,12 +227,17 @@ st.markdown(f"""
     /* Hide Leaflet scale bar & attribution footer below map */
     .leaflet-control-attribution,
     .leaflet-control-scale,
+    .leaflet-bottom,
     .leaflet-bottom.leaflet-left,
     .leaflet-bottom.leaflet-right {{
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
         height: 0px !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        background: transparent !important;
+        border: none !important;
     }}
 
     /* Top Boundary Gap: Strictly set to 0.5cm (in 0.3cm - 0.7cm range) */
@@ -485,9 +498,21 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
 
-    /* Map Background Container */
+    /* Map Background Container & iframe alignment */
+    iframe[title="streamlit_folium.st_folium"],
+    iframe,
+    div[data-testid="stCustomComponentV1"],
+    div[data-testid="stElementContainer"] {{
+        background-color: transparent !important;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 12px !important;
+        box-shadow: none !important;
+    }}
     .leaflet-container {{
         background-color: {map_bg_col} !important;
+        background: {map_bg_col} !important;
+        border-radius: 12px !important;
     }}
     /* Hide native collapse arrow */
     button[kind="secondary"][data-testid="base_web_button"] {{
@@ -497,11 +522,11 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Sidebar Navigation Header
-st.sidebar.title("🛸 UAV Mission Planner")
+st.sidebar.title("🚁 UAV Mission Planner")
 st.sidebar.caption("Agentic AI Airspace Planner & Auditor")
-st.sidebar.markdown("<hr style='border:1px solid #888888;margin:0.4rem 0 0.8rem 0'>", unsafe_allow_html=True)
+st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:0.4rem 0 0.8rem 0'>", unsafe_allow_html=True)
 
-# Mode Toggle Radio Control
+# Mode Toggle Radio Control — persist selection to query params so refresh restores it
 theme_mode = st.sidebar.radio(
     "🎨 Display Mode",
     ["Dark Mode", "Light Mode"],
@@ -511,18 +536,59 @@ theme_mode = st.sidebar.radio(
 new_theme = "Dark" if "Dark" in theme_mode else "Light"
 if new_theme != st.session_state.theme:
     st.session_state.theme = new_theme
+    st.query_params["theme"] = new_theme
     st.rerun()
 
-st.sidebar.markdown("<hr style='border:1px solid #888888;margin:0.6rem 0'>", unsafe_allow_html=True)
+# Gemini API availability notice (issue #16)
+if not GENAI_AVAILABLE:
+    st.sidebar.markdown(
+        "<div style='background:#3A1A10;border:1px solid #C05621;border-radius:6px;"
+        "padding:6px 10px;font-size:0.75rem;color:#FBD38D;margin-bottom:0.5rem'>"
+        "⚠️ <b>Gemini AI unavailable</b> — using regex fallback.</div>",
+        unsafe_allow_html=True
+    )
 
-for page in pages:
+st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:0.6rem 0'>", unsafe_allow_html=True)
+
+# Grouped navigation with distinct icons
+PLANNING_PAGES = {
+    "Home":          "🏠",
+    "Mission Input": "📝",
+    "Mission Plan":  "⚙️",
+    "Map View":      "🗺️",
+}
+SAFETY_PAGES = {
+    "Safety Check":    "🛡️",
+    "Suggestions":     "💡",
+    "Export":          "📥",
+    "Mission History": "📂",
+}
+
+st.sidebar.markdown(
+    f"<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.08em;"
+    f"text-transform:uppercase;color:{caption_col};padding:0 0 4px 4px'>📋 Planning</div>",
+    unsafe_allow_html=True
+)
+for page, icon in PLANNING_PAGES.items():
     is_active = (st.session_state.current_page == page)
-    label = f"▶️ {page}" if is_active else f"   {page}"
+    label = f"{icon} ▶  {page}" if is_active else f"{icon}  {page}"
     if st.sidebar.button(label, use_container_width=True, key=f"nav_{page}"):
         st.session_state.current_page = page
 
-st.sidebar.markdown("<hr style='border:1px solid #888888;margin:1rem 0'>", unsafe_allow_html=True)
+st.sidebar.markdown(
+    f"<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.08em;"
+    f"text-transform:uppercase;color:{caption_col};padding:8px 0 4px 4px'>🛡️ Safety & Export</div>",
+    unsafe_allow_html=True
+)
+for page, icon in SAFETY_PAGES.items():
+    is_active = (st.session_state.current_page == page)
+    label = f"{icon} ▶  {page}" if is_active else f"{icon}  {page}"
+    if st.sidebar.button(label, use_container_width=True, key=f"nav_{page}"):
+        st.session_state.current_page = page
+
+st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:1rem 0'>", unsafe_allow_html=True)
 st.sidebar.markdown(f"<div style='font-size:0.78rem;color:{sidebar_text};opacity:1;text-align:center;padding:0.3rem 0;font-weight:600'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
+
 
 # Hide or show sidebar via CSS based on session state
 if not st.session_state.sidebar_open:
@@ -538,7 +604,7 @@ col_branding, col_toggle = st.columns([12, 1])
 with col_branding:
     st.markdown(f"""
         <div class="app-branding-card">
-            <div class="app-branding-kicker">🛸 UAV Mission Planner</div>
+            <div class="app-branding-kicker">🚁 UAV Mission Planner</div>
             <div class="app-branding-title">Agentic AI Airspace Planner and Auditor</div>
             <div class="app-branding-subtitle">Mission planning, safety validation, and live route auditing in one place</div>
             <div class="app-branding-footer">💡 Powered by Google Gemini AI</div>
@@ -613,31 +679,74 @@ with col_left:
     elif st.session_state.current_page == "Mission Input":
         st.subheader("📝 Mission Parameter Input")
 
+        # --- Option A: Natural Language ---
         st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
-                <div style="font-size:0.85rem;color:{box_text};margin-bottom:0.5rem">Enter mission details in plain English and let the Gemini AI Agent extract coordinates and parameters.</div>
+                <div style="font-size:0.85rem;color:{box_text};margin-bottom:0.5rem">
+                    Enter mission details in plain English and let the AI Agent extract the parameters.
+                    {'<span style="color:#FBD38D;font-size:0.8rem">⚠️ Using regex fallback (Gemini unavailable)</span>' if not GENAI_AVAILABLE else '<span style="color:#68D391;font-size:0.8rem">✅ Gemini AI active</span>'}
+                </div>
             </div>
         """, unsafe_allow_html=True)
-        
+
+        # Example prompt buttons
+        EXAMPLE_PROMPTS = [
+            "Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern.",
+            "Grid mapping of an industrial zone for 20 minutes, altitude 60 metres, avoid restricted zones, return to launch.",
+            "Search and rescue circular sweep for 25 minutes at 40 metres, RTL enabled.",
+        ]
+        with st.expander("📖 Show example prompts", expanded=False):
+            for i, ex in enumerate(EXAMPLE_PROMPTS, 1):
+                st.markdown(f"**Example {i}:** `{ex}`")
+                if st.button(f"Use Example {i}", key=f"example_prompt_{i}"):
+                    st.session_state["_nl_prompt_prefill"] = ex
+                    st.rerun()
+
+        default_prompt = st.session_state.pop("_nl_prompt_prefill", None) or \
+            "Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern layout."
+
         prompt = st.text_area(
             "Natural Language Prompt:",
-            value="Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern layout.",
-            height=100
+            value=default_prompt,
+            height=100,
+            help="Describe your UAV mission in plain English. Include altitude (metres), duration (minutes), mission type, and route pattern."
         )
-        
-        if st.button("🚀 Process with Gemini AI Agent", use_container_width=True):
-            with st.spinner("Extracting mission parameters with Gemini..."):
+
+        if st.button("🚀 Process with AI Agent", use_container_width=True):
+            with st.spinner("Extracting mission parameters..."):
                 extracted = understand_mission(prompt)
                 st.session_state.mission_name = extracted.get("mission_name", "FAST Surveillance")
                 st.session_state.mission_type = extracted.get("mission_type", "surveillance")
                 st.session_state.altitude = float(extracted.get("altitude", 50.0))
                 st.session_state.duration = float(extracted.get("duration", 15.0))
-                st.session_state.pattern = extracted.get("pattern", "square")
-                st.success("✅ Parameters successfully extracted and applied!")
+                st.session_state.pattern = extracted.get(
+                    "route_pattern", extracted.get("pattern", "square")
+                )
+                st.session_state.nl_extracted = extracted
+            st.success("✅ Parameters extracted and applied!")
 
-        st.markdown("<hr style='border:1px solid #888888;margin:1.2rem 0'>", unsafe_allow_html=True)
+        # NL extraction feedback card (issue #41)
+        if st.session_state.nl_extracted:
+            ex = st.session_state.nl_extracted
+            st.markdown(f"""
+                <div class="uav-card" style="border-left:4px solid #0072FF;margin-top:0.6rem">
+                    <div style="font-size:0.8rem;font-weight:700;color:{box_text};margin-bottom:0.5rem">🔍 Extracted Parameters</div>
+                    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:0.82rem;color:{box_text}">
+                        <div><b>Name:</b> {ex.get('mission_name','—')}</div>
+                        <div><b>Type:</b> {ex.get('mission_type','—')}</div>
+                        <div><b>Altitude:</b> {ex.get('altitude','—')} m</div>
+                        <div><b>Duration:</b> {ex.get('duration','—')} min</div>
+                        <div><b>Pattern:</b> {ex.get('route_pattern', ex.get('pattern','—'))}</div>
+                        <div><b>RTL:</b> {'Yes' if ex.get('return_to_launch', True) else 'No'}</div>
+                        <div><b>Avoid NFZ:</b> {'Yes' if ex.get('avoid_no_fly_zone', True) else 'No'}</div>
+                    </div>
+                </div>
+            """, unsafe_allow_html=True)
 
+        st.markdown("<hr style='border:1px solid #2A2A44;margin:1.2rem 0'>", unsafe_allow_html=True)
+
+        # --- Option B: Manual Override ---
         st.markdown("""
             <div class="uav-card">
                 <div class="uav-card-title">⚙️ Option B: Manual Parameter Override</div>
@@ -646,23 +755,40 @@ with col_left:
 
         col_a, col_b, col_c = st.columns(3)
         with col_a:
-            st.session_state.mission_name = st.text_input("Mission Name", st.session_state.mission_name)
+            st.session_state.mission_name = st.text_input(
+                "Mission Name", st.session_state.mission_name,
+                help="A short descriptive label for this mission (e.g. 'Campus Perimeter Survey')."
+            )
             st.session_state.mission_type = st.selectbox(
                 "Mission Type",
                 ["surveillance", "mapping", "search_rescue", "inspection"],
-                index=["surveillance", "mapping", "search_rescue", "inspection"].index(st.session_state.mission_type)
+                index=["surveillance", "mapping", "search_rescue", "inspection"].index(st.session_state.mission_type),
+                help="The operational category determines how the mission is logged and reported."
             )
             st.session_state.pattern = st.selectbox(
                 "Route Pattern Profile",
                 ["square", "grid", "circle", "perimeter"],
-                index=["square", "grid", "circle", "perimeter"].index(st.session_state.pattern)
+                index=["square", "grid", "circle", "perimeter"].index(st.session_state.pattern),
+                help="Square: 4-corner patrol | Grid: lawn-mower scan | Circle: radial orbit | Perimeter: boundary trace."
             )
         with col_b:
-            st.session_state.altitude = st.slider("Target Altitude (metres)", 10.0, 150.0, st.session_state.altitude)
-            st.session_state.duration = st.slider("Target Duration (minutes)", 5.0, 60.0, st.session_state.duration)
+            st.session_state.altitude = st.slider(
+                "Target Altitude (metres)", 10.0, 150.0, st.session_state.altitude,
+                help="Maximum cruise altitude. Rule R1 limits this to 80 m for legal compliance."
+            )
+            st.session_state.duration = st.slider(
+                "Target Duration (minutes)", 5.0, 60.0, st.session_state.duration,
+                help="Planned total flight time. Rule R6 sets a 30-minute maximum safety window."
+            )
         with col_c:
-            st.session_state.home_lat = st.number_input("Home Latitude", value=st.session_state.home_lat, format="%.6f")
-            st.session_state.home_lon = st.number_input("Home Longitude", value=st.session_state.home_lon, format="%.6f")
+            st.session_state.home_lat = st.number_input(
+                "Home Latitude", value=st.session_state.home_lat, format="%.6f",
+                help="Latitude of the takeoff / launch point (decimal degrees, e.g. 33.642500)."
+            )
+            st.session_state.home_lon = st.number_input(
+                "Home Longitude", value=st.session_state.home_lon, format="%.6f",
+                help="Longitude of the takeoff / launch point (decimal degrees, e.g. 73.023200)."
+            )
 
     # Page 3: Mission Plan
     elif st.session_state.current_page == "Mission Plan":
@@ -682,19 +808,27 @@ with col_left:
         """, unsafe_allow_html=True)
 
         if st.button("⚡ Generate Waypoint Trajectory", use_container_width=True):
-            wps = generate_waypoints(
-                st.session_state.home_lat, st.session_state.home_lon,
-                st.session_state.altitude, st.session_state.pattern
-            )
-            st.session_state.generated_waypoints = wps
-            meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
-            st.session_state.safety_checks = perform_safety_checks(meta, wps)
-            st.session_state.corrections = generate_corrections(st.session_state.safety_checks, meta, wps)
-            st.success(f"✅ Generated {len(wps)} waypoints successfully!")
+            with st.spinner("Computing flight waypoints and running safety checks..."):
+                wps = generate_waypoints(
+                    st.session_state.home_lat, st.session_state.home_lon,
+                    st.session_state.altitude, st.session_state.pattern
+                )
+                st.session_state.generated_waypoints = wps
+                meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
+                st.session_state.safety_checks = perform_safety_checks(meta, wps)
+                st.session_state.corrections = generate_corrections(st.session_state.safety_checks, meta, wps)
+                # Compute and store bounding box for map auto-zoom
+                _, bounds = create_mission_map(
+                    wps,
+                    (st.session_state.home_lat, st.session_state.home_lon),
+                    dark_map=is_dark
+                )
+                st.session_state.map_bounds = bounds
+            st.success(f"✅ Generated {len(wps)} waypoints — navigate to **Map View** to see the route.")
 
         if st.session_state.generated_waypoints:
             st.write(f"**Generated Waypoint Count:** `{len(st.session_state.generated_waypoints)}`")
-            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True)
+            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True, height=300)
 
             st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
             st.markdown("### 📄 Mission Summary Report")
@@ -714,6 +848,7 @@ with col_left:
             st.markdown(summary_html, unsafe_allow_html=True)
         else:
             st.info("Click **Generate Waypoint Trajectory** to compute flight waypoints.")
+
 
     # Page 4: Map View
     elif st.session_state.current_page == "Map View":
@@ -735,7 +870,7 @@ with col_left:
 
         if st.session_state.generated_waypoints:
             st.write(f"**Waypoint Sequence List ({len(st.session_state.generated_waypoints)} Points):**")
-            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True)
+            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True, height=300)
         else:
             st.info("No waypoints generated yet. Go to **Mission Plan** to generate waypoints first.")
 
@@ -847,6 +982,83 @@ with col_left:
         else:
             st.warning("⚠️ No waypoints generated yet. Complete Mission Plan before exporting.")
 
+    # Page 8: Mission History
+    elif st.session_state.current_page == "Mission History":
+        st.subheader("📂 Mission History & Database")
+        st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
+
+        # Search & filter bar
+        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2])
+        with filt_col1:
+            name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
+                                        help="Case-insensitive substring search on mission name.")
+        with filt_col2:
+            status_filter = st.selectbox("Filter by status", ["All", "Safe", "Unsafe", "Needs Revision"],
+                                         help="Filter missions by their safety compliance status.")
+        with filt_col3:
+            type_filter = st.selectbox("Filter by type", ["All", "surveillance", "mapping", "search_rescue", "inspection"],
+                                       help="Filter missions by their operational type.")
+
+        missions_list = search_missions(name_search, status_filter, type_filter)
+
+        if not missions_list:
+            st.info("No saved missions found. Complete a mission and click **Save Mission to Database** on the Safety Check page.")
+        else:
+            st.markdown(f"<div style='font-size:0.82rem;color:{caption_col};margin-bottom:0.5rem'>"
+                        f"Showing <b>{len(missions_list)}</b> mission(s)</div>", unsafe_allow_html=True)
+
+            for m_row in missions_list:
+                mid = m_row["mission_id"]
+                m_status = m_row.get("status", "")
+                status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
+
+                with st.expander(
+                    f"#{mid} — {m_row['mission_name']}  |  {m_row['mission_type'].upper()}  |  "
+                    f"{m_row['altitude']}m  |  {m_row['duration']}min  |  "
+                    f"{'✅' if m_status == 'Safe' else '❌'} {m_status}  |  {m_row['created_at']}",
+                    expanded=False
+                ):
+                    detail_col1, detail_col2 = st.columns([1, 1])
+                    with detail_col1:
+                        st.markdown(f"""
+                            <div class="uav-card" style="padding:0.7rem 1rem">
+                                <div style="font-size:0.8rem;color:{box_text}">
+                                    <b>Mission ID:</b> {mid}<br>
+                                    <b>Name:</b> {m_row['mission_name']}<br>
+                                    <b>Type:</b> {m_row['mission_type']}<br>
+                                    <b>Altitude:</b> {m_row['altitude']} m<br>
+                                    <b>Duration:</b> {m_row['duration']} min<br>
+                                    <b>Status:</b> <span style="color:{status_color};font-weight:700">{m_status}</span><br>
+                                    <b>Saved:</b> {m_row['created_at']}
+                                </div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                    with detail_col2:
+                        if st.button(f"📥 Load Mission #{mid} into Planner", key=f"load_mission_{mid}",
+                                     use_container_width=True,
+                                     help="Load this mission's parameters and waypoints into the active session."):
+                            try:
+                                m_data, m_wps, m_checks = get_mission_by_id(mid)
+                                st.session_state.mission_name = m_data["mission_name"]
+                                st.session_state.mission_type = m_data["mission_type"]
+                                st.session_state.altitude = float(m_data["altitude"])
+                                st.session_state.duration = float(m_data["duration"])
+                                st.session_state.generated_waypoints = m_wps
+                                st.session_state.safety_checks = m_checks
+                                st.session_state.corrections = []
+                                st.success(f"✅ Mission '**{m_data['mission_name']}**' loaded. Navigate to Map View to see the route.")
+                            except Exception as e:
+                                st.error(f"Error loading mission: {e}")
+
+                        if st.checkbox(f"🗑️ Delete Mission #{mid}", key=f"del_chk_{mid}"):
+                            st.warning(f"This will permanently delete mission **#{mid}** and all its waypoints and safety checks.")
+                            if st.button(f"Confirm Delete Mission #{mid}", key=f"confirm_delete_{mid}",
+                                         use_container_width=True):
+                                from utils.database_utils import delete_mission
+                                delete_mission(mid)
+                                st.success(f"Mission #{mid} deleted.")
+                                st.rerun()
+
 with col_right:
     st.markdown(f"""
         <div style="background-color:{box_bg};border:1px solid {border_col};border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
@@ -855,9 +1067,20 @@ with col_right:
         </div>
     """, unsafe_allow_html=True)
 
-    m = create_mission_map(
+    m, map_bounds_live = create_mission_map(
         st.session_state.generated_waypoints,
         (st.session_state.home_lat, st.session_state.home_lon),
-        dark_map=(not is_dark)
+        dark_map=is_dark  # Fixed: map theme now matches page theme
     )
-    st_folium(m, use_container_width=True, height=620, key=f"gcs_map_{st.session_state.current_page}_{len(st.session_state.generated_waypoints)}_{st.session_state.theme}")
+    # Use stored bounds (from waypoint generation) for auto-zoom; fall back to live-computed bounds
+    active_bounds = st.session_state.map_bounds or map_bounds_live
+    if active_bounds:
+        min_lat, min_lon, max_lat, max_lon = active_bounds
+        m.fit_bounds([[min_lat, min_lon], [max_lat, max_lon]])
+
+    st_folium(
+        m,
+        use_container_width=True,
+        height=620,
+        key=f"gcs_map_{len(st.session_state.generated_waypoints)}_{st.session_state.theme}"
+    )
