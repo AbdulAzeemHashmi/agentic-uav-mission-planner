@@ -1,0 +1,20 @@
+{
+  "no_fly_zones": [
+    {
+      "name": "Restricted Military Airspace (Zone A)",
+      "type": "circle",
+      "center": [33.6438, 73.0210],
+      "radius_m": 120.0
+    },
+    {
+      "name": "High Voltage Grid Facility (Zone B)",
+      "type": "polygon",
+      "coords": [
+        [33.6410, 73.0255],
+        [33.6410, 73.0270],
+        [33.6395, 73.0270],
+        [33.6395, 73.0255]
+      ]
+    }
+  ]
+}

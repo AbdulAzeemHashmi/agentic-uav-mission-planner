@@ -1,27 +1,46 @@
 from typing import List, Dict, Any, Tuple
 import math
+import json
+import os
 from shapely.geometry import Point, Polygon, LineString
 from utils.distance_utils import calculate_haversine_distance, latlon_to_meters
 
-# Preconfigured No-Fly Zone Fences
-NO_FLY_ZONES = [
-    {
-        "name": "Restricted Military Airspace (Zone A)",
-        "type": "circle",
-        "center": (33.6438, 73.0210),
-        "radius_m": 120.0
-    },
-    {
-        "name": "High Voltage Grid Facility (Zone B)",
-        "type": "polygon",
-        "coords": [
-            (33.6410, 73.0255),
-            (33.6410, 73.0270),
-            (33.6395, 73.0270),
-            (33.6395, 73.0255)
+
+def load_no_fly_zones():
+    """Load no-fly zones from JSON configuration file."""
+    config_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        "config",
+        "no_fly_zones.json"
+    )
+    try:
+        with open(config_path, 'r') as f:
+            data = json.load(f)
+            return data.get("no_fly_zones", [])
+    except (FileNotFoundError, json.JSONDecodeError):
+        # Fallback to default zones
+        return [
+            {
+                "name": "Restricted Military Airspace (Zone A)",
+                "type": "circle",
+                "center": (33.6438, 73.0210),
+                "radius_m": 120.0
+            },
+            {
+                "name": "High Voltage Grid Facility (Zone B)",
+                "type": "polygon",
+                "coords": [
+                    (33.6410, 73.0255),
+                    (33.6410, 73.0270),
+                    (33.6395, 73.0270),
+                    (33.6395, 73.0255)
+                ]
+            }
         ]
-    }
-]
+
+
+# Load no-fly zones from config
+NO_FLY_ZONES = load_no_fly_zones()
 
 
 def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
@@ -29,7 +48,7 @@ def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
     Checks if a coordinate violates any registered no-fly zone fences.
     """
     p = Point(lat, lon)
-    
+
     for nfz in NO_FLY_ZONES:
         if nfz["type"] == "circle":
             c_lat, c_lon = nfz["center"]
@@ -40,7 +59,7 @@ def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
             poly = Polygon(nfz["coords"])
             if poly.contains(p):
                 return True, nfz["name"]
-                
+
     return False, ""
 
 
@@ -50,49 +69,49 @@ def check_segment_geofence_violation(wp1: Dict[str, Any], wp2: Dict[str, Any]) -
     """
     lat1, lon1 = wp1["latitude"], wp1["longitude"]
     lat2, lon2 = wp2["latitude"], wp2["longitude"]
-    
+
     # Create LineString for polygon checks (using latitude, longitude order to match Polygon coords)
     line = LineString([(lat1, lon1), (lat2, lon2)])
-    
+
     for nfz in NO_FLY_ZONES:
         if nfz["type"] == "polygon":
             poly = Polygon(nfz["coords"])
             if poly.intersects(line):
                 return True, nfz["name"]
-                
+
         elif nfz["type"] == "circle":
             c_lat, c_lon = nfz["center"]
             radius_m = nfz["radius_m"]
-            
+
             # Convert coordinates to local meters with respect to (lat1, lon1)
             # This completely avoids degree-meter aspect-ratio distortion!
             x1, y1 = 0.0, 0.0
             x2, y2 = latlon_to_meters(lat2, lon2, lat1, lon1)
             xc, yc = latlon_to_meters(c_lat, c_lon, lat1, lon1)
-            
+
             dy = y2 - y1
             dx = x2 - x1
-            
+
             if dx == 0 and dy == 0:
                 dist = calculate_haversine_distance(lat1, lon1, c_lat, c_lon)
                 if dist <= radius_m:
                     return True, nfz["name"]
                 continue
-                
+
             uy = yc - y1
             ux = xc - x1
-            
+
             t = (ux * dx + uy * dy) / (dx * dx + dy * dy)
             t_clamped = max(0.0, min(1.0, t))
-            
+
             closest_x = x1 + t_clamped * dx
             closest_y = y1 + t_clamped * dy
-            
+
             # Calculate exact Euclidean distance in local metric space
             dist = math.sqrt((closest_x - xc)**2 + (closest_y - yc)**2)
             if dist <= radius_m:
                 return True, nfz["name"]
-                
+
     return False, ""
 
 
@@ -134,13 +153,13 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
         violated, zone_name = check_geofence_violation(wp["latitude"], wp["longitude"])
         if violated and zone_name not in violated_zones:
             violated_zones.append(zone_name)
-            
+
     # Check flight path segments between consecutive waypoints
     for i in range(len(waypoints) - 1):
         violated, zone_name = check_segment_geofence_violation(waypoints[i], waypoints[i+1])
         if violated and zone_name not in violated_zones:
             violated_zones.append(zone_name)
-            
+
     r4_pass = len(violated_zones) == 0
     results.append({
         "check_name": "R4: Geofence Compliance Check",
@@ -160,7 +179,7 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
             max_dist = dist
         if dist > 500.0:
             violated_wps.append(f"{waypoints[i]['sequence_no']}->{waypoints[i+1]['sequence_no']}")
-            
+
     r5_pass = len(violated_wps) == 0
     results.append({
         "check_name": "R5: Max Waypoint Distance Limit",
@@ -179,66 +198,66 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
     # --- R7: Predictive Battery Heuristic Model Check ---
     # Realistic physics-based energy model
     battery_capacity_wh = 90.0  # Wh (standard 4S LiPo drone battery)
-    
+
     # Speed parameters
     v_cruise = 10.0  # m/s
     v_climb = 4.0  # m/s
     v_descend = 2.0  # m/s
-    
+
     # Power consumption constants (Watts)
     p_climb = 215.0
     p_cruise = 120.0
     p_hover = 130.0
     p_descend = 115.0
-    
+
     t_climb = 0.0
     t_cruise_all = 0.0
     t_descend = 0.0
-    
+
     energy_climb = 0.0
     energy_cruise = 0.0
     energy_descend = 0.0
-    
+
     # Iterate over waypoints to compute transition energy
     for i in range(len(waypoints) - 1):
         wp1 = waypoints[i]
         wp2 = waypoints[i+1]
         action2 = wp2.get("action", "").lower()
-        
+
         dist = calculate_haversine_distance(
             wp1["latitude"], wp1["longitude"],
             wp2["latitude"], wp2["longitude"]
         )
-        
+
         # Calculate horizontal cruise energy
         t_leg = dist / v_cruise
         t_cruise_all += t_leg
         energy_cruise += p_cruise * t_leg / 3600.0
-        
+
         # Handle takeoff vertical ascent
         if wp1.get("action", "").lower() == "takeoff":
             t_asc = altitude / v_climb
             t_climb += t_asc
             energy_climb += p_climb * t_asc / 3600.0
-            
+
         # Handle land/rtl vertical descent
         if action2 in ["rtl", "land"]:
             t_desc = altitude / v_descend
             t_descend += t_desc
             energy_descend += p_descend * t_desc / 3600.0
-            
+
     # Hover time calculation (remaining mission duration)
     fly_time_sec = t_climb + t_cruise_all + t_descend
     planned_time_sec = duration * 60.0
     t_hover = max(0.0, planned_time_sec - fly_time_sec)
     energy_hover = p_hover * t_hover / 3600.0
-    
+
     total_energy_wh = energy_climb + energy_cruise + energy_descend + energy_hover
     est_battery_used = (total_energy_wh / battery_capacity_wh) * 100.0
-    
+
     # Cap battery percentage at 100%
     est_battery_used = min(100.0, est_battery_used)
-    
+
     r7_pass = est_battery_used < 80.0
     results.append({
         "check_name": "R7: Battery Heuristic Drainage Model",

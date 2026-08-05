@@ -247,7 +247,6 @@ The header issue reported on the live app is now handled by keeping a persistent
 
 - 👤 Author: Abdul Azeem Hashmi
 - 🐙 GitHub: https://github.com/AbdulAzeemHashmi
-- 🌐 Live app: https://agentic-uav-mission-planner-mdarysdfc32zt2nax2tu5p.streamlit.app/
 - 📦 Repository: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
 
 ---

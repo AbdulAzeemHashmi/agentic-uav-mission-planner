@@ -4,22 +4,24 @@ import re
 from typing import Any
 from dotenv import load_dotenv
 
-# Gracefully handle broken gRPC / cygrpc installs (issue #17).
-# If the import fails the whole app still launches and uses regex fallback.
+# Migrate to new google-genai library
 try:
-    import google.generativeai as genai
+    from google import genai
     GENAI_AVAILABLE = True
-except Exception:
-    genai = None  # type: ignore[assignment]
+except ImportError:
+    genai = None
     GENAI_AVAILABLE = False
 
-# Find .env inside the current app directory or root
 APP_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 load_dotenv(os.path.join(APP_DIR, ".env"))
 
 api_key = os.getenv("GEMINI_API_KEY")
+
+# New client initialization
 if api_key and GENAI_AVAILABLE:
-    genai.configure(api_key=api_key)
+    genai_client = genai.Client(api_key=api_key)
+else:
+    genai_client = None
 
 SYSTEM_PROMPT = """
 You are the Mission Understanding Agent for an Agentic UAV Mission Planner.
@@ -56,19 +58,19 @@ def parse_with_regex(user_input: str) -> dict[str, Any]:
         "home_latitude": 33.6425,
         "home_longitude": 73.0232
     }
-    
+
     input_lower = user_input.lower()
-    
+
     # Extract Altitude
     alt_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:m|meter)', input_lower)
     if alt_match:
         data["altitude"] = float(alt_match.group(1))
-        
+
     # Extract Duration
     dur_match = re.search(r'(\d+(?:\.\d+)?)\s*(?:min|minute)', input_lower)
     if dur_match:
         data["duration"] = float(dur_match.group(1))
-        
+
     # Extract Route Pattern types
     if "grid" in input_lower:
         data["route_pattern"] = "grid"
@@ -76,7 +78,7 @@ def parse_with_regex(user_input: str) -> dict[str, Any]:
         data["route_pattern"] = "perimeter"
     elif "circle" in input_lower:
         data["route_pattern"] = "circle"
-        
+
     # Extract Mission Type
     if "delivery" in input_lower:
         data["mission_type"] = "delivery"
@@ -87,7 +89,7 @@ def parse_with_regex(user_input: str) -> dict[str, Any]:
     elif "search" in input_lower or "rescue" in input_lower:
         data["mission_type"] = "search_and_rescue"
         data["mission_name"] = "Search and Rescue Mission"
-        
+
     return data
 
 
@@ -96,23 +98,25 @@ def parse_mission_request(user_input: str) -> dict[str, Any]:
     Translates user requests using Google's generative AI models,
     falling back on local regex processing if network connections or API endpoints fail.
     """
-    if not api_key or not GENAI_AVAILABLE:
+    if not api_key or not GENAI_AVAILABLE or genai_client is None:
         return parse_with_regex(user_input)
-        
-    models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-pro"]
+
+    models_to_try = ["gemini-2.0-flash", "gemini-1.5-flash"]
     prompt = f"{SYSTEM_PROMPT}\n\nUser request: \"{user_input}\""
 
     for model_name in models_to_try:
         try:
-            model = genai.GenerativeModel(model_name)
-            response = model.generate_content(prompt)
-            
+            # New API syntax for google-genai
+            response = genai_client.models.generate_content(
+                model=model_name,
+                contents=prompt
+            )
             text_response = response.text.strip()
             # Clean markdown formatting tags if returned
             if text_response.startswith("```"):
                 text_response = re.sub(r'^```(?:json)?\n', '', text_response)
                 text_response = re.sub(r'\n```$', '', text_response)
-            
+
             # Parse JSON response
             parsed_data = json.loads(text_response)
             return parsed_data

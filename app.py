@@ -14,7 +14,7 @@ st.set_page_config(
 )
 
 # Imports from local modules
-from agents.mission_understanding_agent import understand_mission
+from agents.mission_understanding_agent import understand_mission, GENAI_AVAILABLE
 from agents.waypoint_planner_agent import generate_waypoints
 from agents.safety_compliance_agent import perform_safety_checks
 from agents.correction_agent import generate_corrections
@@ -22,7 +22,6 @@ from utils.map_utils import create_mission_map
 from utils.database_utils import save_mission, init_db, search_missions, get_mission_by_id
 from utils.export_utils import export_mission_json, export_waypoints_csv, generate_pdf_report
 from agents.report_agent import generate_mission_summary_html
-from agents.mission_understanding_agent import understand_mission, GENAI_AVAILABLE
 
 # Initialize database
 init_db()
@@ -60,7 +59,7 @@ if "current_page" not in st.session_state:
 if "map_bounds" not in st.session_state:
     st.session_state.map_bounds = None
 if "nl_extracted" not in st.session_state:
-    st.session_state.nl_extracted = None  # stores last NL extraction result for feedback card
+    st.session_state.nl_extracted = None
 
 # Navigation pages
 pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export", "Mission History"]
@@ -86,7 +85,6 @@ btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
 border_col     = "#2A2A44" if is_dark else "#CBD5E1"
 th_bg          = "#252540" if is_dark else "#F1F5F9"
 caption_col    = "#8890AA" if is_dark else "#64748B"
-# Map tiles MATCH the page theme: dark page → dark map tiles, light page → light map tiles
 map_bg_col     = "#0D0D14" if is_dark else "#F8FAFC"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
 map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
@@ -98,7 +96,7 @@ st.markdown(f"""
     * {{
         box-sizing: border-box !important;
     }}
-    
+
     /* Root Page Background & Text Color */
     body, .stApp {{
         background-color: {page_bg} !important;
@@ -106,8 +104,7 @@ st.markdown(f"""
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
     }}
 
-    /* Shrink Streamlit header to zero height but keep it in DOM
-       so the native sidebar collapse button still functions */
+    /* Shrink Streamlit header to zero height */
     header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {{
         height: 0px !important;
         min-height: 0px !important;
@@ -117,15 +114,35 @@ st.markdown(f"""
         visibility: hidden !important;
     }}
 
-    /* Hide the native Streamlit sidebar collapse controls so our own toggle remains authoritative */
+    /* COMPLETELY HIDE the native sidebar collapse controls */
     button[data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"],
     button[aria-label="Collapse sidebar"],
-    button[aria-label="Expand sidebar"] {{
+    button[aria-label="Expand sidebar"],
+    button[kind="secondary"][data-testid="base_web_button"],
+    button[title="Toggle navigation panel"],
+    button[aria-label="Toggle navigation panel"],
+    section[data-testid="stSidebar"] button:has(svg) {{
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        border: none !important;
+        pointer-events: none !important;
+        position: absolute !important;
+        left: -9999px !important;
     }}
 
-    /* Persistent app branding panel that stays visible even when the sidebar is collapsed */
+    /* Hide X button in sidebar header */
+    [data-testid="stSidebar"] [data-testid="stSidebarHeader"] button {{
+        display: none !important;
+        visibility: hidden !important;
+    }}
+
+    /* Persistent app branding panel */
     .app-branding-card {{
         background: linear-gradient(135deg, rgba(0, 114, 255, 0.14), rgba(0, 198, 255, 0.08));
         border: 1px solid rgba(0, 114, 255, 0.18);
@@ -171,54 +188,6 @@ st.markdown(f"""
         to {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* Our custom sidebar toggle button - fixed top-left */
-    .sidebar-toggle-btn {{
-        position: fixed !important;
-        top: 0.6rem !important;
-        left: 0.6rem !important;
-        z-index: 99999 !important;
-        background: #0072FF !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        border-radius: 8px !important;
-        padding: 6px 10px !important;
-        width: 44px !important;
-        height: 44px !important;
-        font-size: 1.1rem !important;
-        cursor: pointer !important;
-        box-shadow: 0 6px 20px rgba(0,114,255,0.25) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-    }}
-
-    /* Style the Streamlit-generated button (uses title/help attribute) so residual white square becomes themed
-       Position it at the top-right of the branding card area */
-    button[title="Toggle navigation panel"],
-    button[aria-label="Toggle navigation panel"] {{
-        position: fixed !important;
-        top: 1.0rem !important;
-        right: 1.2rem !important;
-        left: auto !important;
-        z-index: 99998 !important;
-        width: 44px !important;
-        height: 44px !important;
-        padding: 0 !important;
-        border-radius: 10px !important;
-        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        box-shadow: 0 8px 28px rgba(0,114,255,0.28) !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
-        font-size: 1.05rem !important;
-    }}
-    button[title="Toggle navigation panel"]:focus, button[aria-label="Toggle navigation panel"]:focus {{
-        outline: none !important;
-        box-shadow: 0 10px 36px rgba(0,114,255,0.36) !important;
-    }}
-
     /* When sidebar is hidden: slide it off-screen */
     .sidebar-hidden section[data-testid="stSidebar"] {{
         display: none !important;
@@ -240,7 +209,7 @@ st.markdown(f"""
         border: none !important;
     }}
 
-    /* Top Boundary Gap: Strictly set to 0.5cm (in 0.3cm - 0.7cm range) */
+    /* Top Boundary Gap: Strictly set to 0.5cm */
     .block-container, [data-testid="stMainBlockContainer"] {{
         padding-top: 0.5cm !important;
         padding-bottom: 1.5rem !important;
@@ -258,7 +227,7 @@ st.markdown(f"""
         color: {page_text} !important;
     }}
 
-    /* Sidebar Theme & Top Boundary Gap (0.5cm) */
+    /* Sidebar Theme */
     section[data-testid="stSidebar"] {{
         background-color: {sidebar_bg} !important;
         border-right: 1px solid {sidebar_border} !important;
@@ -309,7 +278,7 @@ st.markdown(f"""
         transform: translateX(3px);
     }}
 
-    /* Form & Input Field Labels Outside Boxes - Matches Page Text */
+    /* Form & Input Field Labels */
     label,
     .stWidgetLabel,
     [data-testid="stWidgetLabel"],
@@ -328,7 +297,7 @@ st.markdown(f"""
         font-size: 0.9rem !important;
     }}
 
-    /* Slider values & min/max numbers readability */
+    /* Slider values */
     .stSlider [data-testid="stTickBarMin"],
     .stSlider [data-testid="stTickBarMax"],
     .stSlider div[data-testid="stMarkdownContainer"] p,
@@ -338,12 +307,11 @@ st.markdown(f"""
         font-weight: 500 !important;
     }}
 
-    /* Captions globally across main page and sidebar */
+    /* Captions */
     .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, caption, small {{
         color: {caption_col} !important;
         font-weight: 500 !important;
     }}
-    /* Sidebar caption text – must be explicitly visible */
     section[data-testid="stSidebar"] .stCaption,
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {{
@@ -351,7 +319,7 @@ st.markdown(f"""
         opacity: 0.85 !important;
     }}
 
-    /* Telemetry HUD Metrics Cards - BOX BACKGROUND & BOX TEXT COLOR */
+    /* Telemetry HUD Metrics Cards */
     div[data-testid="stMetric"],
     [data-testid="stMetric"] {{
         background-color: {box_bg} !important;
@@ -383,7 +351,7 @@ st.markdown(f"""
         line-height: 1.2 !important;
     }}
 
-    /* Streamlit Alert Boxes - BOX BACKGROUND & BOX TEXT COLOR */
+    /* Alert Boxes */
     div[data-testid="stAlert"],
     .stAlert,
     div[data-baseweb="notification"],
@@ -437,7 +405,7 @@ st.markdown(f"""
         box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
     }}
 
-    /* Form Controls & Input Boxes - BOX BACKGROUND & BOX TEXT COLOR */
+    /* Form Controls */
     div[data-baseweb="input"], div[data-baseweb="select"], textarea, input {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
@@ -448,8 +416,8 @@ st.markdown(f"""
         border-color: #0072FF !important;
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
-    
-    /* Select Dropdown Popups - BOX BACKGROUND & BOX TEXT COLOR */
+
+    /* Select Dropdown Popups */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
@@ -464,7 +432,7 @@ st.markdown(f"""
         color: #0072FF !important;
     }}
 
-    /* Dataframe Container & Table - BOX BACKGROUND & BOX TEXT COLOR */
+    /* Dataframe */
     .dataframe, [data-testid="stDataFrame"] {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
@@ -482,7 +450,7 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
 
-    /* Custom Card Containers - BOX BACKGROUND & BOX TEXT COLOR */
+    /* Custom Card Containers */
     .uav-card {{
         background-color: {box_bg} !important;
         border: 1px solid {border_col} !important;
@@ -498,7 +466,7 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
 
-    /* Map Background Container & iframe alignment */
+    /* Map Background */
     iframe[title="streamlit_folium.st_folium"],
     iframe,
     div[data-testid="stCustomComponentV1"],
@@ -514,10 +482,6 @@ st.markdown(f"""
         background: {map_bg_col} !important;
         border-radius: 12px !important;
     }}
-    /* Hide native collapse arrow */
-    button[kind="secondary"][data-testid="base_web_button"] {{
-        display: none !important;
-    }}
     </style>
 """, unsafe_allow_html=True)
 
@@ -526,7 +490,7 @@ st.sidebar.title("🚁 UAV Mission Planner")
 st.sidebar.caption("Agentic AI Airspace Planner & Auditor")
 st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:0.4rem 0 0.8rem 0'>", unsafe_allow_html=True)
 
-# Mode Toggle Radio Control — persist selection to query params so refresh restores it
+# Mode Toggle Radio Control
 theme_mode = st.sidebar.radio(
     "🎨 Display Mode",
     ["Dark Mode", "Light Mode"],
@@ -539,7 +503,7 @@ if new_theme != st.session_state.theme:
     st.query_params["theme"] = new_theme
     st.rerun()
 
-# Gemini API availability notice (issue #16)
+# Gemini API availability notice
 if not GENAI_AVAILABLE:
     st.sidebar.markdown(
         "<div style='background:#3A1A10;border:1px solid #C05621;border-radius:6px;"
@@ -588,7 +552,6 @@ for page, icon in SAFETY_PAGES.items():
 
 st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:1rem 0'>", unsafe_allow_html=True)
 st.sidebar.markdown(f"<div style='font-size:0.78rem;color:{sidebar_text};opacity:1;text-align:center;padding:0.3rem 0;font-weight:600'>💡 Powered by Google Gemini AI</div>", unsafe_allow_html=True)
-
 
 # Hide or show sidebar via CSS based on session state
 if not st.session_state.sidebar_open:
@@ -679,7 +642,6 @@ with col_left:
     elif st.session_state.current_page == "Mission Input":
         st.subheader("📝 Mission Parameter Input")
 
-        # --- Option A: Natural Language ---
         st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
@@ -690,7 +652,6 @@ with col_left:
             </div>
         """, unsafe_allow_html=True)
 
-        # Example prompt buttons
         EXAMPLE_PROMPTS = [
             "Plan a surveillance mission around FAST campus for 15 minutes at 50 meters altitude using a square pattern.",
             "Grid mapping of an industrial zone for 20 minutes, altitude 60 metres, avoid restricted zones, return to launch.",
@@ -726,7 +687,6 @@ with col_left:
                 st.session_state.nl_extracted = extracted
             st.success("✅ Parameters extracted and applied!")
 
-        # NL extraction feedback card (issue #41)
         if st.session_state.nl_extracted:
             ex = st.session_state.nl_extracted
             st.markdown(f"""
@@ -746,7 +706,6 @@ with col_left:
 
         st.markdown("<hr style='border:1px solid #2A2A44;margin:1.2rem 0'>", unsafe_allow_html=True)
 
-        # --- Option B: Manual Override ---
         st.markdown("""
             <div class="uav-card">
                 <div class="uav-card-title">⚙️ Option B: Manual Parameter Override</div>
@@ -781,14 +740,39 @@ with col_left:
                 help="Planned total flight time. Rule R6 sets a 30-minute maximum safety window."
             )
         with col_c:
-            st.session_state.home_lat = st.number_input(
+            lat_val = st.number_input(
                 "Home Latitude", value=st.session_state.home_lat, format="%.6f",
                 help="Latitude of the takeoff / launch point (decimal degrees, e.g. 33.642500)."
             )
-            st.session_state.home_lon = st.number_input(
+            if lat_val < -90 or lat_val > 90:
+                st.error("❌ Latitude must be between -90 and 90 degrees.")
+            else:
+                st.session_state.home_lat = lat_val
+
+            lon_val = st.number_input(
                 "Home Longitude", value=st.session_state.home_lon, format="%.6f",
                 help="Longitude of the takeoff / launch point (decimal degrees, e.g. 73.023200)."
             )
+            if lon_val < -180 or lon_val > 180:
+                st.error("❌ Longitude must be between -180 and 180 degrees.")
+            else:
+                st.session_state.home_lon = lon_val
+
+        # Reset button
+        if st.button("🔄 Reset to Defaults", use_container_width=True):
+            from config.settings import MISSION_DEFAULTS
+            st.session_state.mission_name = MISSION_DEFAULTS["name"]
+            st.session_state.mission_type = MISSION_DEFAULTS["type"]
+            st.session_state.altitude = MISSION_DEFAULTS["altitude"]
+            st.session_state.duration = MISSION_DEFAULTS["duration"]
+            st.session_state.pattern = MISSION_DEFAULTS["pattern"]
+            st.session_state.home_lat = MISSION_DEFAULTS["home_lat"]
+            st.session_state.home_lon = MISSION_DEFAULTS["home_lon"]
+            st.session_state.generated_waypoints = []
+            st.session_state.safety_checks = []
+            st.session_state.corrections = []
+            st.success("✅ All parameters reset to defaults.")
+            st.rerun()
 
     # Page 3: Mission Plan
     elif st.session_state.current_page == "Mission Plan":
@@ -813,18 +797,29 @@ with col_left:
                     st.session_state.home_lat, st.session_state.home_lon,
                     st.session_state.altitude, st.session_state.pattern
                 )
-                st.session_state.generated_waypoints = wps
                 meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
-                st.session_state.safety_checks = perform_safety_checks(meta, wps)
-                st.session_state.corrections = generate_corrections(st.session_state.safety_checks, meta, wps)
-                # Compute and store bounding box for map auto-zoom
+                safety_checks = perform_safety_checks(meta, wps)
+                
+                # Apply corrections
+                suggestions, corrected_meta, corrected_wps = generate_corrections(
+                    safety_checks, meta, wps
+                )
+                
+                st.session_state.generated_waypoints = corrected_wps
+                st.session_state.safety_checks = safety_checks
+                st.session_state.corrections = suggestions
+                
+                # Update mission parameters with corrections
+                st.session_state.altitude = corrected_meta.get("altitude", st.session_state.altitude)
+                st.session_state.duration = corrected_meta.get("duration", st.session_state.duration)
+                
                 _, bounds = create_mission_map(
-                    wps,
+                    corrected_wps,
                     (st.session_state.home_lat, st.session_state.home_lon),
                     dark_map=is_dark
                 )
                 st.session_state.map_bounds = bounds
-            st.success(f"✅ Generated {len(wps)} waypoints — navigate to **Map View** to see the route.")
+            st.success(f"✅ Generated {len(corrected_wps)} waypoints — navigate to **Map View** to see the route.")
 
         if st.session_state.generated_waypoints:
             st.write(f"**Generated Waypoint Count:** `{len(st.session_state.generated_waypoints)}`")
@@ -848,7 +843,6 @@ with col_left:
             st.markdown(summary_html, unsafe_allow_html=True)
         else:
             st.info("Click **Generate Waypoint Trajectory** to compute flight waypoints.")
-
 
     # Page 4: Map View
     elif st.session_state.current_page == "Map View":
@@ -987,7 +981,6 @@ with col_left:
         st.subheader("📂 Mission History & Database")
         st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
 
-        # Search & filter bar
         filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2])
         with filt_col1:
             name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
@@ -1004,10 +997,23 @@ with col_left:
         if not missions_list:
             st.info("No saved missions found. Complete a mission and click **Save Mission to Database** on the Safety Check page.")
         else:
-            st.markdown(f"<div style='font-size:0.82rem;color:{caption_col};margin-bottom:0.5rem'>"
-                        f"Showing <b>{len(missions_list)}</b> mission(s)</div>", unsafe_allow_html=True)
+            # Pagination
+            page_size = 10
+            total_missions = len(missions_list)
+            total_pages = (total_missions + page_size - 1) // page_size
 
-            for m_row in missions_list:
+            if total_pages > 1:
+                page_number = st.selectbox("Page", range(1, total_pages + 1), key="page_number")
+                start_idx = (page_number - 1) * page_size
+                end_idx = min(start_idx + page_size, total_missions)
+                page_missions = missions_list[start_idx:end_idx]
+            else:
+                page_missions = missions_list
+
+            st.markdown(f"<div style='font-size:0.82rem;color:{caption_col};margin-bottom:0.5rem'>"
+                        f"Showing <b>{len(page_missions)}</b> of <b>{total_missions}</b> mission(s)</div>", unsafe_allow_html=True)
+
+            for m_row in page_missions:
                 mid = m_row["mission_id"]
                 m_status = m_row.get("status", "")
                 status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
@@ -1070,9 +1076,8 @@ with col_right:
     m, map_bounds_live = create_mission_map(
         st.session_state.generated_waypoints,
         (st.session_state.home_lat, st.session_state.home_lon),
-        dark_map=is_dark  # Fixed: map theme now matches page theme
+        dark_map=is_dark
     )
-    # Use stored bounds (from waypoint generation) for auto-zoom; fall back to live-computed bounds
     active_bounds = st.session_state.map_bounds or map_bounds_live
     if active_bounds:
         min_lat, min_lon, max_lat, max_lon = active_bounds
