@@ -516,6 +516,13 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
+    /* Align widget labels and input boxes cleanly across columns */
+    div[data-testid="stColumn"] {{
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-start !important;
+    }}
+
     /* Select Dropdown Popups */
     div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {{
         background-color: {box_bg} !important;
@@ -1260,14 +1267,14 @@ with col_left:
 
         filt_col1, filt_col2, filt_col3 = st.columns([1, 1, 1])
         with filt_col1:
-            name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
+            name_search = st.text_input("🔍 Search by Name", "", placeholder="Type mission name...",
                                         help="Case-insensitive substring search on mission name.")
         with filt_col2:
-            status_filter = st.selectbox("Filter by status", ["All", "Safe", "Unsafe", "Needs Revision"],
-                                         help="Filter missions by their safety compliance status.")
+            status_filter = st.selectbox("🛡️ Filter by Status", ["All", "Safe", "Unsafe", "Needs Revision"],
+                                         help="Filter missions by safety compliance status.")
         with filt_col3:
-            type_filter = st.selectbox("Filter by type", ["All", "surveillance", "mapping", "search_rescue", "inspection"],
-                                       help="Filter missions by their operational type.")
+            type_filter = st.selectbox("✈️ Filter by Type", ["All", "surveillance", "mapping", "search_rescue", "inspection"],
+                                       help="Filter missions by operational type.")
 
         missions_list = search_missions(name_search, status_filter, type_filter)
 

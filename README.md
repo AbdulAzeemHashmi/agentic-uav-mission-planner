@@ -223,6 +223,39 @@ Open the browser at http://localhost:8501
 
 ---
 
+### 🐳 Running with Docker
+
+You can easily containerize and run this application on any computer using Docker or Docker Compose.
+
+#### Option A: Using Docker Compose (Recommended)
+
+1. Ensure Docker Desktop is running and `.env` contains your `GEMINI_API_KEY`.
+2. Build and start the containerized application:
+
+```bash
+docker compose up --build
+```
+
+3. Access the app in your browser at `http://localhost:8501`.
+
+#### Option B: Using Docker CLI
+
+1. Build the Docker image:
+
+```bash
+docker build -t agentic-uav-mission-planner .
+```
+
+2. Run the container:
+
+```bash
+docker run -d -p 8501:8501 --env-file .env --name uav-planner agentic-uav-mission-planner
+```
+
+3. Open `http://localhost:8501` in your browser.
+
+---
+
 ## 🖥 Application Pages
 
 | Page | Purpose |
