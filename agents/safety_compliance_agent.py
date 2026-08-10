@@ -43,6 +43,12 @@ def load_no_fly_zones():
 NO_FLY_ZONES = load_no_fly_zones()
 
 
+def add_custom_no_fly_zone(zone: Dict[str, Any]):
+    """Dynamically register a custom no-fly zone polygon or circle into the active list."""
+    if zone not in NO_FLY_ZONES:
+        NO_FLY_ZONES.append(zone)
+
+
 def check_geofence_violation(lat: float, lon: float) -> Tuple[bool, str]:
     """
     Checks if a coordinate violates any registered no-fly zone fences.
@@ -123,12 +129,19 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
     altitude = mission_data.get("altitude", 50.0)
     duration = mission_data.get("duration", 15.0)
 
+    # Dynamic Drone Safety Profile thresholds (if provided)
+    profile = mission_data.get("drone_profile", {})
+    max_alt = profile.get("max_altitude_m", 80.0)
+    max_dur = profile.get("max_duration_min", 30.0)
+    max_leg = profile.get("max_leg_distance_m", 500.0)
+    max_bat = profile.get("max_battery_pct", 80.0)
+
     # --- R1: Maximum Altitude Limit ---
-    r1_pass = altitude <= 80.0
+    r1_pass = altitude <= max_alt
     results.append({
         "check_name": "R1: Maximum Altitude Limit",
         "result": "Pass" if r1_pass else "Fail",
-        "message": f"Planned altitude {altitude}m is within the legal 80m limit." if r1_pass else f"Planned altitude {altitude}m exceeds the maximum 80m legal limit."
+        "message": f"Planned altitude {altitude}m is within the legal {max_alt}m limit." if r1_pass else f"Planned altitude {altitude}m exceeds the maximum {max_alt}m legal limit."
     })
 
     # --- R2: Takeoff Verification ---
@@ -177,30 +190,28 @@ def perform_safety_checks(mission_data: Dict[str, Any], waypoints: List[Dict[str
         )
         if dist > max_dist:
             max_dist = dist
-        if dist > 500.0:
+        if dist > max_leg:
             violated_wps.append(f"{waypoints[i]['sequence_no']}->{waypoints[i+1]['sequence_no']}")
 
     r5_pass = len(violated_wps) == 0
     results.append({
         "check_name": "R5: Max Waypoint Distance Limit",
         "result": "Pass" if r5_pass else "Fail",
-        "message": f"All leg distances are under 500m (Max leg: {max_dist:.1f}m)." if r5_pass else f"Legs exceed 500m limit: {', '.join(violated_wps)}."
+        "message": f"All leg distances are under {max_leg}m (Max leg: {max_dist:.1f}m)." if r5_pass else f"Legs exceed {max_leg}m limit: {', '.join(violated_wps)}."
     })
 
     # --- R6: Safe Duration Window Evaluation ---
-    r6_pass = duration <= 30.0
+    r6_pass = duration <= max_dur
     results.append({
         "check_name": "R6: Mission Duration Limit",
         "result": "Pass" if r6_pass else "Fail",
-        "message": f"Mission duration {duration} mins is within the 30-minute safety window." if r6_pass else f"Mission duration {duration} mins exceeds the 30-minute maximum limit."
+        "message": f"Mission duration {duration} mins is within the {max_dur}-minute safety window." if r6_pass else f"Mission duration {duration} mins exceeds the {max_dur}-minute maximum limit."
     })
 
     # --- R7: Predictive Battery Heuristic Model Check ---
-    # Realistic physics-based energy model
-    battery_capacity_wh = 90.0  # Wh (standard 4S LiPo drone battery)
+    battery_capacity_wh = profile.get("battery_wh", 90.0)
+    v_cruise = profile.get("cruise_speed_ms", 10.0)
 
-    # Speed parameters
-    v_cruise = 10.0  # m/s
     v_climb = 4.0  # m/s
     v_descend = 2.0  # m/s
 

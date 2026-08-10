@@ -91,28 +91,40 @@ def generate_waypoints(
             seq += 1
             
     elif pattern == "grid":
-        # Lawn-mower scan mapping simulation sequence matrix
+        # Dynamic multi-leg serpentine raster (lawn-mower) scan mapping sequence
         lat_radians = math.radians(home_lat)
         meters_per_deg_lon = METERS_PER_DEG_LAT * math.cos(lat_radians)
         
         step_lat = grid_step / METERS_PER_DEG_LAT
-        step_lon = grid_step / meters_per_deg_lon
+        step_lon = (grid_step * 2.5) / meters_per_deg_lon  # Coverage width
         
-        grid_offsets = [
-            (0.0, 0.0),
-            (step_lat * 2, 0.0),
-            (step_lat * 2, step_lon * 2),
-            (0.0, step_lon * 2),
-        ]
-        for lat_off, lon_off in grid_offsets:
+        num_passes = 4
+        for row in range(num_passes):
+            lat_off = row * step_lat
+            # Serpentine direction toggle for continuous flight path
+            if row % 2 == 0:
+                lon_start, lon_end = 0.0, step_lon
+            else:
+                lon_start, lon_end = step_lon, 0.0
+
             waypoints.append({
                 "sequence_no": seq,
                 "latitude": home_lat + lat_off,
-                "longitude": home_lon + lon_off,
+                "longitude": home_lon + lon_start,
                 "altitude": altitude,
                 "action": "waypoint"
             })
             seq += 1
+
+            waypoints.append({
+                "sequence_no": seq,
+                "latitude": home_lat + lat_off,
+                "longitude": home_lon + lon_end,
+                "altitude": altitude,
+                "action": "waypoint"
+            })
+            seq += 1
+
             
     elif pattern == "perimeter":
         lat_radians = math.radians(home_lat)

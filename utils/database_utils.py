@@ -7,11 +7,15 @@ DB_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))
 DB_PATH = os.path.join(DB_DIR, "missions.db")
 
 def init_db():
-    """Initialize the SQLite database and create tables if they do not exist."""
+    """Initialize the SQLite database and create tables & indexes if they do not exist."""
     os.makedirs(DB_DIR, exist_ok=True)
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     
+    # Enable WAL mode and foreign key enforcement
+    cursor.execute("PRAGMA journal_mode=WAL;")
+    cursor.execute("PRAGMA foreign_keys=ON;")
+
     # 1. Missions Table
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS missions (
@@ -51,8 +55,16 @@ def init_db():
         )
     """)
     
+    # 4. Indexes for fast query performance
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_missions_status ON missions(status);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_missions_type ON missions(mission_type);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_missions_created ON missions(created_at DESC);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_waypoints_mission ON waypoints(mission_id, sequence_no);")
+    cursor.execute("CREATE INDEX IF NOT EXISTS idx_safety_mission ON safety_checks(mission_id);")
+
     conn.commit()
     conn.close()
+
 
 def save_mission(mission_data: dict[str, Any], waypoints: list[dict[str, Any]], safety_results: list[dict[str, Any]]) -> int:
     """

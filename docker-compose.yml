@@ -1,0 +1,17 @@
+services:
+  agentic-uav-planner:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: agentic-uav-mission-planner:latest
+    container_name: agentic-uav-planner
+    ports:
+      - "8501:8501"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    volumes:
+      - ./data:/app/data
+      - ./database:/app/database
+    restart: unless-stopped

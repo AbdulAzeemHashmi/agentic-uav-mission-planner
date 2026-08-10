@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.vscode
+.env
+.DS_Store
+dash_*.txt
+reports/*.pdf
+database/*.db

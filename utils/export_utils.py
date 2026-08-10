@@ -191,3 +191,124 @@ def generate_pdf_report(mission: Dict[str, Any], waypoints: List[Dict[str, Any]]
     
     doc.build(story)
     return pdf_buffer.getvalue()
+
+
+def export_qgroundcontrol_plan(mission: Dict[str, Any], waypoints: List[Dict[str, Any]]) -> str:
+    """Export mission as QGroundControl v1.0 .plan JSON format."""
+    home_wp = waypoints[0] if waypoints else {"latitude": 33.6425, "longitude": 73.0232, "altitude": 0}
+    home_lat = float(home_wp.get("latitude", 33.6425))
+    home_lon = float(home_wp.get("longitude", 73.0232))
+    home_alt = float(home_wp.get("altitude", 50.0))
+
+    items = []
+    for idx, wp in enumerate(waypoints):
+        action = str(wp.get("action", "waypoint")).lower()
+        if action == "takeoff":
+            cmd = 22  # MAV_CMD_NAV_TAKEOFF
+        elif action == "rtl":
+            cmd = 20  # MAV_CMD_NAV_RETURN_TO_LAUNCH
+        elif action == "land":
+            cmd = 21  # MAV_CMD_NAV_LAND
+        else:
+            cmd = 16  # MAV_CMD_NAV_WAYPOINT
+
+        items.append({
+            "autoContinue": True,
+            "command": cmd,
+            "doJumpId": idx + 1,
+            "frame": 3,  # MAV_FRAME_GLOBAL_RELATIVE_ALT
+            "params": [0, 0, 0, 0, float(wp.get("latitude", 0)), float(wp.get("longitude", 0)), float(wp.get("altitude", 50.0))],
+            "type": "SimpleItem"
+        })
+
+    plan_data = {
+        "fileType": "Plan",
+        "geoFence": {"circles": [], "polygons": [], "version": 2},
+        "groundStation": "AgenticUAVMissionPlanner",
+        "mission": {
+            "cruiseSpeed": 15,
+            "firmwareType": 12,
+            "hoverSpeed": 5,
+            "items": items,
+            "plannedHomePosition": [home_lat, home_lon, home_alt],
+            "vehicleType": 2,
+            "version": 2
+        },
+        "rallyPoints": {"points": [], "version": 1},
+        "version": 1
+    }
+    return json.dumps(plan_data, indent=2)
+
+
+def export_ardupilot_waypoints(waypoints: List[Dict[str, Any]]) -> str:
+    """Export waypoints as ArduPilot Mission Planner QGC WPL 110 format."""
+    lines = ["QGC WPL 110"]
+    for idx, wp in enumerate(waypoints):
+        action = str(wp.get("action", "waypoint")).lower()
+        if action == "takeoff":
+            cmd = 22
+        elif action == "rtl":
+            cmd = 20
+        elif action == "land":
+            cmd = 21
+        else:
+            cmd = 16
+        current = 1 if idx == 0 else 0
+        frame = 3  # Relative altitude
+        lat = float(wp.get("latitude", 0))
+        lon = float(wp.get("longitude", 0))
+        alt = float(wp.get("altitude", 50))
+        line = f"{idx}\t{current}\t{frame}\t{cmd}\t0.000000\t0.000000\t0.000000\t0.000000\t{lat:.6f}\t{lon:.6f}\t{alt:.2f}\t1"
+        lines.append(line)
+    return "\n".join(lines)
+
+
+def export_kml_format(mission: Dict[str, Any], waypoints: List[Dict[str, Any]]) -> str:
+    """Export mission as Google Earth KML vector file."""
+    name = mission.get("mission_name", "UAV Mission")
+    coords_str = " ".join([f"{wp.get('longitude')},{wp.get('latitude')},{wp.get('altitude')}" for wp in waypoints])
+
+    placemarks = []
+    for wp in waypoints:
+        seq = wp.get("sequence_no")
+        act = str(wp.get("action", "waypoint")).upper()
+        lat = wp.get("latitude")
+        lon = wp.get("longitude")
+        alt = wp.get("altitude")
+        placemarks.append(f"""    <Placemark>
+      <name>WP {seq}: {act}</name>
+      <description>Altitude: {alt}m</description>
+      <Point>
+        <coordinates>{lon},{lat},{alt}</coordinates>
+      </Point>
+    </Placemark>""")
+
+    placemarks_xml = "\n".join(placemarks)
+
+    kml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>{name}</name>
+    <Style id="pathStyle">
+      <LineStyle>
+        <color>ff0000ff</color>
+        <width>4</width>
+      </LineStyle>
+    </Style>
+    <Placemark>
+      <name>Flight Trajectory</name>
+      <styleUrl>#pathStyle</styleUrl>
+      <LineString>
+        <extrude>1</extrude>
+        <tessellate>1</tessellate>
+        <altitudeMode>relativeToGround</altitudeMode>
+        <coordinates>
+          {coords_str}
+        </coordinates>
+      </LineString>
+    </Placemark>
+{placemarks_xml}
+  </Document>
+</kml>"""
+    return kml
+

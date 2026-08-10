@@ -1,0 +1,9 @@
+﻿Line 575:         "ΓÜá∩╕Å <b>Gemini AI unavailable</b> ΓÇö using regex fallback.</div>",
+Line 787:                         <div><b>Name:</b> {ex.get('mission_name','ΓÇö')}</div>
+Line 788:                         <div><b>Type:</b> {ex.get('mission_type','ΓÇö')}</div>
+Line 789:                         <div><b>Altitude:</b> {ex.get('altitude','ΓÇö')} m</div>
+Line 790:                         <div><b>Duration:</b> {ex.get('duration','ΓÇö')} min</div>
+Line 791:                         <div><b>Pattern:</b> {ex.get('route_pattern', ex.get('pattern','ΓÇö'))}</div>
+Line 955:             st.success(f"Γ£à Generated {len(corrected_wps)} waypoints ΓÇö navigate to **Map View** to see the route.")
+Line 1212:                     f"#{mid} ΓÇö {m_row['mission_name']}  |  {m_row['mission_type'].upper()}  |  "
+Line 1247:                                 st.success(f"Γ£à Mission '**{m_data['mission_name']}**' loaded. Navigating to Mission Plan

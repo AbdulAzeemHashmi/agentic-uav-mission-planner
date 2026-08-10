@@ -4,7 +4,7 @@ __pycache__/
 *.pyo
 database/
 *.db
-reports/generated_reports/*.pdf
+reports/*.pdf
 .venv/
 venv/
 .vscode/

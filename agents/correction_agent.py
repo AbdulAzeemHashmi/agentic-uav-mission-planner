@@ -74,35 +74,26 @@ def generate_corrections(
                 lat, lon = wp.get("latitude", 0), wp.get("longitude", 0)
                 viol, zone_name = check_geofence_violation(lat, lon)
                 if viol:
-                    # Find which zone was violated
+                    placed = False
+                    # Iteratively test 8 radial directions to ensure the candidate coordinate clears all no-fly zones
                     for nfz in NO_FLY_ZONES:
                         if nfz["name"] == zone_name:
+                            base_dist = 30.0
                             if nfz["type"] == "circle":
-                                c_lat, c_lon = nfz["center"]
-                                radius_m = nfz["radius_m"]
-                                bearing_deg = calculate_bearing(c_lat, c_lon, lat, lon)
-                                # Move 15 meters beyond circle radius
-                                new_lat, new_lon = get_point_at_distance_and_bearing(c_lat, c_lon, radius_m + 15.0, bearing_deg)
-                                wp["latitude"] = new_lat
-                                wp["longitude"] = new_lon
-                                suggestions.append(f"Shift Waypoint {idx} outside circular geofence {zone_name} (radial offset by {radius_m + 15.0:.1f}m).")
-                            elif nfz["type"] == "polygon":
-                                poly = Polygon(nfz["coords"])
-                                p_geom = Point(lat, lon)
-                                boundary = poly.boundary
-                                closest_point_geom = boundary.interpolate(boundary.project(p_geom))
-                                closest_lat, closest_lon = closest_point_geom.x, closest_point_geom.y
+                                base_dist = nfz["radius_m"] + 25.0
 
-                                # Calculate vector and bearing from point to closest boundary point (outward normal)
-                                bearing_deg = calculate_bearing(lat, lon, closest_lat, closest_lon)
-                                dist_to_boundary = calculate_haversine_distance(lat, lon, closest_lat, closest_lon)
-
-                                # Move 15 meters beyond the closest boundary point
-                                new_lat, new_lon = get_point_at_distance_and_bearing(lat, lon, dist_to_boundary + 15.0, bearing_deg)
-                                wp["latitude"] = new_lat
-                                wp["longitude"] = new_lon
-                                suggestions.append(f"Shift Waypoint {idx} outside polygon geofence {zone_name} (shifted along outward normal by {dist_to_boundary + 15.0:.1f}m).")
+                            for angle in [0, 45, 90, 135, 180, 225, 270, 315]:
+                                test_lat, test_lon = get_point_at_distance_and_bearing(lat, lon, base_dist, angle)
+                                test_viol, _ = check_geofence_violation(test_lat, test_lon)
+                                if not test_viol:
+                                    wp["latitude"] = test_lat
+                                    wp["longitude"] = test_lon
+                                    suggestions.append(f"Shift Waypoint {idx} safely outside geofence {zone_name} (radial clearance offset {base_dist:.1f}m at {angle}°).")
+                                    placed = True
+                                    break
+                        if placed:
                             break
+
 
         # --- R5: Distance Limit Notification ---
         elif "R5" in name:

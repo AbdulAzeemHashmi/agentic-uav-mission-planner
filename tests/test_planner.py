@@ -8,8 +8,10 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.waypoint_planner_agent import generate_waypoints, generate_square_route
-from agents.safety_compliance_agent import perform_safety_checks, check_geofence_violation
+from agents.safety_compliance_agent import perform_safety_checks, check_geofence_violation, add_custom_no_fly_zone
 from utils.distance_utils import calculate_haversine_distance
+from utils.export_utils import export_qgroundcontrol_plan, export_ardupilot_waypoints, export_kml_format
+from config.settings import DRONE_PROFILES
 
 
 class TestUAVPlanner(unittest.TestCase):
@@ -53,6 +55,41 @@ class TestUAVPlanner(unittest.TestCase):
             self.assertEqual(wps[0]["action"], "takeoff")
             self.assertEqual(wps[-1]["action"], "rtl")
 
+    def test_gcs_exports(self):
+        """Test QGroundControl, ArduPilot, and KML export format generators"""
+        wps = generate_waypoints(33.6425, 73.0232, 50.0, "square")
+        meta = {"mission_name": "Test Mission", "altitude": 50.0, "duration": 15.0}
+        
+        qgc_json = export_qgroundcontrol_plan(meta, wps)
+        self.assertIn('"fileType": "Plan"', qgc_json)
+        self.assertIn('"command": 22', qgc_json)
+
+        ardupilot_txt = export_ardupilot_waypoints(wps)
+        self.assertTrue(ardupilot_txt.startswith("QGC WPL 110"))
+
+        kml_xml = export_kml_format(meta, wps)
+        self.assertIn('<kml xmlns="http://www.opengis.net/kml/2.2">', kml_xml)
+        self.assertIn('<coordinates>', kml_xml)
+
+    def test_raster_grid_waypoints(self):
+        """Test serpentine raster grid waypoint pattern generation"""
+        wps = generate_waypoints(33.6425, 73.0232, 50.0, "grid")
+        # Takeoff + 8 scan points (4 passes * 2 endpoints) + RTL = 10 total waypoints
+        self.assertEqual(len(wps), 10)
+
+    def test_custom_geofence_registration(self):
+        """Test dynamic registration of custom no-fly zones"""
+        custom_zone = {
+            "name": "Test Custom Reserved Zone",
+            "type": "circle",
+            "center": (33.7000, 73.1000),
+            "radius_m": 50.0
+        }
+        add_custom_no_fly_zone(custom_zone)
+        violated, name = check_geofence_violation(33.7000, 73.1000)
+        self.assertTrue(violated)
+        self.assertEqual(name, "Test Custom Reserved Zone")
+
 
 if __name__ == "__main__":
-    unittest.main()
+    unittest.main()

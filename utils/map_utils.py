@@ -58,11 +58,16 @@ def initialize_mission_map(
     mission_map = folium.Map(
         location=[home_lat, home_lon],
         zoom_start=zoom_start,
-        control_scale=False,
+        control_scale=True,
         tiles=primary_tile,
         name=primary_name,
-        attr=" "
+        attr="CartoDB"
     )
+
+    # Add fallback OpenStreetMap tile layer for reliability
+    folium.TileLayer('openstreetmap', name='OpenStreetMap Standard').add_to(mission_map)
+    folium.LayerControl(position='topright').add_to(mission_map)
+
 
     # Inject CSS into iframe <head> to eliminate white background and Leaflet attribution bar
     hide_controls_css = f"""

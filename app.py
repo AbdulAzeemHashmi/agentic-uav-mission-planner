@@ -20,11 +20,17 @@ from agents.safety_compliance_agent import perform_safety_checks
 from agents.correction_agent import generate_corrections
 from utils.map_utils import create_mission_map
 from utils.database_utils import save_mission, init_db, search_missions, get_mission_by_id
-from utils.export_utils import export_mission_json, export_waypoints_csv, generate_pdf_report
+from utils.export_utils import (
+    export_mission_json, export_waypoints_csv, generate_pdf_report,
+    export_qgroundcontrol_plan, export_ardupilot_waypoints, export_kml_format
+)
 from agents.report_agent import generate_mission_summary_html
+from config.settings import DRONE_PROFILES
+from agents.safety_compliance_agent import perform_safety_checks, add_custom_no_fly_zone
 
 # Initialize database
 init_db()
+
 
 # Session state defaults (prevent reload reset)
 # Theme persistence: read from query params first, fall back to session state
@@ -60,6 +66,9 @@ if "map_bounds" not in st.session_state:
     st.session_state.map_bounds = None
 if "nl_extracted" not in st.session_state:
     st.session_state.nl_extracted = None
+if "drone_profile_key" not in st.session_state:
+    st.session_state.drone_profile_key = "quadcopter_inspection"
+
 
 if "square_side" not in st.session_state:
     st.session_state.square_side = 100.0
@@ -1257,6 +1266,7 @@ with col_left:
                 </div>
             """, unsafe_allow_html=True)
 
+            st.markdown("<div style='font-size:0.9rem;font-weight:700;margin-top:0.8rem;margin-bottom:0.4rem'>📄 Standard Mission Reports & Telemetry:</div>", unsafe_allow_html=True)
             col_e1, col_e2, col_e3 = st.columns(3)
             with col_e1:
                 json_str = export_mission_json(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
@@ -1275,10 +1285,38 @@ with col_left:
             with col_e3:
                 pdf_bytes = generate_pdf_report(mission_meta, st.session_state.generated_waypoints, st.session_state.safety_checks)
                 st.download_button(
-                    "⬇️  Download PDF",
+                    "⬇️  Download PDF Report",
                     data=pdf_bytes, file_name="mission_report.pdf", mime="application/pdf",
                     use_container_width=True
                 )
+
+            st.markdown("<div style='font-size:0.9rem;font-weight:700;margin-top:1.2rem;margin-bottom:0.4rem'>🚁 Industry GCS & GIS Mission Package Exports:</div>", unsafe_allow_html=True)
+            col_g1, col_g2, col_g3 = st.columns(3)
+            with col_g1:
+                qgc_str = export_qgroundcontrol_plan(mission_meta, st.session_state.generated_waypoints)
+                st.download_button(
+                    "🛸 QGroundControl (.plan)",
+                    data=qgc_str, file_name="mission.plan", mime="application/json",
+                    use_container_width=True,
+                    help="Native QGroundControl mission plan format for PX4/ArduPilot."
+                )
+            with col_g2:
+                ardupilot_str = export_ardupilot_waypoints(st.session_state.generated_waypoints)
+                st.download_button(
+                    "✈️ ArduPilot (.waypoints)",
+                    data=ardupilot_str, file_name="mission.waypoints", mime="text/plain",
+                    use_container_width=True,
+                    help="Mission Planner QGC WPL 110 waypoints file for ArduPilot flight controllers."
+                )
+            with col_g3:
+                kml_str = export_kml_format(mission_meta, st.session_state.generated_waypoints)
+                st.download_button(
+                    "🌍 Google Earth (.kml)",
+                    data=kml_str, file_name="mission.kml", mime="application/vnd.google-earth.kml+xml",
+                    use_container_width=True,
+                    help="3D trajectory vector file for Google Earth GIS visualization."
+                )
+
         else:
             st.warning("⚠️ No waypoints generated yet. Complete Mission Plan before exporting.")
 
