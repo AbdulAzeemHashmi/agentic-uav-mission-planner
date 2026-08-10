@@ -295,15 +295,14 @@ st.markdown(f"""
        ================================================================ */
 
     .app-branding-card {{
-        background: linear-gradient(135deg, 
-            rgba(0,114,255,0.10) 0%, 
-            rgba(0,198,255,0.05) 100%
-        );
-        border: 1px solid rgba(0,114,255,{0.25 if is_dark else 0.12});
+        background: {'linear-gradient(135deg, #1A1E40 0%, #141840 60%, #101535 100%)' if is_dark else 'linear-gradient(135deg, #FFFFFF 0%, #F5F7FF 100%)'};
+        border: 1px solid {'rgba(0,114,255,0.35)' if is_dark else 'rgba(0,114,255,0.18)'};
+        border-top: 3px solid transparent;
+        border-image: linear-gradient(90deg, #00C6FF, #0072FF) 1;
         border-radius: var(--radius-xl);
         padding: var(--spacing-lg) var(--spacing-xl);
         margin: 0.85rem 0 1rem 0;
-        box-shadow: 0 18px 40px rgba(0,0,0,0.12);
+        box-shadow: {'0 0 0 1px rgba(0,114,255,0.15), 0 18px 48px rgba(0,0,0,0.55), 0 0 40px rgba(0,100,255,0.08)' if is_dark else '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)'};
         animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
         position: relative;
@@ -316,13 +315,14 @@ st.markdown(f"""
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(0,198,255,0.04), transparent 60%);
+        background: {'radial-gradient(circle at 70% 30%, rgba(0,198,255,0.07), transparent 60%)' if is_dark else 'radial-gradient(circle at 70% 30%, rgba(0,114,255,0.04), transparent 60%)'};
         pointer-events: none;
     }}
     .app-branding-card:hover {{
         transform: translateY(-3px);
-        box-shadow: 0 26px 68px rgba(0,0,0,0.18);
+        box-shadow: {'0 0 0 1px rgba(0,198,255,0.25), 0 26px 68px rgba(0,0,0,0.65), 0 0 60px rgba(0,150,255,0.12)' if is_dark else '0 8px 32px rgba(0,0,0,0.15)'};
     }}
+
     .app-branding-kicker {{
         font-size: 0.8rem;
         font-weight: 700;
