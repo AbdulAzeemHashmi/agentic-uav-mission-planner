@@ -19,7 +19,7 @@
 
 <br/>
 
-> 🛸 A smart mission planning app for UAV flights with AI guidance, live map views, safety checks, and export ready reports.
+> 🚁 A smart mission planning app for UAV flights with AI guidance, live map views, safety checks, and export ready reports.
 >
 > 🔒 This project is a software simulation only. No real drone hardware is involved.
 
@@ -255,7 +255,7 @@ The header issue reported on the live app is now handled by keeping a persistent
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0072ff,100:00c6ff&height=100&section=footer&animation=fadeIn" width="100%"/>
 
-**Built with 🛸 🤖 and 💙 for UAV research and education**
+**Built with 🚁 🤖 and 💙 for UAV research and education**
 
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=AbdulAzeemHashmi.agentic-uav-mission-planner)
 

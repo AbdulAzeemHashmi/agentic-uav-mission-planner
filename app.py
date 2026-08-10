@@ -61,6 +61,15 @@ if "map_bounds" not in st.session_state:
 if "nl_extracted" not in st.session_state:
     st.session_state.nl_extracted = None
 
+if "square_side" not in st.session_state:
+    st.session_state.square_side = 100.0
+if "grid_step" not in st.session_state:
+    st.session_state.grid_step = 40.0
+if "perim_offset" not in st.session_state:
+    st.session_state.perim_offset = 60.0
+if "circle_radius" not in st.session_state:
+    st.session_state.circle_radius = 50.0
+
 # Navigation pages
 pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "Suggestions", "Export", "Mission History"]
 
@@ -84,15 +93,27 @@ btn_bg         = "#13131F" if is_dark else "#F8FAFC"
 btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
 border_col     = "#2A2A44" if is_dark else "#CBD5E1"
 th_bg          = "#252540" if is_dark else "#F1F5F9"
-caption_col    = "#8890AA" if is_dark else "#64748B"
+caption_col    = "#A0AEC0" if is_dark else "#4A5568"
 map_bg_col     = "#0D0D14" if is_dark else "#F8FAFC"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
 map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
 map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
 
-# High-Contrast Theme CSS with strict 0.5cm top gap measurement
+# High-Contrast Theme CSS with strict design system and mobile responsiveness
 st.markdown(f"""
     <style>
+    :root {{
+        --radius-sm: 6px;
+        --radius-md: 8px;
+        --radius-lg: 10px;
+        --radius-xl: 12px;
+        --spacing-xs: 0.25rem;
+        --spacing-sm: 0.5rem;
+        --spacing-md: 0.75rem;
+        --spacing-lg: 1rem;
+        --spacing-xl: 1.25rem;
+    }}
+
     * {{
         box-sizing: border-box !important;
     }}
@@ -114,7 +135,7 @@ st.markdown(f"""
         visibility: hidden !important;
     }}
 
-    /* COMPLETELY HIDE the native sidebar collapse controls */
+    /* COMPLETELY HIDE the native sidebar collapse controls and header X button */
     button[data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"],
     button[aria-label="Collapse sidebar"],
@@ -122,7 +143,11 @@ st.markdown(f"""
     button[kind="secondary"][data-testid="base_web_button"],
     button[title="Toggle navigation panel"],
     button[aria-label="Toggle navigation panel"],
-    section[data-testid="stSidebar"] button:has(svg) {{
+    section[data-testid="stSidebar"] button:has(svg),
+    [data-testid="stSidebar"] [data-testid="stSidebarHeader"] button,
+    [data-testid="stSidebar"] [data-testid="stSidebarHeader"],
+    button[kind="header"],
+    [data-testid="stSidebarHeader"] {{
         display: none !important;
         visibility: hidden !important;
         opacity: 0 !important;
@@ -136,18 +161,22 @@ st.markdown(f"""
         left: -9999px !important;
     }}
 
-    /* Hide X button in sidebar header */
-    [data-testid="stSidebar"] [data-testid="stSidebarHeader"] button {{
-        display: none !important;
-        visibility: hidden !important;
+    /* Focus States for Keyboard Accessibility */
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible,
+    div[data-baseweb="input"]:focus-within {{
+        outline: 3px solid #0072FF !important;
+        outline-offset: 2px !important;
     }}
 
     /* Persistent app branding panel */
     .app-branding-card {{
         background: linear-gradient(135deg, rgba(0, 114, 255, 0.14), rgba(0, 198, 255, 0.08));
         border: 1px solid rgba(0, 114, 255, 0.18);
-        border-radius: 14px;
-        padding: 1rem 1.2rem;
+        border-radius: var(--radius-xl);
+        padding: var(--spacing-lg) var(--spacing-xl);
         margin: 0.85rem 0 1rem 0;
         box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
         animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
@@ -263,10 +292,10 @@ st.markdown(f"""
         background-color: {btn_bg} !important;
         color: {sidebar_text} !important;
         border: 1px solid {btn_border} !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
         font-size: 0.9rem !important;
         font-weight: 600 !important;
-        padding: 0.55rem 0.9rem !important;
+        padding: var(--spacing-sm) var(--spacing-md) !important;
         margin-bottom: 0.25rem !important;
         transition: all 0.2s ease-in-out !important;
         width: 100% !important;
@@ -307,10 +336,11 @@ st.markdown(f"""
         font-weight: 500 !important;
     }}
 
-    /* Captions */
+    /* Captions with Enhanced Contrast */
     .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, caption, small {{
         color: {caption_col} !important;
         font-weight: 500 !important;
+        font-size: 0.85rem !important;
     }}
     section[data-testid="stSidebar"] .stCaption,
     section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
@@ -319,13 +349,13 @@ st.markdown(f"""
         opacity: 0.85 !important;
     }}
 
-    /* Telemetry HUD Metrics Cards */
+    /* Telemetry HUD Metrics Cards (Larger Sizing & Padding) */
     div[data-testid="stMetric"],
     [data-testid="stMetric"] {{
         background-color: {box_bg} !important;
         border: 1px solid {border_col} !important;
-        padding: 0.45rem 0.75rem !important;
-        border-radius: 10px !important;
+        padding: 0.65rem 0.9rem !important;
+        border-radius: var(--radius-md) !important;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
         overflow: hidden !important;
         min-width: 0 !important;
@@ -341,12 +371,12 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
     [data-testid="stMetricValue"] {{
-        font-size: 1.1rem !important;
+        font-size: 1.25rem !important;
         font-weight: 700 !important;
         line-height: 1.3 !important;
     }}
     [data-testid="stMetricLabel"] {{
-        font-size: 0.72rem !important;
+        font-size: 0.8rem !important;
         font-weight: 500 !important;
         line-height: 1.2 !important;
     }}
@@ -360,7 +390,8 @@ st.markdown(f"""
         background-color: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid {border_col} !important;
-        border-radius: 10px !important;
+        border-radius: var(--radius-md) !important;
+        padding: var(--spacing-md) var(--spacing-lg) !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
     }}
     div[data-testid="stAlert"] *,
@@ -377,7 +408,7 @@ st.markdown(f"""
         color: #FFFFFF !important;
         border: none !important;
         padding: 0.55rem 1.25rem !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
         font-weight: 700 !important;
         font-size: 0.9rem !important;
         box-shadow: 0 4px 16px rgba(0, 198, 255, 0.25) !important;
@@ -394,7 +425,7 @@ st.markdown(f"""
         background: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid #0072FF !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
         font-weight: 700 !important;
         padding: 0.6rem 1rem !important;
         transition: all 0.2s ease-in-out !important;
@@ -410,7 +441,7 @@ st.markdown(f"""
         background-color: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid {border_col} !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
     }}
     textarea:focus, input:focus, div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {{
         border-color: #0072FF !important;
@@ -432,20 +463,20 @@ st.markdown(f"""
         color: #0072FF !important;
     }}
 
-    /* Dataframe */
-    .dataframe, [data-testid="stDataFrame"] {{
+    /* Dataframe & Data Editor */
+    .dataframe, [data-testid="stDataFrame"], [data-testid="stDataEditor"] {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid {border_col} !important;
-        border-radius: 8px !important;
+        border-radius: var(--radius-sm) !important;
         font-size: 0.88rem !important;
     }}
-    .dataframe th, [data-testid="stDataFrame"] th {{
+    .dataframe th, [data-testid="stDataFrame"] th, [data-testid="stDataEditor"] th {{
         background-color: {th_bg} !important;
         color: {box_text} !important;
         font-weight: 700 !important;
     }}
-    .dataframe td, [data-testid="stDataFrame"] td {{
+    .dataframe td, [data-testid="stDataFrame"] td, [data-testid="stDataEditor"] td {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
     }}
@@ -454,8 +485,8 @@ st.markdown(f"""
     .uav-card {{
         background-color: {box_bg} !important;
         border: 1px solid {border_col} !important;
-        border-radius: 12px !important;
-        padding: 1.25rem 1.5rem !important;
+        border-radius: var(--radius-xl) !important;
+        padding: var(--spacing-lg) var(--spacing-xl) !important;
         margin-bottom: 1rem !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
         color: {box_text} !important;
@@ -466,21 +497,43 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
 
-    /* Map Background */
+    /* Map Background & Zero White Gap Below Map */
     iframe[title="streamlit_folium.st_folium"],
     iframe,
     div[data-testid="stCustomComponentV1"],
     div[data-testid="stElementContainer"] {{
-        background-color: transparent !important;
-        background: transparent !important;
+        background-color: {map_bg_col} !important;
+        background: {map_bg_col} !important;
         border: none !important;
         border-radius: 12px !important;
         box-shadow: none !important;
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+        vertical-align: bottom !important;
+        display: block !important;
     }}
-    .leaflet-container {{
+    .leaflet-container, .folium-map, #map {{
         background-color: {map_bg_col} !important;
         background: {map_bg_col} !important;
         border-radius: 12px !important;
+    }}
+
+    /* Responsive Media Queries for Mobile/Tablet */
+    @media screen and (max-width: 768px) {{
+        .stColumns {{
+            flex-direction: column !important;
+        }}
+        .block-container, [data-testid="stMainBlockContainer"] {{
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
+        }}
+        div[data-testid="stMetric"] {{
+            padding: 0.4rem 0.6rem !important;
+            margin-bottom: 0.5rem !important;
+        }}
+        [data-testid="stMetricValue"] {{
+            font-size: 1rem !important;
+        }}
     }}
     </style>
 """, unsafe_allow_html=True)
@@ -642,6 +695,28 @@ with col_left:
     elif st.session_state.current_page == "Mission Input":
         st.subheader("📝 Mission Parameter Input")
 
+        # JSON Mission File Import Block
+        with st.expander("📥 Import Saved Mission Package (JSON)", expanded=False):
+            uploaded_file = st.file_uploader("Upload exported mission.json file:", type=["json"])
+            if uploaded_file is not None:
+                try:
+                    imported_data = json.load(uploaded_file)
+                    mission_info = imported_data.get("mission", imported_data)
+                    wps_info = imported_data.get("waypoints", [])
+                    checks_info = imported_data.get("safety_checks", [])
+
+                    st.session_state.mission_name = mission_info.get("mission_name", st.session_state.mission_name)
+                    st.session_state.mission_type = mission_info.get("mission_type", st.session_state.mission_type)
+                    st.session_state.altitude = float(mission_info.get("altitude", st.session_state.altitude))
+                    st.session_state.duration = float(mission_info.get("duration", st.session_state.duration))
+                    if wps_info:
+                        st.session_state.generated_waypoints = wps_info
+                    if checks_info:
+                        st.session_state.safety_checks = checks_info
+                    st.success(f"✅ Imported mission package '**{st.session_state.mission_name}**' successfully!")
+                except Exception as e:
+                    st.error(f"❌ Failed to parse mission JSON: {e}")
+
         st.markdown(f"""
             <div class="uav-card">
                 <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
@@ -675,8 +750,11 @@ with col_left:
         )
 
         if st.button("🚀 Process with AI Agent", use_container_width=True):
-            with st.spinner("Extracting mission parameters..."):
+            with st.status("🤖 Extracting mission parameters with AI Agent...", expanded=True) as status_box:
+                status_box.update(label="Parsing prompt string & identifying entities...")
                 extracted = understand_mission(prompt)
+                
+                status_box.update(label="Applying extracted telemetry parameters...")
                 st.session_state.mission_name = extracted.get("mission_name", "FAST Surveillance")
                 st.session_state.mission_type = extracted.get("mission_type", "surveillance")
                 st.session_state.altitude = float(extracted.get("altitude", 50.0))
@@ -685,6 +763,8 @@ with col_left:
                     "route_pattern", extracted.get("pattern", "square")
                 )
                 st.session_state.nl_extracted = extracted
+                
+                status_box.update(label="✅ Extraction complete!", state="complete")
             st.success("✅ Parameters extracted and applied!")
 
         if st.session_state.nl_extracted:
@@ -698,8 +778,8 @@ with col_left:
                         <div><b>Altitude:</b> {ex.get('altitude','—')} m</div>
                         <div><b>Duration:</b> {ex.get('duration','—')} min</div>
                         <div><b>Pattern:</b> {ex.get('route_pattern', ex.get('pattern','—'))}</div>
-                        <div><b>RTL:</b> {'Yes' if ex.get('return_to_launch', True) else 'No'}</div>
-                        <div><b>Avoid NFZ:</b> {'Yes' if ex.get('avoid_no_fly_zone', True) else 'No'}</div>
+                        <div><b>RTL:</b> {'Yes' if ex.get('return_to_launch', True) else 'No'} <span style="font-size:0.72rem;color:{caption_col}">(Return to Launch)</span></div>
+                        <div><b>Avoid NFZ:</b> {'Yes' if ex.get('avoid_no_fly_zone', True) else 'No'} <span style="font-size:0.72rem;color:{caption_col}">(No-Fly Zone)</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
@@ -791,25 +871,61 @@ with col_left:
             </div>
         """, unsafe_allow_html=True)
 
+        with st.expander("📐 Route Pattern Dimensions & Geometry Options", expanded=False):
+            dim_col1, dim_col2 = st.columns(2)
+            with dim_col1:
+                st.session_state.square_side = st.slider(
+                    "Square Side Length (m)", 20.0, 500.0, st.session_state.square_side,
+                    help="Side length for Square patrol geometry."
+                )
+                st.session_state.grid_step = st.slider(
+                    "Grid Scan Step Spacing (m)", 10.0, 200.0, st.session_state.grid_step,
+                    help="Step spacing distance for Grid lawn-mower mapping scan."
+                )
+            with dim_col2:
+                st.session_state.perim_offset = st.slider(
+                    "Perimeter Boundary Offset (m)", 10.0, 300.0, st.session_state.perim_offset,
+                    help="Offset distance for Perimeter boundary trace."
+                )
+                st.session_state.circle_radius = st.slider(
+                    "Circle Orbit Radius (m)", 10.0, 300.0, st.session_state.circle_radius,
+                    help="Radial distance for Circle orbit pattern."
+                )
+
         if st.button("⚡ Generate Waypoint Trajectory", use_container_width=True):
-            with st.spinner("Computing flight waypoints and running safety checks..."):
+            # Auto-generate a unique timestamped name if default name is used
+            if st.session_state.mission_name == "FAST Surveillance":
+                stamp = datetime.now().strftime("%Y%m%d_%H%M")
+                st.session_state.mission_name = f"Surveillance_{st.session_state.pattern.upper()}_{stamp}"
+
+            with st.status("⚙️ Generating Flight Trajectory & Auditing Airspace Safety...", expanded=True) as status_box:
+                status_box.update(label="Computing pattern coordinates & geometry...")
+                dims = {
+                    "square_side": st.session_state.square_side,
+                    "grid_step": st.session_state.grid_step,
+                    "perim_offset": st.session_state.perim_offset,
+                    "circle_radius": st.session_state.circle_radius,
+                }
                 wps = generate_waypoints(
                     st.session_state.home_lat, st.session_state.home_lon,
-                    st.session_state.altitude, st.session_state.pattern
+                    st.session_state.altitude, st.session_state.pattern,
+                    dimensions=dims
                 )
+                
+                status_box.update(label="Auditing 7 airspace safety compliance regulations...")
                 meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
                 safety_checks = perform_safety_checks(meta, wps)
                 
-                # Apply corrections
+                status_box.update(label="Applying compliance correction heuristics...")
                 suggestions, corrected_meta, corrected_wps = generate_corrections(
                     safety_checks, meta, wps
                 )
                 
+                status_box.update(label="Updating session state and map boundary vectors...")
                 st.session_state.generated_waypoints = corrected_wps
                 st.session_state.safety_checks = safety_checks
                 st.session_state.corrections = suggestions
                 
-                # Update mission parameters with corrections
                 st.session_state.altitude = corrected_meta.get("altitude", st.session_state.altitude)
                 st.session_state.duration = corrected_meta.get("duration", st.session_state.duration)
                 
@@ -819,11 +935,50 @@ with col_left:
                     dark_map=is_dark
                 )
                 st.session_state.map_bounds = bounds
+                status_box.update(label="✅ Trajectory and safety audit complete!", state="complete")
+
             st.success(f"✅ Generated {len(corrected_wps)} waypoints — navigate to **Map View** to see the route.")
 
         if st.session_state.generated_waypoints:
-            st.write(f"**Generated Waypoint Count:** `{len(st.session_state.generated_waypoints)}`")
-            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True, height=300)
+            st.markdown(f"### 📍 Interactive Waypoint Editor (`{len(st.session_state.generated_waypoints)}` Points)")
+            st.caption("You can edit waypoint values directly in the table below and re-audit safety compliance.")
+            
+            df_wp = pd.DataFrame(st.session_state.generated_waypoints)
+            edited_df = st.data_editor(
+                df_wp,
+                use_container_width=True,
+                height=280,
+                key="waypoint_table_editor"
+            )
+
+            if st.button("✏️ Apply Waypoint Edits & Re-Audit Safety", use_container_width=True):
+                updated_wps = edited_df.to_dict('records')
+                # Ensure correct types for updated waypoints
+                for wp in updated_wps:
+                    wp["sequence_no"] = int(wp.get("sequence_no", 0))
+                    wp["latitude"] = float(wp.get("latitude", st.session_state.home_lat))
+                    wp["longitude"] = float(wp.get("longitude", st.session_state.home_lon))
+                    wp["altitude"] = float(wp.get("altitude", st.session_state.altitude))
+                    wp["action"] = str(wp.get("action", "waypoint"))
+
+                meta = {"altitude": st.session_state.altitude, "duration": st.session_state.duration}
+                safety_checks = perform_safety_checks(meta, updated_wps)
+                suggestions, corrected_meta, corrected_wps = generate_corrections(
+                    safety_checks, meta, updated_wps
+                )
+
+                st.session_state.generated_waypoints = corrected_wps
+                st.session_state.safety_checks = safety_checks
+                st.session_state.corrections = suggestions
+                
+                _, bounds = create_mission_map(
+                    corrected_wps,
+                    (st.session_state.home_lat, st.session_state.home_lon),
+                    dark_map=is_dark
+                )
+                st.session_state.map_bounds = bounds
+                st.success("✅ Waypoint modifications saved and safety checks updated!")
+                st.rerun()
 
             st.markdown("<div style='height:1.2rem'></div>", unsafe_allow_html=True)
             st.markdown("### 📄 Mission Summary Report")
@@ -904,6 +1059,7 @@ with col_left:
                 }
                 save_mission(mission_row, st.session_state.generated_waypoints, st.session_state.safety_checks)
                 st.success("✅ Mission record saved to SQLite database successfully!")
+                st.rerun()
         else:
             st.warning("⚠️ No safety checks available. Please generate waypoints on the **Mission Plan** page first.")
 
@@ -1056,10 +1212,9 @@ with col_left:
                             except Exception as e:
                                 st.error(f"Error loading mission: {e}")
 
-                        if st.checkbox(f"🗑️ Delete Mission #{mid}", key=f"del_chk_{mid}"):
-                            st.warning(f"This will permanently delete mission **#{mid}** and all its waypoints and safety checks.")
-                            if st.button(f"Confirm Delete Mission #{mid}", key=f"confirm_delete_{mid}",
-                                         use_container_width=True):
+                        with st.popover(f"🗑️ Delete Mission #{mid}", use_container_width=True):
+                            st.warning(f"Are you sure you want to permanently delete mission **#{mid}**?")
+                            if st.button(f"Yes, Delete #{mid}", key=f"confirm_delete_{mid}", use_container_width=True):
                                 from utils.database_utils import delete_mission
                                 delete_mission(mid)
                                 st.success(f"Mission #{mid} deleted.")

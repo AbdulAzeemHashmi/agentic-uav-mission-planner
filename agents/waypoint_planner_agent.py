@@ -23,7 +23,7 @@ def generate_square_route(
     lon_offset = half_side / meters_per_deg_lon
 
     # Define vertices relative to the home center coordinate
-    square_offsets = [\
+    square_offsets = [
         (lat_offset, lon_offset),    # North-East
         (lat_offset, -lon_offset),   # North-West
         (-lat_offset, -lon_offset),  # South-West
@@ -50,11 +50,25 @@ def generate_waypoints(
     home_lon: float,
     altitude: float,
     pattern: str,
-    rtl_enabled: bool = True
+    rtl_enabled: bool = True,
+    dimensions: Optional[dict[str, float]] = None
 ) -> list[dict[str, Any]]:
     """
     Main orchestration entry point to map out dynamic UAV flight routes.
+    Supports optional custom pattern dimensions:
+      dimensions = {
+        'square_side': 100.0,
+        'grid_step': 40.0,
+        'perim_offset': 60.0,
+        'circle_radius': 50.0
+      }
     """
+    dims = dimensions or {}
+    square_side = dims.get('square_side', 100.0)
+    grid_step = dims.get('grid_step', 40.0)
+    perim_offset_val = dims.get('perim_offset', 60.0)
+    circle_radius = dims.get('circle_radius', 50.0)
+
     waypoints = []
     
     # 1. Base mandatory structural checkpoint: Takeoff point sequence
@@ -70,7 +84,7 @@ def generate_waypoints(
     
     # 2. Select matching geometry generation model
     if pattern == "square":
-        square_wps = generate_square_route(home_lat, home_lon, altitude)
+        square_wps = generate_square_route(home_lat, home_lon, altitude, side_length_meters=square_side)
         for wp in square_wps:
             wp["sequence_no"] = seq
             waypoints.append(wp)
@@ -81,10 +95,10 @@ def generate_waypoints(
         lat_radians = math.radians(home_lat)
         meters_per_deg_lon = METERS_PER_DEG_LAT * math.cos(lat_radians)
         
-        step_lat = 40.0 / METERS_PER_DEG_LAT
-        step_lon = 40.0 / meters_per_deg_lon
+        step_lat = grid_step / METERS_PER_DEG_LAT
+        step_lon = grid_step / meters_per_deg_lon
         
-        grid_offsets = [\
+        grid_offsets = [
             (0.0, 0.0),
             (step_lat * 2, 0.0),
             (step_lat * 2, step_lon * 2),
@@ -104,10 +118,10 @@ def generate_waypoints(
         lat_radians = math.radians(home_lat)
         meters_per_deg_lon = METERS_PER_DEG_LAT * math.cos(lat_radians)
         
-        perim_offset = 60.0 / METERS_PER_DEG_LAT
-        lon_perim_offset = 60.0 / meters_per_deg_lon
+        perim_offset = perim_offset_val / METERS_PER_DEG_LAT
+        lon_perim_offset = perim_offset_val / meters_per_deg_lon
         
-        perimeter_offsets = [\
+        perimeter_offsets = [
             (perim_offset, 0.0),
             (0.0, -lon_perim_offset),
             (-perim_offset, 0.0),
@@ -125,7 +139,7 @@ def generate_waypoints(
             
     elif pattern == "circle":
         # Radial orbit calculation trajectory model (8 coordinates, 45-degree steps)
-        radius_meters = 50.0  
+        radius_meters = circle_radius  
         lat_radians = math.radians(home_lat)
         meters_per_deg_lon = METERS_PER_DEG_LAT * math.cos(lat_radians)
         

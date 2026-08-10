@@ -67,12 +67,22 @@ def initialize_mission_map(
     # Inject CSS into iframe <head> to eliminate white background and Leaflet attribution bar
     hide_controls_css = f"""
     <style>
-    html, body, #map, .leaflet-container, .folium-map {{
+    html, body {{
+        height: 100% !important;
+        width: 100% !important;
+        margin: 0px !important;
+        padding: 0px !important;
+        overflow: hidden !important;
+        background-color: {bg_color} !important;
+        background: {bg_color} !important;
+    }}
+    #map, .leaflet-container, .folium-map {{
         background-color: {bg_color} !important;
         background: {bg_color} !important;
         margin: 0px !important;
         padding: 0px !important;
         border-radius: 12px !important;
+        border: none !important;
     }}
     .leaflet-control-attribution,
     .leaflet-control-scale,

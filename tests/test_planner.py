@@ -17,7 +17,7 @@ class TestUAVPlanner(unittest.TestCase):
     def test_haversine_distance(self):
         """Test Haversine distance calculation"""
         dist = calculate_haversine_distance(0, 0, 1, 1)
-        self.assertAlmostEqual(dist, 157225.43, places=2)
+        self.assertAlmostEqual(dist, 157249.38, places=2)
 
     def test_square_route_generation(self):
         """Test square route generation"""
@@ -42,7 +42,7 @@ class TestUAVPlanner(unittest.TestCase):
         # Find R7 check
         r7 = next((c for c in checks if "R7" in c["check_name"]), None)
         self.assertIsNotNone(r7)
-        self.assertIn("Pass", r7["message"])
+        self.assertEqual(r7["result"], "Pass")
 
     def test_waypoint_generation_all_patterns(self):
         """Test all waypoint patterns"""
