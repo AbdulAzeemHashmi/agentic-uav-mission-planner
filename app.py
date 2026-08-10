@@ -516,19 +516,33 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
-    /* Force Mission History filter widgets into a single horizontal row */
+    /* Force Mission History filter widgets into a compact single horizontal row */
     div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) {{
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: flex-end !important;
-        gap: 12px !important;
+        gap: 10px !important;
         width: 100% !important;
+        margin-bottom: 0.6rem !important;
     }}
     div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) > div[data-testid="stColumn"] {{
         flex: 1 1 0% !important;
         min-width: 0 !important;
         width: auto !important;
+    }}
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) label,
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) [data-testid="stWidgetLabel"] {{
+        margin-bottom: 0.15rem !important;
+        font-size: 0.8rem !important;
+        font-weight: 700 !important;
+    }}
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="input"],
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="select"],
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="select"] > div {{
+        min-height: 36px !important;
+        height: 36px !important;
+        max-height: 36px !important;
     }}
 
     /* Select Dropdown Popups */
@@ -1329,22 +1343,29 @@ with col_left:
                 m_status = m_row.get("status", "")
                 status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
 
+                status_badge_bg = "rgba(16, 185, 129, 0.14)" if m_status == "Safe" else ("rgba(239, 68, 68, 0.14)" if m_status == "Unsafe" else "rgba(245, 158, 11, 0.14)")
+
                 with st.expander(
-                    f"{'✅' if m_status == 'Safe' else '❌'} Mission #{mid}: {m_row['mission_name']}  ·  {m_row['mission_type'].title()}  ·  {str(m_row['created_at'])[:16]}",
+                    f"{'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}  │  #{mid} • {m_row['mission_name']} ({m_row['altitude']}m / {m_row['duration']}min)",
                     expanded=False
                 ):
                     detail_col1, detail_col2 = st.columns([3, 2])
                     with detail_col1:
                         st.markdown(f"""
-                            <div class="uav-card" style="padding:0.85rem 1.1rem !important;margin-bottom:0 !important;word-break:break-word;overflow-wrap:anywhere;">
-                                <div style="font-weight:700;font-size:0.9rem;color:#00C6FF;margin-bottom:0.4rem">📋 Mission #{mid} Specs</div>
-                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.82rem;color:{box_text};line-height:1.5">
-                                    <div><b>Name:</b> {m_row['mission_name']}</div>
-                                    <div><b>Type:</b> {m_row['mission_type'].title()}</div>
-                                    <div><b>Altitude:</b> {m_row['altitude']} m</div>
-                                    <div><b>Duration:</b> {m_row['duration']} min</div>
-                                    <div><b>Status:</b> <span style="color:{status_color};font-weight:700">{'✅' if m_status == 'Safe' else '❌'} {m_status}</span></div>
-                                    <div><b>Saved:</b> {m_row['created_at']}</div>
+                            <div style="background:{box_bg};border:1px solid {border_col};border-radius:10px;padding:0.85rem 1.1rem;margin-bottom:0;box-shadow:0 2px 8px rgba(0,0,0,0.06);word-break:break-word;overflow-wrap:anywhere;">
+                                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;padding-bottom:0.4rem;border-bottom:1px solid {border_col}">
+                                    <span style="font-weight:800;font-size:0.88rem;color:#00C6FF">📋 Mission #{mid} Telemetry & Specs</span>
+                                    <span style="background:{status_badge_bg};color:{status_color};padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:800;border:1px solid {status_color}33">
+                                        {'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}
+                                    </span>
+                                </div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:0.82rem;color:{box_text};line-height:1.4">
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🏷️ MISSION NAME</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['mission_name']}</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🎯 FLIGHT PATTERN</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['mission_type'].title()}</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📐 CRUISE ALTITUDE</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['altitude']} m</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">⏱️ MAX DURATION</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['duration']} min</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🛡️ SAFETY AUDIT</span><br><b style="color:{status_color};font-size:0.88rem">{m_status}</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📅 RECORDED DATE</span><br><b style="color:{box_text};font-size:0.82rem">{m_row['created_at']}</b></div>
                                 </div>
                             </div>
                         """, unsafe_allow_html=True)
