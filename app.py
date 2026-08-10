@@ -98,13 +98,14 @@ if st.session_state.current_page not in pages:
     st.session_state.current_page = "Home"
 
 # Define Theme Tokens:
-# Dark Mode: deep navy page, soft slate boxes, dark map tiles (match page)
-# Light Mode: off-white page, white boxes, light map tiles (match page)
+# ENHANCED VISUAL HIERARCHY - Page background darker, cards slightly lighter
 is_dark = (st.session_state.theme == "Dark")
 
-page_bg        = "#0D0D14" if is_dark else "#F8FAFC"
+# Dark Mode: Deep navy page, lighter slate cards, dark map tiles
+# Light Mode: Off-white page, white cards, light map tiles
+page_bg        = "#0A0A12" if is_dark else "#F0F2F6"
 page_text      = "#E8EAF0" if is_dark else "#1A1A2E"
-box_bg         = "#1C1C2E" if is_dark else "#FFFFFF"
+box_bg         = "#1A1A2E" if is_dark else "#FFFFFF"
 box_text       = "#E8EAF0" if is_dark else "#1A1A2E"
 sidebar_bg     = "#080810" if is_dark else "#F1F5F9"
 sidebar_border = "#22223A" if is_dark else "#CBD5E1"
@@ -114,12 +115,12 @@ btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
 border_col     = "#2A2A44" if is_dark else "#CBD5E1"
 th_bg          = "#252540" if is_dark else "#F1F5F9"
 caption_col    = "#A0AEC0" if is_dark else "#4A5568"
-map_bg_col     = "#0D0D14" if is_dark else "#F8FAFC"
+map_bg_col     = "#0A0A12" if is_dark else "#F0F2F6"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
 map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
 map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
 
-# High-Contrast Theme CSS with strict design system and mobile responsiveness
+# Enhanced CSS with visual hierarchy, distinct backgrounds, and polish
 st.markdown(f"""
     <style>
     :root {{
@@ -127,26 +128,48 @@ st.markdown(f"""
         --radius-md: 8px;
         --radius-lg: 10px;
         --radius-xl: 12px;
+        --radius-xxl: 16px;
         --spacing-xs: 0.25rem;
         --spacing-sm: 0.5rem;
         --spacing-md: 0.75rem;
         --spacing-lg: 1rem;
         --spacing-xl: 1.25rem;
+        --spacing-2xl: 1.5rem;
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
+        --shadow-md: 0 8px 32px rgba(0,0,0,0.12);
+        --shadow-lg: 0 16px 48px rgba(0,0,0,0.18);
+        --shadow-xl: 0 24px 64px rgba(0,0,0,0.24);
+        --accent-start: #00C6FF;
+        --accent-end: #0072FF;
+        --accent-glow: rgba(0,114,255,0.15);
     }}
 
     * {{
         box-sizing: border-box !important;
     }}
 
-    /* Root Page Background & Text Color */
+    /* ================================================================
+       ROOT PAGE WITH SUBTLE BACKGROUND PATTERN
+       ================================================================ */
+
     body, .stApp {{
         background-color: {page_bg} !important;
         color: {page_text} !important;
         font-family: 'Segoe UI', system-ui, -apple-system, sans-serif !important;
+        min-height: 100vh !important;
+        background-image: 
+            radial-gradient(circle at 20% 50%, rgba(0,114,255,0.03) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(0,198,255,0.02) 0%, transparent 50%) !important;
+        background-attachment: fixed !important;
     }}
 
-    /* Shrink Streamlit header to zero height */
-    header[data-testid="stHeader"], [data-testid="stHeader"], .stAppHeader {{
+    /* ================================================================
+       HEADER HIDE
+       ================================================================ */
+
+    header[data-testid="stHeader"],
+    [data-testid="stHeader"],
+    .stAppHeader {{
         height: 0px !important;
         min-height: 0px !important;
         overflow: hidden !important;
@@ -155,7 +178,7 @@ st.markdown(f"""
         visibility: hidden !important;
     }}
 
-    /* COMPLETELY HIDE the native sidebar collapse controls and header X button */
+    /* COMPLETELY HIDE the native sidebar collapse controls */
     button[data-testid="collapsedControl"],
     [data-testid="stSidebarCollapsedControl"],
     button[aria-label="Collapse sidebar"],
@@ -181,7 +204,10 @@ st.markdown(f"""
         left: -9999px !important;
     }}
 
-    /* Focus States for Keyboard Accessibility */
+    /* ================================================================
+       FOCUS STATES FOR KEYBOARD ACCESSIBILITY
+       ================================================================ */
+
     button:focus-visible,
     input:focus-visible,
     select:focus-visible,
@@ -189,22 +215,41 @@ st.markdown(f"""
     div[data-baseweb="input"]:focus-within {{
         outline: 3px solid #0072FF !important;
         outline-offset: 2px !important;
+        box-shadow: 0 0 0 4px rgba(0,114,255,0.15) !important;
     }}
 
-    /* Persistent app branding panel */
+    /* ================================================================
+       BRANDING CARD - ENHANCED WITH GRADIENT AND GLOW
+       ================================================================ */
+
     .app-branding-card {{
-        background: linear-gradient(135deg, rgba(0, 114, 255, 0.14), rgba(0, 198, 255, 0.08));
-        border: 1px solid rgba(0, 114, 255, 0.18);
+        background: linear-gradient(135deg, 
+            rgba(0,114,255,0.12) 0%, 
+            rgba(0,198,255,0.06) 100%
+        );
+        border: 1px solid rgba(0,114,255,{0.25 if is_dark else 0.15});
         border-radius: var(--radius-xl);
         padding: var(--spacing-lg) var(--spacing-xl);
         margin: 0.85rem 0 1rem 0;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.22);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.15);
         animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
+        position: relative;
+        overflow: hidden;
+    }}
+    .app-branding-card::before {{
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: radial-gradient(circle at 70% 30%, rgba(0,198,255,0.05), transparent 60%);
+        pointer-events: none;
     }}
     .app-branding-card:hover {{
         transform: translateY(-3px);
-        box-shadow: 0 26px 68px rgba(0, 0, 0, 0.28);
+        box-shadow: 0 26px 68px rgba(0,0,0,0.22);
     }}
     .app-branding-kicker {{
         font-size: 0.8rem;
@@ -213,52 +258,433 @@ st.markdown(f"""
         text-transform: uppercase;
         color: #00C6FF;
         margin-bottom: 0.35rem;
+        position: relative;
+        z-index: 1;
     }}
     .app-branding-title {{
         font-size: 1.35rem;
         font-weight: 800;
         color: {page_text};
         margin-bottom: 0.2rem;
+        position: relative;
+        z-index: 1;
     }}
     .app-branding-subtitle {{
         font-size: 0.95rem;
         color: {page_text};
         opacity: 0.9;
         margin-bottom: 0.2rem;
+        position: relative;
+        z-index: 1;
     }}
     .app-branding-footer {{
         font-size: 0.78rem;
         font-weight: 600;
         color: {page_text};
         opacity: 0.82;
+        position: relative;
+        z-index: 1;
     }}
     @keyframes fadeInUp {{
         from {{ opacity: 0; transform: translateY(6px); }}
         to {{ opacity: 1; transform: translateY(0); }}
     }}
 
-    /* When sidebar is hidden: slide it off-screen */
-    .sidebar-hidden section[data-testid="stSidebar"] {{
-        display: none !important;
+    /* ================================================================
+       SIDEBAR - ENHANCED WITH BETTER VISUAL SEPARATION
+       ================================================================ */
+
+    section[data-testid="stSidebar"] {{
+        background-color: {sidebar_bg} !important;
+        border-right: 1px solid {sidebar_border} !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.08) !important;
+    }}
+    section[data-testid="stSidebar"] .block-container {{
+        padding-top: 0.5cm !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }}
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label {{
+        color: {sidebar_text} !important;
     }}
 
-    /* Hide Leaflet scale bar & attribution footer below map */
-    .leaflet-control-attribution,
-    .leaflet-control-scale,
-    .leaflet-bottom,
-    .leaflet-bottom.leaflet-left,
-    .leaflet-bottom.leaflet-right {{
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        height: 0px !important;
-        margin: 0px !important;
-        padding: 0px !important;
-        background: transparent !important;
+    /* Sidebar Navigation Buttons - Enhanced */
+    section[data-testid="stSidebar"] div.stButton > button {{
+        background-color: {btn_bg} !important;
+        color: {sidebar_text} !important;
+        border: 1px solid {btn_border} !important;
+        border-radius: var(--radius-sm) !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+        margin-bottom: 0.25rem !important;
+        transition: all 0.2s ease-in-out !important;
+        width: 100% !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button:hover {{
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
+        border-color: #0072FF !important;
+        transform: translateX(3px);
+        box-shadow: 0 4px 12px rgba(0,114,255,0.25) !important;
+    }}
+
+    /* Sidebar Section Headers */
+    .sidebar-section-label {{
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: {caption_col};
+        padding: 0.5rem 0 0.25rem 0.25rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.5rem;
+    }}
+
+    /* ================================================================
+       METRICS CARDS - ENHANCED WITH GRADIENT ACCENT AND DEPTH
+       ================================================================ */
+
+    div[data-testid="stMetric"],
+    [data-testid="stMetric"] {{
+        background: linear-gradient(145deg, 
+            {box_bg} 0%, 
+            {box_bg if is_dark else '#F8FAFC'} 100%
+        ) !important;
+        border: 1px solid rgba(0,114,255,0.10) !important;
+        padding: 0.75rem 1rem !important;
+        border-radius: var(--radius-md) !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+        overflow: hidden !important;
+        min-width: 0 !important;
+        position: relative !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+    }}
+    div[data-testid="stMetric"]:hover {{
+        transform: translateY(-3px);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
+    }}
+    /* Accent bar on top of metrics */
+    div[data-testid="stMetric"]::before {{
+        content: '';
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: 3px !important;
+        background: linear-gradient(90deg, #00C6FF 0%, #0072FF 100%) !important;
+        border-radius: var(--radius-md) var(--radius-md) 0 0 !important;
+    }}
+    div[data-testid="stMetric"] *,
+    [data-testid="stMetric"] *,
+    [data-testid="stMetricValue"],
+    [data-testid="stMetricLabel"],
+    div[data-testid="stMetric"] div,
+    div[data-testid="stMetric"] span,
+    div[data-testid="stMetric"] label,
+    div[data-testid="stMetric"] p {{
+        color: {box_text} !important;
+    }}
+    [data-testid="stMetricValue"] {{
+        font-size: 1.45rem !important;
+        font-weight: 800 !important;
+        line-height: 1.3 !important;
+        letter-spacing: -0.01em !important;
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%);
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+    }}
+    [data-testid="stMetricLabel"] {{
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        line-height: 1.2 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.06em !important;
+        opacity: 0.8 !important;
+    }}
+
+    /* ================================================================
+       CUSTOM CARDS - ENHANCED WITH SUBTLE GRADIENT AND DEPTH
+       ================================================================ */
+
+    .uav-card {{
+        background: linear-gradient(145deg, 
+            {box_bg} 0%, 
+            {box_bg if is_dark else '#F8FAFC'} 100%
+        ) !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: var(--radius-xl) !important;
+        padding: var(--spacing-lg) var(--spacing-xl);
+        margin-bottom: 1rem !important;
+        box-shadow: var(--shadow-md) !important;
+        color: {box_text} !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        box-sizing: border-box !important;
+        max-width: 100% !important;
+        position: relative !important;
+    }}
+    .uav-card:hover {{
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg) !important;
+    }}
+    .uav-card *,
+    .uav-card-title,
+    .uav-card-title * {{
+        color: {box_text} !important;
+    }}
+
+    /* Card with accent border */
+    .uav-card-accent {{
+        border-left: 4px solid #0072FF !important;
+    }}
+
+    /* Card with gradient top border */
+    .uav-card-gradient-top {{
+        border-top: 3px solid transparent !important;
+        border-image: linear-gradient(90deg, #00C6FF, #0072FF) 1 !important;
+    }}
+
+    /* ================================================================
+       ALERT BOXES - ENHANCED VISIBILITY
+       ================================================================ */
+
+    div[data-testid="stAlert"],
+    .stAlert,
+    div[data-baseweb="notification"],
+    div[kind="info"],
+    div[kind="warning"] {{
+        background: linear-gradient(145deg, 
+            {box_bg} 0%, 
+            {box_bg if is_dark else '#F8FAFC'} 100%
+        ) !important;
+        color: {box_text} !important;
+        border: 1px solid rgba(0,114,255,0.12) !important;
+        border-radius: var(--radius-md) !important;
+        padding: var(--spacing-md) var(--spacing-lg) !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+    }}
+    div[data-testid="stAlert"] *,
+    .stAlert *,
+    div[data-baseweb="notification"] *,
+    div[kind="info"] *,
+    div[kind="warning"] * {{
+        color: {box_text} !important;
+    }}
+
+    /* Success alert - green accent */
+    div[kind="success"] {{
+        border-left: 4px solid #10B981 !important;
+    }}
+    /* Error alert - red accent */
+    div[kind="error"] {{
+        border-left: 4px solid #EF4444 !important;
+    }}
+    /* Warning alert - orange accent */
+    div[kind="warning"] {{
+        border-left: 4px solid #F59E0B !important;
+    }}
+    /* Info alert - blue accent */
+    div[kind="info"] {{
+        border-left: 4px solid #3B82F6 !important;
+    }}
+
+    /* ================================================================
+       BUTTONS - ENHANCED WITH GRADIENTS AND HOVER EFFECTS
+       ================================================================ */
+
+    /* Primary Action Buttons */
+    div.stButton > button {{
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
         border: none !important;
+        padding: 0.6rem 1.5rem !important;
+        border-radius: var(--radius-sm) !important;
+        font-weight: 700 !important;
+        font-size: 0.9rem !important;
+        box-shadow: 0 4px 16px rgba(0,198,255,0.25) !important;
+        transition: all 0.25s ease-in-out !important;
+        min-height: 44px !important;
+    }}
+    div.stButton > button:hover {{
+        box-shadow: 0 6px 28px rgba(0,198,255,0.4) !important;
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, #00D4FF 0%, #0084FF 100%) !important;
+    }}
+    div.stButton > button:active {{
+        transform: translateY(0px);
+        box-shadow: 0 2px 8px rgba(0,198,255,0.3) !important;
     }}
 
-    /* Top Boundary Gap: Strictly set to 0.5cm */
+    /* Secondary Buttons */
+    div.stButton > button[kind="secondary"],
+    button[data-testid="baseButton-secondary"] {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+        min-height: 38px !important;
+    }}
+    div.stButton > button[kind="secondary"]:hover,
+    button[data-testid="baseButton-secondary"]:hover {{
+        background: rgba(0,114,255,0.08) !important;
+        border-color: #0072FF !important;
+        color: #0072FF !important;
+        box-shadow: 0 4px 12px rgba(0,114,255,0.12) !important;
+    }}
+
+    /* Download Buttons */
+    div.stDownloadButton > button,
+    [data-testid="stDownloadButton"] > button {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 2px solid #0072FF !important;
+        border-radius: var(--radius-sm) !important;
+        font-weight: 700 !important;
+        font-size: 0.88rem !important;
+        padding: 0.6rem 1rem !important;
+        transition: all 0.25s ease-in-out !important;
+        min-height: 44px !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    }}
+    div.stDownloadButton > button:hover,
+    [data-testid="stDownloadButton"] > button:hover {{
+        background: linear-gradient(135deg, #0072FF 0%, #0052CC 100%) !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 16px rgba(0,114,255,0.3) !important;
+        transform: translateY(-2px);
+        border-color: #0072FF !important;
+    }}
+
+    /* ================================================================
+       FORM CONTROLS - ENHANCED WITH BETTER VISIBILITY
+       ================================================================ */
+
+    div[data-baseweb="input"],
+    div[data-baseweb="select"],
+    textarea,
+    input {{
+        background: linear-gradient(145deg, 
+            {box_bg} 0%, 
+            {box_bg if is_dark else '#F8FAFC'} 100%
+        ) !important;
+        color: {box_text} !important;
+        border: 1px solid rgba(255,255,255,0.08) !important;
+        border-radius: var(--radius-sm) !important;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        box-shadow: inset 0 1px 3px rgba(0,0,0,0.04) !important;
+    }}
+    input::placeholder,
+    textarea::placeholder,
+    [data-baseweb="input"] input::placeholder {{
+        color: {caption_col} !important;
+        opacity: 0.6 !important;
+    }}
+    textarea:focus,
+    input:focus,
+    div[data-baseweb="input"]:focus-within,
+    div[data-baseweb="select"]:focus-within {{
+        border-color: #0072FF !important;
+        box-shadow: 0 0 0 3px rgba(0,114,255,0.15), inset 0 1px 3px rgba(0,0,0,0.04) !important;
+    }}
+
+    div[data-baseweb="input"], div[data-baseweb="select"], div[data-baseweb="select"] > div {{
+        min-height: 42px !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    div[data-baseweb="input"] input {{
+        height: 100% !important;
+        color: {box_text} !important;
+        -webkit-text-fill-color: {box_text} !important;
+    }}
+
+    /* ================================================================
+       DATA FRAME - ENHANCED WITH BETTER BORDERS
+       ================================================================ */
+
+    .dataframe,
+    [data-testid="stDataFrame"],
+    [data-testid="stDataEditor"] {{
+        background: linear-gradient(145deg, 
+            {box_bg} 0%, 
+            {box_bg if is_dark else '#F8FAFC'} 100%
+        ) !important;
+        color: {box_text} !important;
+        border: 1px solid rgba(255,255,255,0.06) !important;
+        border-radius: var(--radius-sm) !important;
+        font-size: 0.88rem !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.04) !important;
+    }}
+    .dataframe th,
+    [data-testid="stDataFrame"] th,
+    [data-testid="stDataEditor"] th {{
+        background: rgba(255,255,255,0.04) !important;
+        color: {box_text} !important;
+        font-weight: 700 !important;
+        padding: 0.5rem 0.6rem !important;
+        border-bottom: 2px solid rgba(0,114,255,0.12) !important;
+    }}
+    .dataframe td,
+    [data-testid="stDataFrame"] td,
+    [data-testid="stDataEditor"] td {{
+        padding: 0.4rem 0.6rem !important;
+        border-bottom: 1px solid rgba(255,255,255,0.04) !important;
+    }}
+    .dataframe tr:hover,
+    [data-testid="stDataFrame"] tr:hover {{
+        background: rgba(0,114,255,0.04) !important;
+    }}
+
+    /* ================================================================
+       MAP - ENHANCED WITH GLOW BORDER
+       ================================================================ */
+
+    iframe[title="streamlit_folium.st_folium"],
+    div[data-testid="stCustomComponentV1"] {{
+        background-color: {map_bg_col} !important;
+        border: 1px solid rgba(0,114,255,0.08) !important;
+        border-radius: var(--radius-xl) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        display: block !important;
+        line-height: 0 !important;
+        overflow: hidden !important;
+    }}
+    div[data-testid="stCustomComponentV1"] > div,
+    div[data-testid="stCustomComponentV1"] iframe,
+    [data-testid="stIFrame"],
+    [data-testid="stIFrame"] > iframe {{
+        background-color: {map_bg_col} !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        display: block !important;
+        line-height: 0 !important;
+        vertical-align: bottom !important;
+        border-radius: var(--radius-xl) !important;
+    }}
+    .leaflet-container,
+    .folium-map {{
+        background-color: {map_bg_col} !important;
+        background: {map_bg_col} !important;
+        border-radius: var(--radius-xl) !important;
+    }}
+
+    /* ================================================================
+       TOP BOUNDARY GAP
+       ================================================================ */
+
     .block-container, [data-testid="stMainBlockContainer"] {{
         padding-top: 0.5cm !important;
         padding-bottom: 1.5rem !important;
@@ -276,58 +702,26 @@ st.markdown(f"""
         color: {page_text} !important;
     }}
 
-    /* Sidebar Theme */
-    section[data-testid="stSidebar"] {{
-        background-color: {sidebar_bg} !important;
-        border-right: 1px solid {sidebar_border} !important;
+    /* ================================================================
+       CAPTIONS
+       ================================================================ */
+
+    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, caption, small {{
+        color: {caption_col} !important;
+        font-weight: 500 !important;
+        font-size: 0.85rem !important;
     }}
-    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
-    section[data-testid="stSidebar"] header {{
-        padding-top: 0.5cm !important;
-        padding-bottom: 0rem !important;
-        height: auto !important;
-        min-height: 0px !important;
-    }}
-    section[data-testid="stSidebar"] .block-container,
-    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"] {{
-        padding-top: 0.5cm !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }}
-    section[data-testid="stSidebar"] h1, 
-    section[data-testid="stSidebar"] h2, 
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label,
-    section[data-testid="stSidebar"] .stMarkdown h1,
-    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] h1 {{
+    section[data-testid="stSidebar"] .stCaption,
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
+    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {{
         color: {sidebar_text} !important;
-        margin-top: 0rem !important;
-        padding-top: 0rem !important;
+        opacity: 0.85 !important;
     }}
 
-    /* Sidebar Navigation Buttons */
-    section[data-testid="stSidebar"] div.stButton > button {{
-        background-color: {btn_bg} !important;
-        color: {sidebar_text} !important;
-        border: 1px solid {btn_border} !important;
-        border-radius: var(--radius-sm) !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        padding: var(--spacing-sm) var(--spacing-md) !important;
-        margin-bottom: 0.25rem !important;
-        transition: all 0.2s ease-in-out !important;
-        width: 100% !important;
-    }}
-    section[data-testid="stSidebar"] div.stButton > button:hover {{
-        background: #0072FF !important;
-        color: #FFFFFF !important;
-        border-color: #0072FF !important;
-        transform: translateX(3px);
-    }}
+    /* ================================================================
+       LABELS
+       ================================================================ */
 
-    /* Form & Input Field Labels */
     label,
     .stWidgetLabel,
     [data-testid="stWidgetLabel"],
@@ -346,7 +740,10 @@ st.markdown(f"""
         font-size: 0.9rem !important;
     }}
 
-    /* Slider values */
+    /* ================================================================
+       SLIDER VALUES
+       ================================================================ */
+
     .stSlider [data-testid="stTickBarMin"],
     .stSlider [data-testid="stTickBarMax"],
     .stSlider div[data-testid="stMarkdownContainer"] p,
@@ -356,227 +753,32 @@ st.markdown(f"""
         font-weight: 500 !important;
     }}
 
-    /* Captions with Enhanced Contrast */
-    .stCaption, [data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] *, caption, small {{
-        color: {caption_col} !important;
-        font-weight: 500 !important;
-        font-size: 0.85rem !important;
-    }}
-    section[data-testid="stSidebar"] .stCaption,
-    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"],
-    section[data-testid="stSidebar"] [data-testid="stCaptionContainer"] * {{
-        color: {sidebar_text} !important;
-        opacity: 0.85 !important;
-    }}
+    /* ================================================================
+       SELECT DROPDOWN
+       ================================================================ */
 
-    /* Telemetry HUD Metrics Cards (Larger Sizing & Padding) */
-    div[data-testid="stMetric"],
-    [data-testid="stMetric"] {{
-        background-color: {box_bg} !important;
-        border: 1px solid {border_col} !important;
-        padding: 0.65rem 0.9rem !important;
-        border-radius: var(--radius-md) !important;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05) !important;
-        overflow: hidden !important;
-        min-width: 0 !important;
-    }}
-    div[data-testid="stMetric"] *,
-    [data-testid="stMetric"] *,
-    [data-testid="stMetricValue"], 
-    [data-testid="stMetricLabel"],
-    div[data-testid="stMetric"] div,
-    div[data-testid="stMetric"] span,
-    div[data-testid="stMetric"] label,
-    div[data-testid="stMetric"] p {{
-        color: {box_text} !important;
-    }}
-    [data-testid="stMetricValue"] {{
-        font-size: 1.35rem !important;
-        font-weight: 800 !important;
-        line-height: 1.3 !important;
-        letter-spacing: -0.01em !important;
-    }}
-    [data-testid="stMetricLabel"] {{
-        font-size: 0.82rem !important;
-        font-weight: 600 !important;
-        line-height: 1.2 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.04em !important;
-    }}
-
-    /* Alert Boxes */
-    div[data-testid="stAlert"],
-    .stAlert,
-    div[data-baseweb="notification"],
-    div[kind="info"],
-    div[kind="warning"] {{
+    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid {border_col} !important;
-        border-radius: var(--radius-md) !important;
-        padding: var(--spacing-md) var(--spacing-lg) !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.05) !important;
-    }}
-    div[data-testid="stAlert"] *,
-    .stAlert *,
-    div[data-baseweb="notification"] *,
-    div[kind="info"] *,
-    div[kind="warning"] * {{
-        color: {box_text} !important;
-    }}
-
-    /* Primary Action Buttons */
-    div.stButton > button {{
-        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        padding: 0.55rem 1.25rem !important;
+        box-shadow: var(--shadow-md) !important;
         border-radius: var(--radius-sm) !important;
-        font-weight: 700 !important;
-        font-size: 0.9rem !important;
-        box-shadow: 0 4px 16px rgba(0, 198, 255, 0.25) !important;
-        transition: all 0.2s ease-in-out !important;
     }}
-    div.stButton > button:hover {{
-        box-shadow: 0 6px 22px rgba(0, 198, 255, 0.4) !important;
-        color: #FFFFFF !important;
-        transform: translateY(-1px);
-    }}
-
-    /* Secondary / Destructive Buttons (inside expanders and cards) */
-    div.stButton > button[kind="secondary"],
-    div.stButton > button.secondary-btn {{
-        background: {box_bg} !important;
+    li[role="option"] {{
+        background-color: {box_bg} !important;
         color: {box_text} !important;
-        border: 1px solid {border_col} !important;
-        box-shadow: none !important;
+        padding: 0.5rem 0.75rem !important;
+        transition: background 0.15s ease !important;
     }}
-    div.stButton > button.secondary-btn:hover {{
-        border-color: #0072FF !important;
+    li[role="option"]:hover, li[aria-selected="true"] {{
+        background: rgba(0,114,255,0.12) !important;
         color: #0072FF !important;
     }}
 
-    /* Clear Extraction small button: visible secondary style */
-    button[data-testid="baseButton-secondary"],
-    div[data-testid="stButton"] > button[kind="secondary"] {{
-        background: {box_bg} !important;
-        color: {box_text} !important;
-        border: 1px solid {border_col} !important;
-        font-weight: 600 !important;
-        box-shadow: none !important;
-    }}
-    button[data-testid="baseButton-secondary"]:hover {{
-        background: rgba(0, 114, 255, 0.12) !important;
-        border-color: #0072FF !important;
-        color: #0072FF !important;
-    }}
+    /* ================================================================
+       RADIO BUTTONS
+       ================================================================ */
 
-    /* Download Buttons - always visible with explicit contrast */
-    div.stDownloadButton > button,
-    [data-testid="stDownloadButton"] > button {{
-        background: {box_bg} !important;
-        color: {box_text} !important;
-        border: 2px solid #0072FF !important;
-        border-radius: var(--radius-sm) !important;
-        font-weight: 700 !important;
-        font-size: 0.88rem !important;
-        padding: 0.6rem 1rem !important;
-        transition: all 0.2s ease-in-out !important;
-    }}
-    div.stDownloadButton > button:hover,
-    [data-testid="stDownloadButton"] > button:hover {{
-        background: #0072FF !important;
-        color: #FFFFFF !important;
-        box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
-    }}
-
-    /* Buttons inside st.expander - force visible styling */
-    details div.stButton > button {{
-        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-        color: #FFFFFF !important;
-        border: none !important;
-        font-weight: 700 !important;
-    }}
-    details div.stDownloadButton > button {{
-        background: {box_bg} !important;
-        color: {box_text} !important;
-        border: 2px solid #0072FF !important;
-        font-weight: 700 !important;
-    }}
-
-    /* Form Controls */
-    div[data-baseweb="input"], div[data-baseweb="select"], textarea, input {{
-        background-color: {box_bg} !important;
-        color: {box_text} !important;
-        border: 1px solid {border_col} !important;
-        border-radius: var(--radius-sm) !important;
-    }}
-    div[data-baseweb="input"], div[data-baseweb="select"], div[data-baseweb="select"] > div {{
-        min-height: 42px !important;
-        height: 42px !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-    div[data-baseweb="input"] input {{
-        height: 100% !important;
-        color: {box_text} !important;
-        -webkit-text-fill-color: {box_text} !important;
-    }}
-    /* Clearly Visible Placeholder Text in Search & Input Boxes */
-    input::placeholder,
-    textarea::placeholder,
-    [data-baseweb="input"] input::placeholder,
-    div[data-baseweb="base-input"] input::placeholder {{
-        color: {caption_col} !important;
-        -webkit-text-fill-color: {caption_col} !important;
-        opacity: 0.85 !important;
-    }}
-    textarea:focus, input:focus, div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {{
-        border-color: #0072FF !important;
-        box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
-    }}
-
-    /* Mission History filter widgets styling (100% straight horizontal line) */
-    div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        align-items: flex-end !important;
-        gap: 8px !important;
-        width: 100% !important;
-        margin-bottom: 0.6rem !important;
-    }}
-    div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-        width: auto !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-end !important;
-    }}
-    div.history-filter-bar label,
-    div.history-filter-bar [data-testid="stWidgetLabel"],
-    div.history-filter-bar [data-testid="stWidgetLabel"] p {{
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        height: 20px !important;
-        min-height: 20px !important;
-        max-height: 20px !important;
-        margin-bottom: 4px !important;
-        font-size: 0.78rem !important;
-        font-weight: 700 !important;
-        color: {box_text} !important;
-        line-height: 20px !important;
-    }}
-    div.history-filter-bar div[data-baseweb="input"],
-    div.history-filter-bar div[data-baseweb="select"],
-    div.history-filter-bar div[data-baseweb="select"] > div {{
-        min-height: 38px !important;
-        height: 38px !important;
-        max-height: 38px !important;
-    }}
-    /* Radio Option Text Visibility in Dark Mode */
     div[data-testid="stRadio"] label,
     div[data-testid="stRadio"] label span,
     div[data-testid="stRadio"] label p,
@@ -586,106 +788,28 @@ st.markdown(f"""
         font-weight: 600 !important;
     }}
 
-    /* Select Dropdown Popups */
-    div[data-baseweb="popover"], div[data-baseweb="menu"], ul[role="listbox"] {{
-        background-color: {box_bg} !important;
-        color: {box_text} !important;
-        border: 1px solid {border_col} !important;
-    }}
-    li[role="option"] {{
-        background-color: {box_bg} !important;
-        color: {box_text} !important;
-    }}
-    li[role="option"]:hover, li[aria-selected="true"] {{
-        background-color: #F1F5F9 !important;
-        color: #0072FF !important;
-    }}
+    /* ================================================================
+       EXPANDER
+       ================================================================ */
 
-    /* Dataframe & Data Editor */
-    .dataframe, [data-testid="stDataFrame"], [data-testid="stDataEditor"] {{
-        background-color: {box_bg} !important;
-        color: {box_text} !important;
-        border: 1px solid {border_col} !important;
-        border-radius: var(--radius-sm) !important;
-        font-size: 0.88rem !important;
-    }}
-    .dataframe th, [data-testid="stDataFrame"] th, [data-testid="stDataEditor"] th {{
-        background-color: {th_bg} !important;
-        color: {box_text} !important;
-        font-weight: 700 !important;
-        white-space: nowrap !important;
-        padding: 0.4rem 0.6rem !important;
-    }}
-    .dataframe td, [data-testid="stDataFrame"] td, [data-testid="stDataEditor"] td {{
-        background-color: {box_bg} !important;
-        color: {box_text} !important;
-        padding: 0.35rem 0.6rem !important;
-    }}
-    /* Dataframe wrapper: no overflow clip, proper scroll */
-    [data-testid="stDataFrame"] > div,
-    [data-testid="stDataEditor"] > div {{
-        border-radius: var(--radius-sm) !important;
-        overflow: auto !important;
-    }}
-
-    /* Custom Card Containers */
-    .uav-card {{
-        background-color: {box_bg} !important;
-        border: 1px solid {border_col} !important;
-        border-radius: var(--radius-xl) !important;
-        padding: var(--spacing-lg) var(--spacing-xl);
-        margin-bottom: 1rem !important;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
-        color: {box_text} !important;
-        word-break: break-word !important;
-        overflow-wrap: anywhere !important;
-        box-sizing: border-box !important;
-        max-width: 100% !important;
-    }}
-    .uav-card *,
-    .uav-card-title,
-    .uav-card-title * {{
-        color: {box_text} !important;
-    }}
-
-    /* Map Background & Zero White Gap Below Map */
-    iframe[title="streamlit_folium.st_folium"],
-    div[data-testid="stCustomComponentV1"] {{
-        background-color: {map_bg_col} !important;
-        background: {map_bg_col} !important;
+    details {{
+        background: transparent !important;
         border: none !important;
-        border-radius: 12px !important;
-        box-shadow: none !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        display: block !important;
-        line-height: 0 !important;
     }}
-    div[data-testid="stCustomComponentV1"] > div,
-    div[data-testid="stCustomComponentV1"] iframe,
-    [data-testid="stIFrame"],
-    [data-testid="stIFrame"] > iframe {{
-        background-color: {map_bg_col} !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        display: block !important;
-        line-height: 0 !important;
-        vertical-align: bottom !important;
+    details summary {{
+        color: {page_text} !important;
+        font-weight: 600 !important;
+        font-size: 0.9rem !important;
+        padding: 0.25rem 0 !important;
     }}
-    /* Kill any bottom spacing Streamlit injects below the iframe component */
-    div[data-testid="stCustomComponentV1"] ~ div[data-testid="stVerticalBlock"],
-    div[data-testid="stElementContainer"]:has(iframe) {{
-        margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
-    }}
-    .leaflet-container, .folium-map {{
-        background-color: {map_bg_col} !important;
-        background: {map_bg_col} !important;
-        border-radius: 12px !important;
+    details summary:hover {{
+        color: #00C6FF !important;
     }}
 
-    /* Responsive Media Queries for Mobile/Tablet */
+    /* ================================================================
+       RESPONSIVE DESIGN
+       ================================================================ */
+
     @media screen and (max-width: 768px) {{
         .stColumns {{
             flex-direction: column !important;
@@ -700,6 +824,54 @@ st.markdown(f"""
         }}
         [data-testid="stMetricValue"] {{
             font-size: 1rem !important;
+        }}
+        .app-branding-title {{
+            font-size: 1rem !important;
+        }}
+        .app-branding-subtitle {{
+            font-size: 0.8rem !important;
+        }}
+        div.stButton > button,
+        div.stDownloadButton > button {{
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.8rem !important;
+            min-height: 36px !important;
+        }}
+        .uav-card {{
+            padding: var(--spacing-md) var(--spacing-lg) !important;
+        }}
+        /* History filters stack on mobile */
+        div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
+            flex-wrap: wrap !important;
+        }}
+        div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
+            flex: 1 1 45% !important;
+            min-width: 120px !important;
+        }}
+    }}
+
+    @media screen and (max-width: 480px) {{
+        div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
+            flex: 1 1 100% !important;
+            min-width: unset !important;
+        }}
+        .app-branding-card {{
+            padding: var(--spacing-md) var(--spacing-lg) !important;
+        }}
+        .app-branding-title {{
+            font-size: 0.9rem !important;
+        }}
+        .app-branding-subtitle {{
+            font-size: 0.7rem !important;
+        }}
+        div[data-testid="stMetric"] {{
+            padding: 0.3rem 0.4rem !important;
+        }}
+        [data-testid="stMetricValue"] {{
+            font-size: 0.9rem !important;
+        }}
+        [data-testid="stMetricLabel"] {{
+            font-size: 0.6rem !important;
         }}
     }}
     </style>
@@ -749,8 +921,7 @@ SAFETY_PAGES = {
 }
 
 st.sidebar.markdown(
-    f"<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.08em;"
-    f"text-transform:uppercase;color:{caption_col};padding:0 0 4px 4px'>📋 Planning</div>",
+    f"<div class='sidebar-section-label'>📋 Planning</div>",
     unsafe_allow_html=True
 )
 for page, icon in PLANNING_PAGES.items():
@@ -760,8 +931,7 @@ for page, icon in PLANNING_PAGES.items():
         st.session_state.current_page = page
 
 st.sidebar.markdown(
-    f"<div style='font-size:0.7rem;font-weight:700;letter-spacing:0.08em;"
-    f"text-transform:uppercase;color:{caption_col};padding:8px 0 4px 4px'>🛡️ Safety & Export</div>",
+    f"<div class='sidebar-section-label'>🛡️ Safety & Export</div>",
     unsafe_allow_html=True
 )
 for page, icon in SAFETY_PAGES.items():
@@ -827,7 +997,7 @@ with col_left:
         st.caption("AI-driven mission planning system: generate waypoints, enforce safety rules, and export mission plans.")
         
         st.markdown(f"""
-            <div class="uav-card" style="margin-top:0.4rem;margin-bottom:0.6rem;padding:0.85rem 1.1rem">
+            <div class="uav-card uav-card-gradient-top" style="margin-top:0.4rem;margin-bottom:0.6rem;padding:0.85rem 1.1rem">
                 <div class="uav-card-title" style="margin-bottom:0.4rem;font-size:0.9rem">🛡️ Active Airspace Safety Regulations</div>
                 <ul style="margin-bottom:0;padding-left:1.1rem;font-size:0.82rem;color:{box_text};line-height:1.55">
                     <li><b>R1</b>: Maximum Altitude Ceiling: <b>80 metres</b></li>
@@ -885,7 +1055,7 @@ with col_left:
                     st.error(f"❌ Failed to parse mission JSON: {e}")
 
         st.markdown(f"""
-            <div class="uav-card">
+            <div class="uav-card uav-card-accent">
                 <div class="uav-card-title">🤖 Option A: Natural Language Request</div>
                 <div style="font-size:0.85rem;color:{box_text};margin-bottom:0.5rem">
                     Enter mission details in plain English and let the AI Agent extract the parameters.
@@ -937,7 +1107,7 @@ with col_left:
         if st.session_state.nl_extracted:
             ex = st.session_state.nl_extracted
             st.markdown(f"""
-                <div class="uav-card" style="border-left:4px solid #0072FF;margin-top:0.6rem">
+                <div class="uav-card uav-card-accent" style="margin-top:0.6rem">
                     <div style="font-size:0.8rem;font-weight:700;color:{box_text};margin-bottom:0.5rem">🔍 Extracted Parameters</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:0.82rem;color:{box_text}">
                         <div><b>Name:</b> {ex.get('mission_name', 'N/A')}</div>
@@ -957,7 +1127,7 @@ with col_left:
         st.markdown("<hr style='border:1px solid #2A2A44;margin:1.2rem 0'>", unsafe_allow_html=True)
 
         st.markdown("""
-            <div class="uav-card">
+            <div class="uav-card uav-card-gradient-top">
                 <div class="uav-card-title">⚙️ Option B: Manual Parameter Override</div>
             </div>
         """, unsafe_allow_html=True)
@@ -1030,7 +1200,7 @@ with col_left:
         st.subheader("⚙️ Mission Route Planner")
 
         st.markdown(f"""
-            <div class="uav-card">
+            <div class="uav-card uav-card-gradient-top">
                 <div class="uav-card-title">📌 Active Mission Setup</div>
                 <div style="font-size:0.9rem;color:{box_text}">
                     <b>Mission:</b> {st.session_state.mission_name} &nbsp;|&nbsp; 
@@ -1183,7 +1353,7 @@ with col_left:
         st.subheader("🗺️ Telemetry & Coordinates Control")
         
         st.markdown(f"""
-            <div class="uav-card">
+            <div class="uav-card uav-card-accent">
                 <div class="uav-card-title">🛰️ Flight Telemetry Summary</div>
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.88rem;color:{box_text}">
                     <div><b>Mission:</b> {st.session_state.mission_name}</div>
@@ -1262,7 +1432,7 @@ with col_left:
             st.write("The Correction Agent generated the following actionable fixes:")
             for i, corr in enumerate(st.session_state.corrections, 1):
                 st.markdown(f"""
-                    <div class="uav-card" style="border-left:4px solid #0072FF">
+                    <div class="uav-card uav-card-accent">
                         <div style="color:#0072FF;font-weight:700;font-size:0.9rem">Correction #{i}</div>
                         <div style="color:{box_text};margin-top:0.3rem">{corr}</div>
                     </div>
@@ -1290,7 +1460,7 @@ with col_left:
                 mission_meta["status"] = "Safe" if all_passed else "Unsafe"
 
             st.markdown(f"""
-                <div class="uav-card">
+                <div class="uav-card uav-card-gradient-top">
                     <div style="font-size:0.95rem;color:{box_text}">
                         <b>Mission Package:</b> {mission_meta['mission_name']} &nbsp;|&nbsp; 
                         <b>Status:</b> <span style="color:{'#10B981' if mission_meta['status']=='Safe' else '#EF4444'};font-weight:700">{mission_meta['status']}</span>
