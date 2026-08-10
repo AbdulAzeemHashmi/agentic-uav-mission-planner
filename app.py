@@ -105,22 +105,22 @@ if st.session_state.current_page not in pages:
 
 is_dark = (st.session_state.theme == "Dark")
 
-# DARK MODE: Page is dark, sidebar is darker, boxes are lighter
-# LIGHT MODE: Page is light gray, sidebar is lighter gray, boxes are white
-page_bg        = "#0A0A12" if is_dark else "#EBEEF2"      # Darkest / Lightest gray
-sidebar_bg     = "#06060E" if is_dark else "#E8ECF0"      # Darker than page / Lighter than page
-box_bg         = "#181828" if is_dark else "#FFFFFF"      # Lighter than page / Pure white
+# DARK MODE: Page is dark, sidebar is almost black, boxes are noticeably lighter
+# LIGHT MODE: Page is light gray, sidebar is slightly darker gray, boxes are pure white
+page_bg        = "#0A0A14" if is_dark else "#E8ECF2"      # Darkest navy / Light gray
+sidebar_bg     = "#020208" if is_dark else "#D5D9E0"      # Almost black / Medium gray
+box_bg         = "#1C1C32" if is_dark else "#FFFFFF"      # Lighter than page / Pure white
 
 page_text      = "#E8EAF0" if is_dark else "#1A1A2E"
 box_text       = "#E8EAF0" if is_dark else "#1A1A2E"
-sidebar_border = "#1E1E2E" if is_dark else "#CBD5E1"
+sidebar_border = "#1A1A30" if is_dark else "#CBD5E1"
 sidebar_text   = "#E8EAF0" if is_dark else "#1A1A2E"
 btn_bg         = "#13131F" if is_dark else "#F8FAFC"
 btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
 border_col     = "#2A2A44" if is_dark else "#CBD5E1"
 th_bg          = "#252540" if is_dark else "#F1F5F9"
-caption_col    = "#A0AEC0" if is_dark else "#4A5568"
-map_bg_col     = "#0A0A12" if is_dark else "#EBEEF2"
+caption_col    = "#8890AA" if is_dark else "#64748B"
+map_bg_col     = "#0A0A14" if is_dark else "#E8ECF2"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
 map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
 map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
@@ -346,14 +346,11 @@ st.markdown(f"""
 
     div[data-testid="stMetric"],
     [data-testid="stMetric"] {{
-        background: linear-gradient(145deg, 
-            {box_bg} 0%, 
-            {'rgba(0,114,255,0.02)' if is_dark else '#F8FAFC'} 100%
-        ) !important;
-        border: 1px solid rgba(0,114,255,0.08) !important;
+        background: {box_bg} !important;
+        border: 1px solid rgba(0,114,255,0.10) !important;
         padding: 0.75rem 1rem !important;
         border-radius: var(--radius-md) !important;
-        box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+        box-shadow: 0 4px 16px rgba(0,0,0,{0.3 if is_dark else 0.08}) !important;
         overflow: hidden !important;
         min-width: 0 !important;
         position: relative !important;
@@ -361,7 +358,7 @@ st.markdown(f"""
     }}
     div[data-testid="stMetric"]:hover {{
         transform: translateY(-3px);
-        box-shadow: 0 8px 28px rgba(0,0,0,0.14) !important;
+        box-shadow: 0 8px 28px rgba(0,0,0,{0.4 if is_dark else 0.14}) !important;
     }}
     /* Accent bar on top of metrics */
     div[data-testid="stMetric"]::before {{
@@ -408,15 +405,12 @@ st.markdown(f"""
        ================================================================ */
 
     .uav-card {{
-        background: linear-gradient(145deg, 
-            {box_bg} 0%, 
-            {'rgba(0,114,255,0.01)' if is_dark else '#F8FAFC'} 100%
-        ) !important;
+        background: {box_bg} !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: var(--radius-xl) !important;
         padding: var(--spacing-lg) var(--spacing-xl);
         margin-bottom: 1rem !important;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,{0.3 if is_dark else 0.10}) !important;
         color: {box_text} !important;
         transition: transform 0.25s ease, box-shadow 0.25s ease !important;
         word-break: break-word !important;
@@ -427,7 +421,7 @@ st.markdown(f"""
     }}
     .uav-card:hover {{
         transform: translateY(-2px);
-        box-shadow: 0 16px 48px rgba(0,0,0,0.14) !important;
+        box-shadow: 0 16px 48px rgba(0,0,0,{0.4 if is_dark else 0.16}) !important;
     }}
     .uav-card *,
     .uav-card-title,
