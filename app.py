@@ -234,15 +234,32 @@ st.markdown(f"""
         z-index: 100 !important;
     }}
 
-    /* SIDEBAR TOP GAP FIX — reduced padding-top and title margin */
-    section[data-testid="stSidebar"] .block-container {{
-        padding-top: 0.1cm !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+    /* ===== SIDEBAR TOP GAP FIX — ELIMINATE ALL TOP PADDING AND MARGIN ===== */
+    section[data-testid="stSidebar"] .block-container,
+    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlock"],
+    section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"],
+    section[data-testid="stSidebar"] [data-testid="stAppViewBlockContainer"] {{
+        padding-top: 0 !important;
+        margin-top: 0 !important;
     }}
-    section[data-testid="stSidebar"] h1 {{
+    section[data-testid="stSidebar"] [data-testid="stSidebarHeader"],
+    section[data-testid="stSidebar"] header {{
+        padding-top: 0 !important;
+        padding-bottom: 0 !important;
+        margin-top: 0 !important;
+        min-height: 0 !important;
+        height: auto !important;
+    }}
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] .st-emotion-cache-10trblm,
+    section[data-testid="stSidebar"] .st-emotion-cache-1v0mbdj {{
         margin-top: 0 !important;
         padding-top: 0 !important;
+    }}
+    section[data-testid="stSidebar"] hr {{
+        margin-top: 0.3rem !important;
+        margin-bottom: 0.6rem !important;
     }}
 
     /* All text in sidebar is always light — sidebar is dark in both modes */
@@ -292,7 +309,7 @@ st.markdown(f"""
         letter-spacing: 0.08em;
         text-transform: uppercase;
         color: rgba(200,212,238,0.55);
-        padding: 0.5rem 0 0.25rem 0.25rem;
+        padding: 0.3rem 0 0.25rem 0.25rem;
         border-bottom: 1px solid rgba(255,255,255,0.08);
         margin-bottom: 0.5rem;
     }}
