@@ -105,25 +105,31 @@ if st.session_state.current_page not in pages:
 
 is_dark = (st.session_state.theme == "Dark")
 
-# DARK MODE: Page is dark, sidebar is almost black, boxes are noticeably lighter
-# LIGHT MODE: Page is light gray, sidebar is slightly darker gray, boxes are pure white
-page_bg        = "#0A0A14" if is_dark else "#E8ECF2"      # Darkest navy / Light gray
-sidebar_bg     = "#020208" if is_dark else "#D5D9E0"      # Almost black / Medium gray
-box_bg         = "#1C1C32" if is_dark else "#FFFFFF"      # Lighter than page / Pure white
+# DARK MODE:
+#   page_bg   = deep charcoal (#0F0F1A) — main canvas
+#   sidebar_bg= rich blue-charcoal (#161628) — clearly lighter/distinct from page
+#   box_bg    = elevated slate (#252540) — cards/panels pop above canvas
+# LIGHT MODE:
+#   page_bg   = clean near-white (#F0F2F8) — spacious main canvas
+#   sidebar_bg= rich slate-blue panel (#2A3050) — strong contrast sidebar
+#   box_bg    = pure white (#FFFFFF) — cards/panels clearly on top of canvas
+page_bg        = "#0F0F1A" if is_dark else "#F0F2F8"      # Deep charcoal / near-white
+sidebar_bg     = "#161628" if is_dark else "#1E2440"      # Blue-charcoal / deep blue-slate
+box_bg         = "#252540" if is_dark else "#FFFFFF"      # Elevated mid-navy / pure white
 
-page_text      = "#E8EAF0" if is_dark else "#1A1A2E"
-box_text       = "#E8EAF0" if is_dark else "#1A1A2E"
-sidebar_border = "#1A1A30" if is_dark else "#CBD5E1"
-sidebar_text   = "#E8EAF0" if is_dark else "#1A1A2E"
-btn_bg         = "#13131F" if is_dark else "#F8FAFC"
-btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
-border_col     = "#2A2A44" if is_dark else "#CBD5E1"
-th_bg          = "#252540" if is_dark else "#F1F5F9"
+page_text      = "#DDE2F0" if is_dark else "#1A1A2E"
+box_text       = "#DDE2F0" if is_dark else "#1A1A2E"
+sidebar_border = "#2C2C50" if is_dark else "#374170"
+sidebar_text   = "#DDE2F0" if is_dark else "#C8D0E8"      # light text on dark sidebar (both modes)
+btn_bg         = "#1E1E38" if is_dark else "#273060"
+btn_border     = "#3A3A60" if is_dark else "#3D5080"
+border_col     = "#3A3A60" if is_dark else "#CBD5E1"
+th_bg          = "#2D2D50" if is_dark else "#F1F5F9"
 caption_col    = "#8890AA" if is_dark else "#64748B"
-map_bg_col     = "#0A0A14" if is_dark else "#E8ECF2"
+map_bg_col     = "#0F0F1A" if is_dark else "#F0F2F8"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
-map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
-map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
+map_badge_bg   = "#1E1E38" if is_dark else "#F1F5F9"
+map_badge_fg   = "#DDE2F0" if is_dark else "#1A1A2E"
 
 # ================================================================
 # UPDATED CSS WITH VISUAL HIERARCHY - DIFFERENT BACKGROUNDS FOR EACH LAYER
@@ -210,13 +216,19 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       SIDEBAR - Darker than page in Dark Mode, Lighter in Light Mode
+       SIDEBAR - Clearly distinct background in BOTH dark and light modes
+       Dark: blue-charcoal (#161628) panel vs deep charcoal (#0F0F1A) page
+       Light: deep navy panel (#1E2440) vs near-white (#F0F2F8) page
        ================================================================ */
 
     section[data-testid="stSidebar"] {{
-        background-color: {sidebar_bg} !important;
-        border-right: 1px solid {sidebar_border} !important;
-        box-shadow: 4px 0 24px rgba(0,0,0,0.12) !important;
+        background: linear-gradient(
+            180deg,
+            {sidebar_bg} 0%,
+            {'#12121E' if is_dark else '#17203A'} 100%
+        ) !important;
+        border-right: 2px solid {sidebar_border} !important;
+        box-shadow: 6px 0 32px rgba(0,0,0,{0.50 if is_dark else 0.35}) !important;
         position: relative !important;
         z-index: 100 !important;
     }}
@@ -234,11 +246,12 @@ st.markdown(f"""
         color: {sidebar_text} !important;
     }}
 
-    /* Sidebar Navigation Buttons */
+
+    /* Sidebar Navigation Buttons - always on dark sidebar */
     section[data-testid="stSidebar"] div.stButton > button {{
-        background-color: {btn_bg} !important;
-        color: {sidebar_text} !important;
-        border: 1px solid {btn_border} !important;
+        background-color: rgba(255,255,255,0.06) !important;
+        color: #C8D4EE !important;
+        border: 1px solid rgba(255,255,255,0.10) !important;
         border-radius: var(--radius-sm) !important;
         font-size: 0.9rem !important;
         font-weight: 600 !important;
@@ -246,25 +259,25 @@ st.markdown(f"""
         margin-bottom: 0.25rem !important;
         transition: all 0.2s ease-in-out !important;
         width: 100% !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.18) !important;
     }}
     section[data-testid="stSidebar"] div.stButton > button:hover {{
         background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
         color: #FFFFFF !important;
         border-color: #0072FF !important;
         transform: translateX(3px);
-        box-shadow: 0 4px 12px rgba(0,114,255,0.25) !important;
+        box-shadow: 0 4px 14px rgba(0,114,255,0.35) !important;
     }}
 
-    /* Sidebar Section Headers */
+    /* Sidebar Section Headers - visible on dark panel */
     .sidebar-section-label {{
         font-size: 0.7rem;
         font-weight: 700;
         letter-spacing: 0.08em;
         text-transform: uppercase;
-        color: {caption_col};
+        color: rgba(200,212,238,0.55);
         padding: 0.5rem 0 0.25rem 0.25rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
+        border-bottom: 1px solid rgba(255,255,255,0.08);
         margin-bottom: 0.5rem;
     }}
 
