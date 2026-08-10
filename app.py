@@ -234,8 +234,14 @@ st.markdown(f"""
         z-index: 100 !important;
     }}
 
-    /* ===== SIDEBAR TOP GAP FIX — ELIMINATE ALL TOP PADDING AND MARGIN ===== */
-    section[data-testid="stSidebar"] .block-container,
+    /* ===== SIDEBAR TOP GAP = 0.4cm (the fix) ===== */
+    section[data-testid="stSidebar"] .block-container {{
+        padding-top: 0.4cm !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }}
+
+    /* Eliminate all other top padding/margin that could interfere */
     section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
     section[data-testid="stSidebar"] [data-testid="stVerticalBlock"],
     section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"],
