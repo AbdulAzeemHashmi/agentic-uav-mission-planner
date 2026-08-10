@@ -92,7 +92,7 @@ and return to launch after completion.
 
 ## 🌟 Key Features
 
-- 🛸 Natural language mission input with Google Gemini AI
+- 🚁 Natural language mission input with Google Gemini AI
 - 📍 Auto generation of mission waypoints
 - 🗺 Live interactive map with route and no fly zone overlays
 - 🛡 Seven rule safety validation engine

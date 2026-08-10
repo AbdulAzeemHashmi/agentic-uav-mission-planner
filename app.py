@@ -371,14 +371,17 @@ st.markdown(f"""
         color: {box_text} !important;
     }}
     [data-testid="stMetricValue"] {{
-        font-size: 1.25rem !important;
-        font-weight: 700 !important;
+        font-size: 1.35rem !important;
+        font-weight: 800 !important;
         line-height: 1.3 !important;
+        letter-spacing: -0.01em !important;
     }}
     [data-testid="stMetricLabel"] {{
-        font-size: 0.8rem !important;
-        font-weight: 500 !important;
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
         line-height: 1.2 !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.04em !important;
     }}
 
     /* Alert Boxes */
@@ -498,10 +501,9 @@ st.markdown(f"""
     }}
 
     /* Map Background & Zero White Gap Below Map */
+    /* NOTE: stElementContainer intentionally excluded to avoid styling all page elements */
     iframe[title="streamlit_folium.st_folium"],
-    iframe,
-    div[data-testid="stCustomComponentV1"],
-    div[data-testid="stElementContainer"] {{
+    div[data-testid="stCustomComponentV1"] {{
         background-color: {map_bg_col} !important;
         background: {map_bg_col} !important;
         border: none !important;
@@ -510,6 +512,15 @@ st.markdown(f"""
         margin-bottom: 0 !important;
         padding-bottom: 0 !important;
         vertical-align: bottom !important;
+        display: block !important;
+    }}
+    /* Target the specific iframe wrapper to remove the white gap */
+    div[data-testid="stCustomComponentV1"] > div,
+    div[data-testid="stCustomComponentV1"] iframe {{
+        background-color: {map_bg_col} !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
         display: block !important;
     }}
     .leaflet-container, .folium-map, #map {{
@@ -783,6 +794,9 @@ with col_left:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
+            if st.button("✖ Clear AI Extraction", key="clear_nl_extracted", help="Dismiss the extracted parameters card and use manual values only."):
+                st.session_state.nl_extracted = None
+                st.rerun()
 
         st.markdown("<hr style='border:1px solid #2A2A44;margin:1.2rem 0'>", unsafe_allow_html=True)
 
@@ -851,6 +865,7 @@ with col_left:
             st.session_state.generated_waypoints = []
             st.session_state.safety_checks = []
             st.session_state.corrections = []
+            st.session_state.nl_extracted = None
             st.success("✅ All parameters reset to defaults.")
             st.rerun()
 
@@ -1150,6 +1165,25 @@ with col_left:
 
         missions_list = search_missions(name_search, status_filter, type_filter)
 
+        # Batch Export All Missions
+        if missions_list:
+            all_missions_export = []
+            for _m in missions_list:
+                try:
+                    _md, _mw, _mc = get_mission_by_id(_m["mission_id"])
+                    all_missions_export.append({"mission": _md, "waypoints": _mw, "safety_checks": _mc})
+                except Exception:
+                    all_missions_export.append({"mission": _m, "waypoints": [], "safety_checks": []})
+            batch_json = json.dumps(all_missions_export, indent=2, default=str)
+            st.download_button(
+                label=f"⬇️ Export All {len(missions_list)} Mission(s) as JSON",
+                data=batch_json,
+                file_name=f"all_missions_export_{datetime.now().strftime('%Y%m%d_%H%M')}.json",
+                mime="application/json",
+                help="Download all currently filtered missions as a single JSON file.",
+                key="export_all_missions_btn"
+            )
+
         if not missions_list:
             st.info("No saved missions found. Complete a mission and click **Save Mission to Database** on the Safety Check page.")
         else:
@@ -1208,7 +1242,10 @@ with col_left:
                                 st.session_state.generated_waypoints = m_wps
                                 st.session_state.safety_checks = m_checks
                                 st.session_state.corrections = []
-                                st.success(f"✅ Mission '**{m_data['mission_name']}**' loaded. Navigate to Map View to see the route.")
+                                st.session_state.nl_extracted = None
+                                st.session_state.current_page = "Mission Plan"
+                                st.success(f"✅ Mission '**{m_data['mission_name']}**' loaded. Navigating to Mission Plan…")
+                                st.rerun()
                             except Exception as e:
                                 st.error(f"Error loading mission: {e}")
 
