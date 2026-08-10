@@ -105,31 +105,32 @@ if st.session_state.current_page not in pages:
 
 is_dark = (st.session_state.theme == "Dark")
 
-# DARK MODE:
-#   page_bg   = deep charcoal (#0F0F1A) — main canvas
-#   sidebar_bg= rich blue-charcoal (#161628) — clearly lighter/distinct from page
-#   box_bg    = elevated slate (#252540) — cards/panels pop above canvas
-# LIGHT MODE:
-#   page_bg   = clean near-white (#F0F2F8) — spacious main canvas
-#   sidebar_bg= rich slate-blue panel (#2A3050) — strong contrast sidebar
-#   box_bg    = pure white (#FFFFFF) — cards/panels clearly on top of canvas
-page_bg        = "#0F0F1A" if is_dark else "#F0F2F8"      # Deep charcoal / near-white
-sidebar_bg     = "#161628" if is_dark else "#1E2440"      # Blue-charcoal / deep blue-slate
-box_bg         = "#252540" if is_dark else "#FFFFFF"      # Elevated mid-navy / pure white
+# ── DARK MODE 3-layer separation ────────────────────────────────────────
+#   page_bg    #08080F  near-black canvas  (deepest)
+#   sidebar_bg #1E2248  bold blue-navy     (clearly brighter/different)
+#   box_bg     #2A2A52  elevated slate     (lightest of the three)
+# ── LIGHT MODE 3-layer separation ───────────────────────────────────────
+#   page_bg    #EEF1F8  soft silver-white  (main canvas)
+#   sidebar_bg #162152  deep indigo panel  (maximum contrast vs page)
+#   box_bg     #FFFFFF  pure white         (cards float above canvas)
+# ── Sidebar text is ALWAYS light since sidebar is always dark in both modes
+page_bg        = "#08080F" if is_dark else "#EEF1F8"      # Near-black   / Soft silver-white
+sidebar_bg     = "#1E2248" if is_dark else "#162152"      # Blue-navy    / Deep indigo
+box_bg         = "#2A2A52" if is_dark else "#FFFFFF"      # Elev. slate  / Pure white
 
 page_text      = "#DDE2F0" if is_dark else "#1A1A2E"
 box_text       = "#DDE2F0" if is_dark else "#1A1A2E"
-sidebar_border = "#2C2C50" if is_dark else "#374170"
-sidebar_text   = "#DDE2F0" if is_dark else "#C8D0E8"      # light text on dark sidebar (both modes)
-btn_bg         = "#1E1E38" if is_dark else "#273060"
-btn_border     = "#3A3A60" if is_dark else "#3D5080"
-border_col     = "#3A3A60" if is_dark else "#CBD5E1"
-th_bg          = "#2D2D50" if is_dark else "#F1F5F9"
+sidebar_text   = "#D0D8F0"                               # Always light — sidebar is always dark
+sidebar_border = "#2E3468" if is_dark else "#253070"
+btn_bg         = "#16183A" if is_dark else "#1E2A6A"
+btn_border     = "#383E70" if is_dark else "#2E4090"
+border_col     = "#383E70" if is_dark else "#CBD5E1"
+th_bg          = "#28285A" if is_dark else "#F1F5F9"
 caption_col    = "#8890AA" if is_dark else "#64748B"
-map_bg_col     = "#0F0F1A" if is_dark else "#F0F2F8"
+map_bg_col     = "#08080F" if is_dark else "#EEF1F8"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
-map_badge_bg   = "#1E1E38" if is_dark else "#F1F5F9"
-map_badge_fg   = "#DDE2F0" if is_dark else "#1A1A2E"
+map_badge_bg   = "#1E2248" if is_dark else "#F1F5F9"
+map_badge_fg   = "#D0D8F0" if is_dark else "#1A1A2E"
 
 # ================================================================
 # UPDATED CSS WITH VISUAL HIERARCHY - DIFFERENT BACKGROUNDS FOR EACH LAYER
@@ -216,19 +217,19 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       SIDEBAR - Clearly distinct background in BOTH dark and light modes
-       Dark: blue-charcoal (#161628) panel vs deep charcoal (#0F0F1A) page
-       Light: deep navy panel (#1E2440) vs near-white (#F0F2F8) page
+       SIDEBAR — Always a dark branded panel in BOTH modes
+       Dark mode : #1E2248 blue-navy  vs page #08080F near-black   → big jump
+       Light mode: #162152 deep indigo vs page #EEF1F8 silver-white → maximum contrast
        ================================================================ */
 
     section[data-testid="stSidebar"] {{
         background: linear-gradient(
-            180deg,
+            160deg,
             {sidebar_bg} 0%,
-            {'#12121E' if is_dark else '#17203A'} 100%
+            {'#141640' if is_dark else '#0F1A42'} 100%
         ) !important;
         border-right: 2px solid {sidebar_border} !important;
-        box-shadow: 6px 0 32px rgba(0,0,0,{0.50 if is_dark else 0.35}) !important;
+        box-shadow: 8px 0 40px rgba(0,0,0,{0.60 if is_dark else 0.45}) !important;
         position: relative !important;
         z-index: 100 !important;
     }}
@@ -237,13 +238,21 @@ st.markdown(f"""
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }}
+    /* All text in sidebar is always light — sidebar is dark in both modes */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
     section[data-testid="stSidebar"] h3,
     section[data-testid="stSidebar"] p,
     section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label {{
+    section[data-testid="stSidebar"] label,
+    section[data-testid="stSidebar"] div,
+    section[data-testid="stSidebar"] small,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"],
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] *,
+    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"],
+    section[data-testid="stSidebar"] [data-testid="stMarkdownContainer"] * {{
         color: {sidebar_text} !important;
+        -webkit-text-fill-color: {sidebar_text} !important;
     }}
 
 
@@ -766,6 +775,7 @@ st.markdown(f"""
        RADIO BUTTONS
        ================================================================ */
 
+    /* Generic radio (main content area) */
     div[data-testid="stRadio"] label,
     div[data-testid="stRadio"] label span,
     div[data-testid="stRadio"] label p,
@@ -773,6 +783,24 @@ st.markdown(f"""
         color: {box_text} !important;
         -webkit-text-fill-color: {box_text} !important;
         font-weight: 600 !important;
+    }}
+
+    /* Sidebar radio — sidebar is ALWAYS dark, so force light text */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label span,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] label p,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] div[role="radiogroup"] span,
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] p,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p,
+    section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] span {{
+        color: #D0D8F0 !important;
+        -webkit-text-fill-color: #D0D8F0 !important;
+        font-weight: 600 !important;
+    }}
+    /* Radio circle/dot color on dark sidebar */
+    section[data-testid="stSidebar"] div[data-testid="stRadio"] [data-testid="stMarkdownContainer"] p {{
+        color: #D0D8F0 !important;
+        -webkit-text-fill-color: #D0D8F0 !important;
     }}
 
     /* ================================================================
