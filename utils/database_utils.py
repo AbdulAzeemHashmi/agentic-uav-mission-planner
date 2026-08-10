@@ -294,3 +294,90 @@ def clone_mission(mission_id: int, new_name: str) -> int:
         "status":       original.get("status", "Needs Revision"),
     }
     return save_mission(cloned_meta, waypoints, safety_checks)
+
+
+def export_filtered_missions_batch_json(missions_list: list[dict[str, Any]]) -> str:
+    """
+    Generate JSON export payload for a list of missions with waypoints and safety checks
+    using optimized batch queries (2 SQL queries total instead of 3N).
+    """
+    import json
+    if not missions_list:
+        return "[]"
+
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+
+    mission_ids = [m["mission_id"] for m in missions_list]
+    placeholders = ",".join("?" * len(mission_ids))
+
+    # Load all waypoints for all missions in 1 query
+    cursor.execute(f"SELECT * FROM waypoints WHERE mission_id IN ({placeholders}) ORDER BY sequence_no ASC", mission_ids)
+    wps_by_mid: dict[int, list[dict[str, Any]]] = {}
+    for row in cursor.fetchall():
+        d = dict(row)
+        wps_by_mid.setdefault(d["mission_id"], []).append(d)
+
+    # Load all safety checks for all missions in 1 query
+    cursor.execute(f"SELECT * FROM safety_checks WHERE mission_id IN ({placeholders})", mission_ids)
+    checks_by_mid: dict[int, list[dict[str, Any]]] = {}
+    for row in cursor.fetchall():
+        d = dict(row)
+        checks_by_mid.setdefault(d["mission_id"], []).append(d)
+
+    conn.close()
+
+    export_payload = []
+    for m in missions_list:
+        mid = m["mission_id"]
+        export_payload.append({
+            "mission": m,
+            "waypoints": wps_by_mid.get(mid, []),
+            "safety_checks": checks_by_mid.get(mid, [])
+        })
+
+    return json.dumps(export_payload, indent=2, default=str)
+
+
+def import_mission_from_json(json_input: str | list | dict) -> list[int]:
+    """
+    Import mission(s) from a JSON string or parsed dict/list structure into SQLite.
+    Returns list of newly created mission_ids.
+    """
+    import json
+    if isinstance(json_input, str):
+        data = json.loads(json_input)
+    else:
+        data = json_input
+
+    if isinstance(data, dict):
+        items = [data]
+    elif isinstance(data, list):
+        items = data
+    else:
+        raise ValueError("Invalid JSON data for mission import.")
+
+    imported_ids = []
+    for item in items:
+        if "mission" in item and isinstance(item["mission"], dict):
+            mission_meta = item["mission"]
+            waypoints = item.get("waypoints", [])
+            safety_checks = item.get("safety_checks", [])
+        else:
+            mission_meta = {
+                "mission_name": item.get("mission_name", "Imported Mission"),
+                "mission_type": item.get("mission_type", "surveillance"),
+                "altitude": float(item.get("altitude", 50.0)),
+                "duration": float(item.get("duration", 15.0)),
+                "status": item.get("status", "Needs Revision"),
+            }
+            waypoints = item.get("waypoints", [])
+            safety_checks = item.get("safety_checks", [])
+
+        new_id = save_mission(mission_meta, waypoints, safety_checks)
+        imported_ids.append(new_id)
+
+    return imported_ids
+

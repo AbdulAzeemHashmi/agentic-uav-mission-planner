@@ -21,7 +21,8 @@ from agents.correction_agent import generate_corrections
 from utils.map_utils import create_mission_map
 from utils.database_utils import (
     save_mission, init_db, search_missions, get_mission_by_id,
-    get_mission_waypoint_count, clone_mission
+    get_mission_waypoint_count, clone_mission,
+    export_filtered_missions_batch_json, import_mission_from_json
 )
 from utils.export_utils import (
     export_mission_json, export_waypoints_csv, generate_pdf_report,
@@ -71,6 +72,13 @@ if "nl_extracted" not in st.session_state:
     st.session_state.nl_extracted = None
 if "drone_profile_key" not in st.session_state:
     st.session_state.drone_profile_key = "quadcopter_inspection"
+if "history_preview_id" not in st.session_state:
+    st.session_state.history_preview_id = None
+if "history_preview_name" not in st.session_state:
+    st.session_state.history_preview_name = ""
+if "history_preview_waypoints" not in st.session_state:
+    st.session_state.history_preview_waypoints = []
+
 
 
 if "square_side" not in st.session_state:
@@ -528,33 +536,30 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
-    /* Force Mission History filter widgets into a compact single horizontal row */
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) {{
+    /* Mission History filter widgets styling (scoped & responsive) */
+    div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: nowrap !important;
+        flex-wrap: wrap !important;
         align-items: flex-end !important;
         gap: 10px !important;
         width: 100% !important;
         margin-bottom: 0.6rem !important;
     }}
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) > div[data-testid="stColumn"] {{
-        flex: 1 1 0% !important;
-        min-width: 0 !important;
-        width: auto !important;
+    div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
+        flex: 1 1 160px !important;
+        min-width: 130px !important;
     }}
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) label,
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) [data-testid="stWidgetLabel"] {{
+    div.history-filter-bar label,
+    div.history-filter-bar [data-testid="stWidgetLabel"] {{
         margin-bottom: 0.15rem !important;
         font-size: 0.8rem !important;
         font-weight: 700 !important;
     }}
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="input"],
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="select"],
-    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) div[data-baseweb="select"] > div {{
+    div.history-filter-bar div[data-baseweb="input"],
+    div.history-filter-bar div[data-baseweb="select"],
+    div.history-filter-bar div[data-baseweb="select"] > div {{
         min-height: 36px !important;
-        height: 36px !important;
-        max-height: 36px !important;
     }}
 
     /* Select Dropdown Popups */
@@ -1328,7 +1333,22 @@ with col_left:
         st.subheader("📂 Mission History & Database")
         st.caption("Browse, search, filter, sort, export, clone, and delete saved missions from the local SQLite database.")
 
-        # ── Filter Row 1: Name | Status | Type ──────────────────────────────
+        # ── JSON Mission Import Section ─────────────────────────────────────
+        with st.expander("📥 Import Saved Mission JSON", expanded=False):
+            st.markdown("Upload a single or batch mission JSON file to restore into the database.")
+            uploaded_file = st.file_uploader("Choose a mission JSON file", type=["json"], key="import_mission_uploader")
+            if uploaded_file is not None:
+                if st.button("✅ Import to Database", key="btn_confirm_import", use_container_width=True):
+                    try:
+                        content = uploaded_file.read().decode("utf-8")
+                        imported_ids = import_mission_from_json(content)
+                        st.success(f"Successfully imported {len(imported_ids)} mission(s) into database! (IDs: {imported_ids})")
+                        st.rerun()
+                    except Exception as ie:
+                        st.error(f"Import failed: {ie}")
+
+        # ── Filters Wrapper (Scoped CSS) ───────────────────────────────────
+        st.markdown('<div class="history-filter-bar">', unsafe_allow_html=True)
         filt_col1, filt_col2, filt_col3 = st.columns([2, 1, 1])
         with filt_col1:
             name_search = st.text_input(
@@ -1346,7 +1366,6 @@ with col_left:
                 help="Filter missions by operational type."
             )
 
-        # ── Filter Row 2: Date From | Date To | Sort By | Sort Dir ──────────
         filt_col4, filt_col5, filt_col6, filt_col7 = st.columns([1, 1, 1, 1])
         with filt_col4:
             date_from = st.date_input(
@@ -1368,8 +1387,8 @@ with col_left:
                 "↕️ Order", ["DESC", "ASC"], horizontal=True,
                 help="Newest first (DESC) or oldest first (ASC)."
             )
+        st.markdown('</div>', unsafe_allow_html=True)
 
-        # Convert date inputs to ISO strings for the DB query
         date_from_str = date_from.strftime("%Y-%m-%d") if date_from else ""
         date_to_str   = date_to.strftime("%Y-%m-%d")   if date_to   else ""
 
@@ -1378,16 +1397,9 @@ with col_left:
             date_from_str, date_to_str, sort_by, sort_dir
         )
 
-        # ── Batch Export ─────────────────────────────────────────────────────
+        # ── Batch Export (Optimized 2-query batch function) ─────────────────
         if missions_list:
-            all_missions_export = []
-            for _m in missions_list:
-                try:
-                    _md, _mw, _mc = get_mission_by_id(_m["mission_id"])
-                    all_missions_export.append({"mission": _md, "waypoints": _mw, "safety_checks": _mc})
-                except Exception:
-                    all_missions_export.append({"mission": _m, "waypoints": [], "safety_checks": []})
-            batch_json = json.dumps(all_missions_export, indent=2, default=str)
+            batch_json = export_filtered_missions_batch_json(missions_list)
             st.download_button(
                 label=f"⬇️ Export All {len(missions_list)} Mission(s) as JSON",
                 data=batch_json,
@@ -1400,13 +1412,27 @@ with col_left:
         if not missions_list:
             st.info("No saved missions found. Complete a mission and click **Save Mission to Database** on the Safety Check page.")
         else:
-            # ── Pagination ───────────────────────────────────────────────────
-            page_size = 10
+            # ── Pagination & Bounds Sanitization ───────────────────────────
+            p_col1, p_col2 = st.columns([1, 2])
+            with p_col1:
+                page_size_val = st.selectbox("Items per page", [10, 20, 50, "All"], index=0, key="hist_page_size")
+
             total_missions = len(missions_list)
-            total_pages = (total_missions + page_size - 1) // page_size
+            if page_size_val == "All":
+                page_size = max(1, total_missions)
+            else:
+                page_size = int(page_size_val)
+
+            total_pages = max(1, (total_missions + page_size - 1) // page_size)
+
+            current_p = st.session_state.get("page_number", 1)
+            if current_p > total_pages:
+                st.session_state["page_number"] = 1
+                current_p = 1
 
             if total_pages > 1:
-                page_number = st.selectbox("Page", range(1, total_pages + 1), key="page_number")
+                with p_col2:
+                    page_number = st.selectbox("Page", range(1, total_pages + 1), key="page_number")
                 start_idx = (page_number - 1) * page_size
                 end_idx = min(start_idx + page_size, total_missions)
                 page_missions = missions_list[start_idx:end_idx]
@@ -1423,11 +1449,10 @@ with col_left:
             for m_row in page_missions:
                 mid       = m_row["mission_id"]
                 m_status  = m_row.get("status", "")
-                wp_count  = get_mission_waypoint_count(mid)          # L7: waypoint count
+                wp_count  = get_mission_waypoint_count(mid)
                 status_color    = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
                 status_badge_bg = "rgba(16,185,129,0.14)" if m_status == "Safe" else ("rgba(239,68,68,0.14)" if m_status == "Unsafe" else "rgba(245,158,11,0.14)")
 
-                # L7: waypoint count shown in expander header
                 expander_label = (
                     f"{'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}  │  "
                     f"#{mid} • {m_row['mission_name']} "
@@ -1459,7 +1484,25 @@ with col_left:
                             </div>
                         """, unsafe_allow_html=True)
 
-                        # ── L2: Inline Waypoint Table ─────────────────────
+                        # ── Safety Check Detailed Breakdown Table ────────────────
+                        try:
+                            _, _, m_checks_detail = get_mission_by_id(mid)
+                            if m_checks_detail:
+                                with st.expander(f"🛡️ Safety Audit Breakdown ({len(m_checks_detail)} rules evaluated)", expanded=False):
+                                    checks_df = pd.DataFrame(m_checks_detail)[["check_name", "result", "message"]]
+                                    st.dataframe(
+                                        checks_df,
+                                        use_container_width=True,
+                                        column_config={
+                                            "check_name": st.column_config.TextColumn("Rule Name", width="medium"),
+                                            "result": st.column_config.TextColumn("Status", width="small"),
+                                            "message": st.column_config.TextColumn("Audit Log Details", width="large"),
+                                        }
+                                    )
+                        except Exception:
+                            pass
+
+                        # ── Inline Waypoint Table ─────────────────────
                         if wp_count > 0:
                             try:
                                 _, m_wps_preview, _ = get_mission_by_id(mid)
@@ -1472,7 +1515,7 @@ with col_left:
                                 st.dataframe(
                                     df_preview,
                                     use_container_width=True,
-                                    height=min(250, 38 + len(df_preview) * 35),
+                                    height=min(220, 38 + len(df_preview) * 35),
                                     column_config={
                                         "sequence_no": st.column_config.NumberColumn("Seq #",    format="%d",    width="small"),
                                         "latitude":    st.column_config.NumberColumn("Lat",      format="%.6f"),
@@ -1486,9 +1529,28 @@ with col_left:
 
                     with detail_col2:
                         st.markdown(
-                            f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};margin-bottom:0.4rem'>⚡ Actions</div>",
+                            f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};margin-bottom:0.4rem'>⚡ Actions & Controls</div>",
                             unsafe_allow_html=True
                         )
+
+                        # ── Map Preview Action Button ──────────────────────
+                        is_currently_previewing = (st.session_state.get("history_preview_id") == mid)
+                        if is_currently_previewing:
+                            if st.button(f"⏹️ Stop Map Preview", key=f"preview_stop_{mid}", use_container_width=True):
+                                st.session_state.history_preview_id = None
+                                st.session_state.history_preview_name = ""
+                                st.session_state.history_preview_waypoints = []
+                                st.rerun()
+                        else:
+                            if st.button(f"👁️ Preview on Map #{mid}", key=f"preview_start_{mid}", use_container_width=True, help="Display this mission route on the right-hand map visualizer."):
+                                try:
+                                    _, m_wps_prev, _ = get_mission_by_id(mid)
+                                    st.session_state.history_preview_id = mid
+                                    st.session_state.history_preview_name = m_row['mission_name']
+                                    st.session_state.history_preview_waypoints = m_wps_prev
+                                    st.rerun()
+                                except Exception as pe:
+                                    st.error(f"Failed to preview map: {pe}")
 
                         # ── Load Mission ─────────────────────────────────
                         if st.button(f"📂 Load Mission #{mid}", key=f"load_mission_{mid}",
@@ -1510,7 +1572,7 @@ with col_left:
                             except Exception as e:
                                 st.error(f"Error loading mission: {e}")
 
-                        # ── L4: Clone Mission ─────────────────────────────
+                        # ── Clone Mission ─────────────────────────────
                         with st.popover(f"🗂️ Clone Mission #{mid}", use_container_width=True):
                             st.markdown(f"**Clone Mission #{mid}** — create a duplicate you can edit independently.")
                             clone_name = st.text_input(
@@ -1532,72 +1594,97 @@ with col_left:
                             if st.button(f"Yes, Delete #{mid}", key=f"confirm_delete_{mid}", use_container_width=True):
                                 from utils.database_utils import delete_mission
                                 delete_mission(mid)
+                                if st.session_state.get("history_preview_id") == mid:
+                                    st.session_state.history_preview_id = None
+                                    st.session_state.history_preview_name = ""
+                                    st.session_state.history_preview_waypoints = []
                                 st.success(f"Mission #{mid} deleted.")
                                 st.rerun()
 
-                        # ── L3: Per-Mission Exports ───────────────────────
-                        st.markdown(
-                            f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};"
-                            f"margin-top:0.6rem;margin-bottom:0.3rem'>📤 Export This Mission</div>",
-                            unsafe_allow_html=True
-                        )
-                        try:
-                            _md, _mw, _mc = get_mission_by_id(mid)
-                            _meta = {
-                                "mission_name": _md["mission_name"],
-                                "mission_type": _md["mission_type"],
-                                "altitude":     _md["altitude"],
-                                "duration":     _md["duration"],
-                                "status":       _md.get("status", "Unknown"),
-                                "created_at":   _md.get("created_at", ""),
-                            }
-                            _fn = _md["mission_name"].replace(" ", "_")[:40]
+                        # ── Compact Per-Mission Export Popover ─────────────
+                        with st.popover(f"📤 Export Mission #{mid}...", use_container_width=True):
+                            st.markdown(f"**Export Mission #{mid} Formats:**")
+                            try:
+                                _md, _mw, _mc = get_mission_by_id(mid)
+                                _meta = {
+                                    "mission_name": _md["mission_name"],
+                                    "mission_type": _md["mission_type"],
+                                    "altitude":     _md["altitude"],
+                                    "duration":     _md["duration"],
+                                    "status":       _md.get("status", "Unknown"),
+                                    "created_at":   _md.get("created_at", ""),
+                                }
+                                _fn = _md["mission_name"].replace(" ", "_")[:40]
 
-                            st.download_button(
-                                "⬇️ JSON",
-                                data=export_mission_json(_meta, _mw, _mc),
-                                file_name=f"{_fn}.json", mime="application/json",
-                                use_container_width=True, key=f"exp_json_{mid}"
-                            )
-                            st.download_button(
-                                "⬇️ CSV Waypoints",
-                                data=export_waypoints_csv(_mw),
-                                file_name=f"{_fn}_waypoints.csv", mime="text/csv",
-                                use_container_width=True, key=f"exp_csv_{mid}"
-                            )
-                            st.download_button(
-                                "🛸 QGroundControl (.plan)",
-                                data=export_qgroundcontrol_plan(_meta, _mw),
-                                file_name=f"{_fn}.plan", mime="application/json",
-                                use_container_width=True, key=f"exp_plan_{mid}"
-                            )
-                            st.download_button(
-                                "✈️ ArduPilot (.waypoints)",
-                                data=export_ardupilot_waypoints(_mw),
-                                file_name=f"{_fn}.waypoints", mime="text/plain",
-                                use_container_width=True, key=f"exp_wp_{mid}"
-                            )
-                            st.download_button(
-                                "🌍 Google Earth (.kml)",
-                                data=export_kml_format(_meta, _mw),
-                                file_name=f"{_fn}.kml",
-                                mime="application/vnd.google-earth.kml+xml",
-                                use_container_width=True, key=f"exp_kml_{mid}"
-                            )
-                        except Exception as _ex:
-                            st.caption(f"Export unavailable: {_ex}")
+                                st.download_button(
+                                    "⬇️ JSON Format",
+                                    data=export_mission_json(_meta, _mw, _mc),
+                                    file_name=f"{_fn}.json", mime="application/json",
+                                    use_container_width=True, key=f"exp_json_{mid}"
+                                )
+                                st.download_button(
+                                    "⬇️ CSV Waypoints",
+                                    data=export_waypoints_csv(_mw),
+                                    file_name=f"{_fn}_waypoints.csv", mime="text/csv",
+                                    use_container_width=True, key=f"exp_csv_{mid}"
+                                )
+                                st.download_button(
+                                    "🛸 QGroundControl (.plan)",
+                                    data=export_qgroundcontrol_plan(_meta, _mw),
+                                    file_name=f"{_fn}.plan", mime="application/json",
+                                    use_container_width=True, key=f"exp_plan_{mid}"
+                                )
+                                st.download_button(
+                                    "✈️ ArduPilot (.waypoints)",
+                                    data=export_ardupilot_waypoints(_mw),
+                                    file_name=f"{_fn}.waypoints", mime="text/plain",
+                                    use_container_width=True, key=f"exp_wp_{mid}"
+                                )
+                                st.download_button(
+                                    "🌍 Google Earth (.kml)",
+                                    data=export_kml_format(_meta, _mw),
+                                    file_name=f"{_fn}.kml",
+                                    mime="application/vnd.google-earth.kml+xml",
+                                    use_container_width=True, key=f"exp_kml_{mid}"
+                                )
+                            except Exception as _ex:
+                                st.caption(f"Export unavailable: {_ex}")
 
 
 with col_right:
-    st.markdown(f"""
-        <div style="background-color:{box_bg};border:1px solid {border_col};border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
-            <span style="font-weight:700;color:{box_text};font-size:1rem">🗺️ Live GCS Mission Radar & Airspace</span>
-            <span style="font-size:0.78rem;background:{map_badge_bg};color:{map_badge_fg};padding:3px 8px;border-radius:6px;font-weight:600">{map_badge_text}</span>
-        </div>
-    """, unsafe_allow_html=True)
+    is_history_preview = (
+        st.session_state.current_page == "Mission History"
+        and st.session_state.get("history_preview_id") is not None
+        and len(st.session_state.get("history_preview_waypoints", [])) > 0
+    )
+
+    if is_history_preview:
+        map_waypoints = st.session_state.history_preview_waypoints
+        preview_mid = st.session_state.history_preview_id
+        preview_name = st.session_state.history_preview_name
+
+        st.markdown(f"""
+            <div style="background-color:{box_bg};border:1px solid #00C6FF;border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-weight:700;color:#00C6FF;font-size:0.95rem">🗺️ Map Preview: Mission #{preview_mid} - {preview_name}</span>
+                <span style="font-size:0.78rem;background:rgba(0,198,255,0.2);color:#00C6FF;padding:3px 8px;border-radius:6px;font-weight:600">HISTORICAL PREVIEW</span>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("⏹️ Reset Map to Active Session", key="clear_map_preview_btn", use_container_width=True):
+            st.session_state.history_preview_id = None
+            st.session_state.history_preview_name = ""
+            st.session_state.history_preview_waypoints = []
+            st.rerun()
+    else:
+        st.markdown(f"""
+            <div style="background-color:{box_bg};border:1px solid {border_col};border-radius:12px;padding:0.75rem 1rem;margin-bottom:0.75rem;display:flex;align-items:center;justify-content:space-between">
+                <span style="font-weight:700;color:{box_text};font-size:1rem">🗺️ Live GCS Mission Radar & Airspace</span>
+                <span style="font-size:0.78rem;background:{map_badge_bg};color:{map_badge_fg};padding:3px 8px;border-radius:6px;font-weight:600">{map_badge_text}</span>
+            </div>
+        """, unsafe_allow_html=True)
+        map_waypoints = st.session_state.generated_waypoints
 
     m, map_bounds_live = create_mission_map(
-        st.session_state.generated_waypoints,
+        map_waypoints,
         (st.session_state.home_lat, st.session_state.home_lon),
         dark_map=is_dark
     )
@@ -1610,5 +1697,5 @@ with col_right:
         m,
         use_container_width=True,
         height=620,
-        key=f"gcs_map_{len(st.session_state.generated_waypoints)}_{st.session_state.theme}"
+        key=f"gcs_map_{len(map_waypoints)}_{st.session_state.theme}_{st.session_state.get('history_preview_id', 'active')}"
     )
