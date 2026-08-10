@@ -542,24 +542,39 @@ st.markdown(f"""
         flex-direction: row !important;
         flex-wrap: wrap !important;
         align-items: flex-end !important;
-        gap: 10px !important;
+        gap: 12px !important;
         width: 100% !important;
         margin-bottom: 0.6rem !important;
     }}
     div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
         flex: 1 1 160px !important;
         min-width: 130px !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: flex-end !important;
     }}
     div.history-filter-bar label,
-    div.history-filter-bar [data-testid="stWidgetLabel"] {{
+    div.history-filter-bar [data-testid="stWidgetLabel"],
+    div.history-filter-bar [data-testid="stWidgetLabel"] p {{
         margin-bottom: 0.15rem !important;
         font-size: 0.8rem !important;
         font-weight: 700 !important;
+        color: {box_text} !important;
     }}
     div.history-filter-bar div[data-baseweb="input"],
     div.history-filter-bar div[data-baseweb="select"],
     div.history-filter-bar div[data-baseweb="select"] > div {{
-        min-height: 36px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+    }}
+    /* Radio Option Text Visibility in Dark Mode */
+    div[data-testid="stRadio"] label,
+    div[data-testid="stRadio"] label span,
+    div[data-testid="stRadio"] label p,
+    div[data-testid="stRadio"] div[role="radiogroup"] span {{
+        color: {box_text} !important;
+        -webkit-text-fill-color: {box_text} !important;
+        font-weight: 600 !important;
     }}
 
     /* Select Dropdown Popups */
@@ -1383,10 +1398,13 @@ with col_left:
                 help="Column used to sort the results."
             )
         with filt_col7:
-            sort_dir = st.radio(
-                "↕️ Order", ["DESC", "ASC"], horizontal=True,
+            sort_dir_choice = st.selectbox(
+                "↕️ Order",
+                ["DESC (Newest)", "ASC (Oldest)"],
+                index=0,
                 help="Newest first (DESC) or oldest first (ASC)."
             )
+            sort_dir = "DESC" if "DESC" in sort_dir_choice else "ASC"
         st.markdown('</div>', unsafe_allow_html=True)
 
         date_from_str = date_from.strftime("%Y-%m-%d") if date_from else ""
@@ -1452,11 +1470,11 @@ with col_left:
                 wp_count  = get_mission_waypoint_count(mid)
                 status_color    = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
                 status_badge_bg = "rgba(16,185,129,0.14)" if m_status == "Safe" else ("rgba(239,68,68,0.14)" if m_status == "Unsafe" else "rgba(245,158,11,0.14)")
+                status_icon     = "🟢" if m_status == "Safe" else ("🔴" if m_status == "Unsafe" else "⚠️")
 
                 expander_label = (
-                    f"{'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}  │  "
-                    f"#{mid} • {m_row['mission_name']} "
-                    f"({m_row['altitude']}m / {m_row['duration']}min / {wp_count} WPs)"
+                    f"{status_icon} Mission #{mid} — {m_row['mission_name']}  "
+                    f"[{m_status.upper()}]  │  {m_row['altitude']}m alt  •  {m_row['duration']}min duration  •  {wp_count} WPs"
                 )
 
                 with st.expander(expander_label, expanded=False):
