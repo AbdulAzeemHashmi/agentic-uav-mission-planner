@@ -97,30 +97,37 @@ pages = ["Home", "Mission Input", "Mission Plan", "Map View", "Safety Check", "S
 if st.session_state.current_page not in pages:
     st.session_state.current_page = "Home"
 
-# Define Theme Tokens:
-# ENHANCED VISUAL HIERARCHY - Page background darker, cards slightly lighter
+# ================================================================
+# DEFINE THEME TOKENS - ENHANCED VISUAL HIERARCHY
+# ================================================================
+# The key fix: Page background, sidebar, and boxes now have DIFFERENT colors
+# This creates depth and visual separation between UI layers
+
 is_dark = (st.session_state.theme == "Dark")
 
-# Dark Mode: Deep navy page, lighter slate cards, dark map tiles
-# Light Mode: Off-white page, white cards, light map tiles
-page_bg        = "#0A0A12" if is_dark else "#F0F2F6"
+# DARK MODE: Page is dark, sidebar is darker, boxes are lighter
+# LIGHT MODE: Page is light gray, sidebar is lighter gray, boxes are white
+page_bg        = "#0A0A12" if is_dark else "#EBEEF2"      # Darkest / Lightest gray
+sidebar_bg     = "#06060E" if is_dark else "#E8ECF0"      # Darker than page / Lighter than page
+box_bg         = "#181828" if is_dark else "#FFFFFF"      # Lighter than page / Pure white
+
 page_text      = "#E8EAF0" if is_dark else "#1A1A2E"
-box_bg         = "#1A1A2E" if is_dark else "#FFFFFF"
 box_text       = "#E8EAF0" if is_dark else "#1A1A2E"
-sidebar_bg     = "#080810" if is_dark else "#F1F5F9"
-sidebar_border = "#22223A" if is_dark else "#CBD5E1"
+sidebar_border = "#1E1E2E" if is_dark else "#CBD5E1"
 sidebar_text   = "#E8EAF0" if is_dark else "#1A1A2E"
 btn_bg         = "#13131F" if is_dark else "#F8FAFC"
 btn_border     = "#2A2A44" if is_dark else "#CBD5E1"
 border_col     = "#2A2A44" if is_dark else "#CBD5E1"
 th_bg          = "#252540" if is_dark else "#F1F5F9"
 caption_col    = "#A0AEC0" if is_dark else "#4A5568"
-map_bg_col     = "#0A0A12" if is_dark else "#F0F2F6"
+map_bg_col     = "#0A0A12" if is_dark else "#EBEEF2"
 map_badge_text = "CARTO Dark Matter (Dark Map)" if is_dark else "CARTO Positron (Light Map)"
 map_badge_bg   = "#1E1E2E" if is_dark else "#F1F5F9"
 map_badge_fg   = "#E8EAF0" if is_dark else "#1A1A2E"
 
-# Enhanced CSS with visual hierarchy, distinct backgrounds, and polish
+# ================================================================
+# UPDATED CSS WITH VISUAL HIERARCHY - DIFFERENT BACKGROUNDS FOR EACH LAYER
+# ================================================================
 st.markdown(f"""
     <style>
     :root {{
@@ -138,10 +145,8 @@ st.markdown(f"""
         --shadow-sm: 0 2px 8px rgba(0,0,0,0.06);
         --shadow-md: 0 8px 32px rgba(0,0,0,0.12);
         --shadow-lg: 0 16px 48px rgba(0,0,0,0.18);
-        --shadow-xl: 0 24px 64px rgba(0,0,0,0.24);
         --accent-start: #00C6FF;
         --accent-end: #0072FF;
-        --accent-glow: rgba(0,114,255,0.15);
     }}
 
     * {{
@@ -149,7 +154,7 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       ROOT PAGE WITH SUBTLE BACKGROUND PATTERN
+       PAGE BACKGROUND - Darkest in Dark Mode, Lightest gray in Light Mode
        ================================================================ */
 
     body, .stApp {{
@@ -205,33 +210,78 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       FOCUS STATES FOR KEYBOARD ACCESSIBILITY
+       SIDEBAR - Darker than page in Dark Mode, Lighter in Light Mode
        ================================================================ */
 
-    button:focus-visible,
-    input:focus-visible,
-    select:focus-visible,
-    textarea:focus-visible,
-    div[data-baseweb="input"]:focus-within {{
-        outline: 3px solid #0072FF !important;
-        outline-offset: 2px !important;
-        box-shadow: 0 0 0 4px rgba(0,114,255,0.15) !important;
+    section[data-testid="stSidebar"] {{
+        background-color: {sidebar_bg} !important;
+        border-right: 1px solid {sidebar_border} !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.12) !important;
+        position: relative !important;
+        z-index: 100 !important;
+    }}
+    section[data-testid="stSidebar"] .block-container {{
+        padding-top: 0.5cm !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }}
+    section[data-testid="stSidebar"] h1,
+    section[data-testid="stSidebar"] h2,
+    section[data-testid="stSidebar"] h3,
+    section[data-testid="stSidebar"] p,
+    section[data-testid="stSidebar"] span,
+    section[data-testid="stSidebar"] label {{
+        color: {sidebar_text} !important;
+    }}
+
+    /* Sidebar Navigation Buttons */
+    section[data-testid="stSidebar"] div.stButton > button {{
+        background-color: {btn_bg} !important;
+        color: {sidebar_text} !important;
+        border: 1px solid {btn_border} !important;
+        border-radius: var(--radius-sm) !important;
+        font-size: 0.9rem !important;
+        font-weight: 600 !important;
+        padding: var(--spacing-sm) var(--spacing-md) !important;
+        margin-bottom: 0.25rem !important;
+        transition: all 0.2s ease-in-out !important;
+        width: 100% !important;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
+    }}
+    section[data-testid="stSidebar"] div.stButton > button:hover {{
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
+        border-color: #0072FF !important;
+        transform: translateX(3px);
+        box-shadow: 0 4px 12px rgba(0,114,255,0.25) !important;
+    }}
+
+    /* Sidebar Section Headers */
+    .sidebar-section-label {{
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: {caption_col};
+        padding: 0.5rem 0 0.25rem 0.25rem;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+        margin-bottom: 0.5rem;
     }}
 
     /* ================================================================
-       BRANDING CARD - ENHANCED WITH GRADIENT AND GLOW
+       BRANDING CARD - Enhanced with gradient and glow
        ================================================================ */
 
     .app-branding-card {{
         background: linear-gradient(135deg, 
-            rgba(0,114,255,0.12) 0%, 
-            rgba(0,198,255,0.06) 100%
+            rgba(0,114,255,0.10) 0%, 
+            rgba(0,198,255,0.05) 100%
         );
-        border: 1px solid rgba(0,114,255,{0.25 if is_dark else 0.15});
+        border: 1px solid rgba(0,114,255,{0.25 if is_dark else 0.12});
         border-radius: var(--radius-xl);
         padding: var(--spacing-lg) var(--spacing-xl);
         margin: 0.85rem 0 1rem 0;
-        box-shadow: 0 18px 40px rgba(0,0,0,0.15);
+        box-shadow: 0 18px 40px rgba(0,0,0,0.12);
         animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
         position: relative;
@@ -244,12 +294,12 @@ st.markdown(f"""
         left: -50%;
         width: 200%;
         height: 200%;
-        background: radial-gradient(circle at 70% 30%, rgba(0,198,255,0.05), transparent 60%);
+        background: radial-gradient(circle at 70% 30%, rgba(0,198,255,0.04), transparent 60%);
         pointer-events: none;
     }}
     .app-branding-card:hover {{
         transform: translateY(-3px);
-        box-shadow: 0 26px 68px rgba(0,0,0,0.22);
+        box-shadow: 0 26px 68px rgba(0,0,0,0.18);
     }}
     .app-branding-kicker {{
         font-size: 0.8rem;
@@ -291,73 +341,16 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       SIDEBAR - ENHANCED WITH BETTER VISUAL SEPARATION
-       ================================================================ */
-
-    section[data-testid="stSidebar"] {{
-        background-color: {sidebar_bg} !important;
-        border-right: 1px solid {sidebar_border} !important;
-        box-shadow: 4px 0 24px rgba(0,0,0,0.08) !important;
-    }}
-    section[data-testid="stSidebar"] .block-container {{
-        padding-top: 0.5cm !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
-    }}
-    section[data-testid="stSidebar"] h1,
-    section[data-testid="stSidebar"] h2,
-    section[data-testid="stSidebar"] h3,
-    section[data-testid="stSidebar"] p,
-    section[data-testid="stSidebar"] span,
-    section[data-testid="stSidebar"] label {{
-        color: {sidebar_text} !important;
-    }}
-
-    /* Sidebar Navigation Buttons - Enhanced */
-    section[data-testid="stSidebar"] div.stButton > button {{
-        background-color: {btn_bg} !important;
-        color: {sidebar_text} !important;
-        border: 1px solid {btn_border} !important;
-        border-radius: var(--radius-sm) !important;
-        font-size: 0.9rem !important;
-        font-weight: 600 !important;
-        padding: var(--spacing-sm) var(--spacing-md) !important;
-        margin-bottom: 0.25rem !important;
-        transition: all 0.2s ease-in-out !important;
-        width: 100% !important;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.04) !important;
-    }}
-    section[data-testid="stSidebar"] div.stButton > button:hover {{
-        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
-        color: #FFFFFF !important;
-        border-color: #0072FF !important;
-        transform: translateX(3px);
-        box-shadow: 0 4px 12px rgba(0,114,255,0.25) !important;
-    }}
-
-    /* Sidebar Section Headers */
-    .sidebar-section-label {{
-        font-size: 0.7rem;
-        font-weight: 700;
-        letter-spacing: 0.08em;
-        text-transform: uppercase;
-        color: {caption_col};
-        padding: 0.5rem 0 0.25rem 0.25rem;
-        border-bottom: 1px solid rgba(255,255,255,0.06);
-        margin-bottom: 0.5rem;
-    }}
-
-    /* ================================================================
-       METRICS CARDS - ENHANCED WITH GRADIENT ACCENT AND DEPTH
+       METRICS CARDS - With gradient accent bar
        ================================================================ */
 
     div[data-testid="stMetric"],
     [data-testid="stMetric"] {{
         background: linear-gradient(145deg, 
             {box_bg} 0%, 
-            {box_bg if is_dark else '#F8FAFC'} 100%
+            {'rgba(0,114,255,0.02)' if is_dark else '#F8FAFC'} 100%
         ) !important;
-        border: 1px solid rgba(0,114,255,0.10) !important;
+        border: 1px solid rgba(0,114,255,0.08) !important;
         padding: 0.75rem 1rem !important;
         border-radius: var(--radius-md) !important;
         box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
@@ -411,19 +404,19 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       CUSTOM CARDS - ENHANCED WITH SUBTLE GRADIENT AND DEPTH
+       CARDS - Lighter than page, with shadows and hover effects
        ================================================================ */
 
     .uav-card {{
         background: linear-gradient(145deg, 
             {box_bg} 0%, 
-            {box_bg if is_dark else '#F8FAFC'} 100%
+            {'rgba(0,114,255,0.01)' if is_dark else '#F8FAFC'} 100%
         ) !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: var(--radius-xl) !important;
         padding: var(--spacing-lg) var(--spacing-xl);
         margin-bottom: 1rem !important;
-        box-shadow: var(--shadow-md) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
         color: {box_text} !important;
         transition: transform 0.25s ease, box-shadow 0.25s ease !important;
         word-break: break-word !important;
@@ -434,7 +427,7 @@ st.markdown(f"""
     }}
     .uav-card:hover {{
         transform: translateY(-2px);
-        box-shadow: var(--shadow-lg) !important;
+        box-shadow: 0 16px 48px rgba(0,0,0,0.14) !important;
     }}
     .uav-card *,
     .uav-card-title,
@@ -454,7 +447,7 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       ALERT BOXES - ENHANCED VISIBILITY
+       ALERT BOXES
        ================================================================ */
 
     div[data-testid="stAlert"],
@@ -462,12 +455,9 @@ st.markdown(f"""
     div[data-baseweb="notification"],
     div[kind="info"],
     div[kind="warning"] {{
-        background: linear-gradient(145deg, 
-            {box_bg} 0%, 
-            {box_bg if is_dark else '#F8FAFC'} 100%
-        ) !important;
+        background: {box_bg} !important;
         color: {box_text} !important;
-        border: 1px solid rgba(0,114,255,0.12) !important;
+        border: 1px solid rgba(0,114,255,0.10) !important;
         border-radius: var(--radius-md) !important;
         padding: var(--spacing-md) var(--spacing-lg) !important;
         box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
@@ -498,7 +488,7 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       BUTTONS - ENHANCED WITH GRADIENTS AND HOVER EFFECTS
+       BUTTONS
        ================================================================ */
 
     /* Primary Action Buttons */
@@ -518,10 +508,6 @@ st.markdown(f"""
         box-shadow: 0 6px 28px rgba(0,198,255,0.4) !important;
         transform: translateY(-2px);
         background: linear-gradient(135deg, #00D4FF 0%, #0084FF 100%) !important;
-    }}
-    div.stButton > button:active {{
-        transform: translateY(0px);
-        box-shadow: 0 2px 8px rgba(0,198,255,0.3) !important;
     }}
 
     /* Secondary Buttons */
@@ -565,17 +551,14 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       FORM CONTROLS - ENHANCED WITH BETTER VISIBILITY
+       FORM CONTROLS
        ================================================================ */
 
     div[data-baseweb="input"],
     div[data-baseweb="select"],
     textarea,
     input {{
-        background: linear-gradient(145deg, 
-            {box_bg} 0%, 
-            {box_bg if is_dark else '#F8FAFC'} 100%
-        ) !important;
+        background: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid rgba(255,255,255,0.08) !important;
         border-radius: var(--radius-sm) !important;
@@ -609,16 +592,13 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       DATA FRAME - ENHANCED WITH BETTER BORDERS
+       DATA FRAME
        ================================================================ */
 
     .dataframe,
     [data-testid="stDataFrame"],
     [data-testid="stDataEditor"] {{
-        background: linear-gradient(145deg, 
-            {box_bg} 0%, 
-            {box_bg if is_dark else '#F8FAFC'} 100%
-        ) !important;
+        background: {box_bg} !important;
         color: {box_text} !important;
         border: 1px solid rgba(255,255,255,0.06) !important;
         border-radius: var(--radius-sm) !important;
@@ -646,7 +626,7 @@ st.markdown(f"""
     }}
 
     /* ================================================================
-       MAP - ENHANCED WITH GLOW BORDER
+       MAP
        ================================================================ */
 
     iframe[title="streamlit_folium.st_folium"],
@@ -654,7 +634,7 @@ st.markdown(f"""
         background-color: {map_bg_col} !important;
         border: 1px solid rgba(0,114,255,0.08) !important;
         border-radius: var(--radius-xl) !important;
-        box-shadow: 0 8px 32px rgba(0,0,0,0.12) !important;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.10) !important;
         margin: 0 !important;
         padding: 0 !important;
         display: block !important;
@@ -840,21 +820,9 @@ st.markdown(f"""
         .uav-card {{
             padding: var(--spacing-md) var(--spacing-lg) !important;
         }}
-        /* History filters stack on mobile */
-        div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
-            flex-wrap: wrap !important;
-        }}
-        div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
-            flex: 1 1 45% !important;
-            min-width: 120px !important;
-        }}
     }}
 
     @media screen and (max-width: 480px) {{
-        div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
-            flex: 1 1 100% !important;
-            min-width: unset !important;
-        }}
         .app-branding-card {{
             padding: var(--spacing-md) var(--spacing-lg) !important;
         }}
