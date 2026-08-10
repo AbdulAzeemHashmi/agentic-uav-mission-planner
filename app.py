@@ -423,20 +423,65 @@ st.markdown(f"""
         transform: translateY(-1px);
     }}
 
-    /* Download Buttons */
-    div.stDownloadButton > button {{
+    /* Secondary / Destructive Buttons (inside expanders and cards) */
+    div.stButton > button[kind="secondary"],
+    div.stButton > button.secondary-btn {{
         background: {box_bg} !important;
         color: {box_text} !important;
-        border: 1px solid #0072FF !important;
+        border: 1px solid {border_col} !important;
+        box-shadow: none !important;
+    }}
+    div.stButton > button.secondary-btn:hover {{
+        border-color: #0072FF !important;
+        color: #0072FF !important;
+    }}
+
+    /* Clear Extraction small button: visible secondary style */
+    button[data-testid="baseButton-secondary"],
+    div[data-testid="stButton"] > button[kind="secondary"] {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 1px solid {border_col} !important;
+        font-weight: 600 !important;
+        box-shadow: none !important;
+    }}
+    button[data-testid="baseButton-secondary"]:hover {{
+        background: rgba(0, 114, 255, 0.12) !important;
+        border-color: #0072FF !important;
+        color: #0072FF !important;
+    }}
+
+    /* Download Buttons - always visible with explicit contrast */
+    div.stDownloadButton > button,
+    [data-testid="stDownloadButton"] > button {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 2px solid #0072FF !important;
         border-radius: var(--radius-sm) !important;
         font-weight: 700 !important;
+        font-size: 0.88rem !important;
         padding: 0.6rem 1rem !important;
         transition: all 0.2s ease-in-out !important;
     }}
-    div.stDownloadButton > button:hover {{
+    div.stDownloadButton > button:hover,
+    [data-testid="stDownloadButton"] > button:hover {{
         background: #0072FF !important;
         color: #FFFFFF !important;
         box-shadow: 0 4px 16px rgba(0, 114, 255, 0.3) !important;
+    }}
+
+    /* Buttons inside st.expander - force visible styling */
+    details div.stButton > button {{
+        background: linear-gradient(135deg, #00C6FF 0%, #0072FF 100%) !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        font-weight: 700 !important;
+    }}
+    details div.stDownloadButton > button {{
+        background: {box_bg} !important;
+        color: {box_text} !important;
+        border: 2px solid #0072FF !important;
+        font-weight: 700 !important;
     }}
 
     /* Form Controls */
@@ -478,10 +523,19 @@ st.markdown(f"""
         background-color: {th_bg} !important;
         color: {box_text} !important;
         font-weight: 700 !important;
+        white-space: nowrap !important;
+        padding: 0.4rem 0.6rem !important;
     }}
     .dataframe td, [data-testid="stDataFrame"] td, [data-testid="stDataEditor"] td {{
         background-color: {box_bg} !important;
         color: {box_text} !important;
+        padding: 0.35rem 0.6rem !important;
+    }}
+    /* Dataframe wrapper: no overflow clip, proper scroll */
+    [data-testid="stDataFrame"] > div,
+    [data-testid="stDataEditor"] > div {{
+        border-radius: var(--radius-sm) !important;
+        overflow: auto !important;
     }}
 
     /* Custom Card Containers */
@@ -501,7 +555,6 @@ st.markdown(f"""
     }}
 
     /* Map Background & Zero White Gap Below Map */
-    /* NOTE: stElementContainer intentionally excluded to avoid styling all page elements */
     iframe[title="streamlit_folium.st_folium"],
     div[data-testid="stCustomComponentV1"] {{
         background-color: {map_bg_col} !important;
@@ -509,21 +562,30 @@ st.markdown(f"""
         border: none !important;
         border-radius: 12px !important;
         box-shadow: none !important;
-        margin-bottom: 0 !important;
-        padding-bottom: 0 !important;
-        vertical-align: bottom !important;
+        margin: 0 !important;
+        padding: 0 !important;
         display: block !important;
+        line-height: 0 !important;
     }}
-    /* Target the specific iframe wrapper to remove the white gap */
     div[data-testid="stCustomComponentV1"] > div,
-    div[data-testid="stCustomComponentV1"] iframe {{
+    div[data-testid="stCustomComponentV1"] iframe,
+    [data-testid="stIFrame"],
+    [data-testid="stIFrame"] > iframe {{
         background-color: {map_bg_col} !important;
         margin: 0 !important;
         padding: 0 !important;
         border: none !important;
         display: block !important;
+        line-height: 0 !important;
+        vertical-align: bottom !important;
     }}
-    .leaflet-container, .folium-map, #map {{
+    /* Kill any bottom spacing Streamlit injects below the iframe component */
+    div[data-testid="stCustomComponentV1"] ~ div[data-testid="stVerticalBlock"],
+    div[data-testid="stElementContainer"]:has(iframe) {{
+        margin-bottom: 0 !important;
+        padding-bottom: 0 !important;
+    }}
+    .leaflet-container, .folium-map {{
         background-color: {map_bg_col} !important;
         background: {map_bg_col} !important;
         border-radius: 12px !important;
@@ -572,7 +634,7 @@ if not GENAI_AVAILABLE:
     st.sidebar.markdown(
         "<div style='background:#3A1A10;border:1px solid #C05621;border-radius:6px;"
         "padding:6px 10px;font-size:0.75rem;color:#FBD38D;margin-bottom:0.5rem'>"
-        "⚠️ <b>Gemini AI unavailable</b> — using regex fallback.</div>",
+        "⚠️ <b>Gemini AI unavailable</b> - using regex fallback.</div>",
         unsafe_allow_html=True
     )
 
@@ -784,17 +846,25 @@ with col_left:
                 <div class="uav-card" style="border-left:4px solid #0072FF;margin-top:0.6rem">
                     <div style="font-size:0.8rem;font-weight:700;color:{box_text};margin-bottom:0.5rem">🔍 Extracted Parameters</div>
                     <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;font-size:0.82rem;color:{box_text}">
-                        <div><b>Name:</b> {ex.get('mission_name','—')}</div>
-                        <div><b>Type:</b> {ex.get('mission_type','—')}</div>
-                        <div><b>Altitude:</b> {ex.get('altitude','—')} m</div>
-                        <div><b>Duration:</b> {ex.get('duration','—')} min</div>
-                        <div><b>Pattern:</b> {ex.get('route_pattern', ex.get('pattern','—'))}</div>
+                        <div><b>Name:</b> {ex.get('mission_name', 'N/A')}</div>
+                        <div><b>Type:</b> {ex.get('mission_type', 'N/A')}</div>
+                        <div><b>Altitude:</b> {ex.get('altitude', 'N/A')} m</div>
+                        <div><b>Duration:</b> {ex.get('duration', 'N/A')} min</div>
+                        <div><b>Pattern:</b> {ex.get('route_pattern', ex.get('pattern', 'N/A'))}</div>
                         <div><b>RTL:</b> {'Yes' if ex.get('return_to_launch', True) else 'No'} <span style="font-size:0.72rem;color:{caption_col}">(Return to Launch)</span></div>
                         <div><b>Avoid NFZ:</b> {'Yes' if ex.get('avoid_no_fly_zone', True) else 'No'} <span style="font-size:0.72rem;color:{caption_col}">(No-Fly Zone)</span></div>
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            if st.button("✖ Clear AI Extraction", key="clear_nl_extracted", help="Dismiss the extracted parameters card and use manual values only."):
+            st.markdown(
+                f"<div style='margin-top:0.4rem'>"
+                f"<button onclick=\"window.location.reload()\" "
+                f"style='background:{box_bg};color:{box_text};border:1px solid {border_col};"
+                f"border-radius:6px;padding:0.3rem 0.8rem;font-size:0.82rem;font-weight:600;"
+                f"cursor:pointer;transition:all 0.2s'>✖ Clear AI Extraction</button></div>",
+                unsafe_allow_html=True
+            )
+            if st.button("✖ Clear AI Extraction", key="clear_nl_extracted", type="secondary", help="Dismiss the extracted parameters card and use manual values only."):
                 st.session_state.nl_extracted = None
                 st.rerun()
 
@@ -952,7 +1022,7 @@ with col_left:
                 st.session_state.map_bounds = bounds
                 status_box.update(label="✅ Trajectory and safety audit complete!", state="complete")
 
-            st.success(f"✅ Generated {len(corrected_wps)} waypoints — navigate to **Map View** to see the route.")
+            st.success(f"✅ Generated {len(corrected_wps)} waypoints - navigate to Map View to see the route.")
 
         if st.session_state.generated_waypoints:
             st.markdown(f"### 📍 Interactive Waypoint Editor (`{len(st.session_state.generated_waypoints)}` Points)")
@@ -962,8 +1032,16 @@ with col_left:
             edited_df = st.data_editor(
                 df_wp,
                 use_container_width=True,
-                height=280,
-                key="waypoint_table_editor"
+                height=min(320, 42 + len(df_wp) * 35),
+                key="waypoint_table_editor",
+                column_config={
+                    "sequence_no": st.column_config.NumberColumn("Seq #",     format="%d",    width="small"),
+                    "latitude":    st.column_config.NumberColumn("Latitude",  format="%.6f"),
+                    "longitude":   st.column_config.NumberColumn("Longitude", format="%.6f"),
+                    "altitude":    st.column_config.NumberColumn("Alt (m)",   format="%.1f",  width="small"),
+                    "action":      st.column_config.SelectboxColumn("Action", width="small",
+                                       options=["takeoff", "waypoint", "rtl", "land"]),
+                }
             )
 
             if st.button("✏️ Apply Waypoint Edits & Re-Audit Safety", use_container_width=True):
@@ -1033,10 +1111,22 @@ with col_left:
         """, unsafe_allow_html=True)
 
         if st.session_state.generated_waypoints:
-            st.write(f"**Waypoint Sequence List ({len(st.session_state.generated_waypoints)} Points):**")
-            st.dataframe(pd.DataFrame(st.session_state.generated_waypoints), use_container_width=True, height=300)
+            st.markdown(f"<div style='font-weight:700;color:{box_text};font-size:0.95rem;margin-bottom:0.4rem'>Waypoint Sequence List ({len(st.session_state.generated_waypoints)} Points):</div>", unsafe_allow_html=True)
+            df_map = pd.DataFrame(st.session_state.generated_waypoints)
+            st.dataframe(
+                df_map,
+                use_container_width=True,
+                height=min(350, 38 + len(df_map) * 35),
+                column_config={
+                    "sequence_no": st.column_config.NumberColumn("Seq #", format="%d", width="small"),
+                    "latitude":    st.column_config.NumberColumn("Latitude",  format="%.6f"),
+                    "longitude":   st.column_config.NumberColumn("Longitude", format="%.6f"),
+                    "altitude":    st.column_config.NumberColumn("Alt (m)",   format="%.1f", width="small"),
+                    "action":      st.column_config.TextColumn("Action", width="small"),
+                }
+            )
         else:
-            st.info("No waypoints generated yet. Go to **Mission Plan** to generate waypoints first.")
+            st.info("No waypoints generated yet. Go to Mission Plan to generate waypoints first.")
 
     # Page 5: Safety Check
     elif st.session_state.current_page == "Safety Check":
@@ -1152,7 +1242,7 @@ with col_left:
         st.subheader("📂 Mission History & Database")
         st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
 
-        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2])
+        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2], vertical_alignment="bottom")
         with filt_col1:
             name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
                                         help="Case-insensitive substring search on mission name.")
@@ -1209,7 +1299,7 @@ with col_left:
                 status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
 
                 with st.expander(
-                    f"#{mid} — {m_row['mission_name']}  |  {m_row['mission_type'].upper()}  |  "
+                    f"#{mid} - {m_row['mission_name']}  |  {m_row['mission_type'].upper()}  |  "
                     f"{m_row['altitude']}m  |  {m_row['duration']}min  |  "
                     f"{'✅' if m_status == 'Safe' else '❌'} {m_status}  |  {m_row['created_at']}",
                     expanded=False
@@ -1230,9 +1320,17 @@ with col_left:
                             </div>
                         """, unsafe_allow_html=True)
                     with detail_col2:
-                        if st.button(f"📥 Load Mission #{mid} into Planner", key=f"load_mission_{mid}",
-                                     use_container_width=True,
-                                     help="Load this mission's parameters and waypoints into the active session."):
+                        st.markdown(
+                            f"<div style='display:flex;flex-direction:column;gap:0.5rem;padding-top:0.25rem'>",
+                            unsafe_allow_html=True
+                        )
+                        load_btn = st.button(
+                            f"Load Mission #{mid}",
+                            key=f"load_mission_{mid}",
+                            use_container_width=True,
+                            help="Load this mission into the active planning session."
+                        )
+                        if load_btn:
                             try:
                                 m_data, m_wps, m_checks = get_mission_by_id(mid)
                                 st.session_state.mission_name = m_data["mission_name"]
@@ -1244,13 +1342,13 @@ with col_left:
                                 st.session_state.corrections = []
                                 st.session_state.nl_extracted = None
                                 st.session_state.current_page = "Mission Plan"
-                                st.success(f"✅ Mission '**{m_data['mission_name']}**' loaded. Navigating to Mission Plan…")
+                                st.success(f"Mission '{m_data['mission_name']}' loaded.")
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Error loading mission: {e}")
 
-                        with st.popover(f"🗑️ Delete Mission #{mid}", use_container_width=True):
-                            st.warning(f"Are you sure you want to permanently delete mission **#{mid}**?")
+                        with st.popover(f"Delete Mission #{mid}", use_container_width=True):
+                            st.warning(f"Permanently delete mission #{mid}?")
                             if st.button(f"Yes, Delete #{mid}", key=f"confirm_delete_{mid}", use_container_width=True):
                                 from utils.database_utils import delete_mission
                                 delete_mission(mid)
