@@ -682,13 +682,25 @@ st.markdown(f"""
        TOP BOUNDARY GAP
        ================================================================ */
 
-    .block-container, [data-testid="stMainBlockContainer"] {{
-        padding-top: 0.3rem !important;
+    /* Kill ALL top padding/margin across every Streamlit container layer */
+    .block-container,
+    [data-testid="stMainBlockContainer"],
+    [data-testid="stAppViewBlockContainer"],
+    [data-testid="stVerticalBlock"],
+    [data-testid="stVerticalBlockBorderWrapper"],
+    .main .block-container {{
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }}
+    /* Keep side and bottom padding intact */
+    .block-container,
+    [data-testid="stMainBlockContainer"] {{
         padding-bottom: 1.5rem !important;
         padding-left: 1.8rem !important;
         padding-right: 1.8rem !important;
         max-width: 100% !important;
     }}
+
 
 
     .stApp h1, h1 {{
