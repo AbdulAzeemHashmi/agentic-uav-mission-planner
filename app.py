@@ -491,6 +491,26 @@ st.markdown(f"""
         border: 1px solid {border_col} !important;
         border-radius: var(--radius-sm) !important;
     }}
+    div[data-baseweb="input"], div[data-baseweb="select"], div[data-baseweb="select"] > div {{
+        min-height: 42px !important;
+        height: 42px !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    div[data-baseweb="input"] input {{
+        height: 100% !important;
+        color: {box_text} !important;
+        -webkit-text-fill-color: {box_text} !important;
+    }}
+    /* Clearly Visible Placeholder Text in Search & Input Boxes */
+    input::placeholder,
+    textarea::placeholder,
+    [data-baseweb="input"] input::placeholder,
+    div[data-baseweb="base-input"] input::placeholder {{
+        color: {caption_col} !important;
+        -webkit-text-fill-color: {caption_col} !important;
+        opacity: 0.85 !important;
+    }}
     textarea:focus, input:focus, div[data-baseweb="input"]:focus-within, div[data-baseweb="select"]:focus-within {{
         border-color: #0072FF !important;
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
@@ -543,10 +563,14 @@ st.markdown(f"""
         background-color: {box_bg} !important;
         border: 1px solid {border_col} !important;
         border-radius: var(--radius-xl) !important;
-        padding: var(--spacing-lg) var(--spacing-xl) !important;
+        padding: var(--spacing-lg) var(--spacing-xl);
         margin-bottom: 1rem !important;
         box-shadow: 0 2px 10px rgba(0,0,0,0.05) !important;
         color: {box_text} !important;
+        word-break: break-word !important;
+        overflow-wrap: anywhere !important;
+        box-sizing: border-box !important;
+        max-width: 100% !important;
     }}
     .uav-card *,
     .uav-card-title,
@@ -1234,7 +1258,7 @@ with col_left:
         st.subheader("📂 Mission History & Database")
         st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
 
-        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2])
+        filt_col1, filt_col2, filt_col3 = st.columns([1, 1, 1])
         with filt_col1:
             name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
                                         help="Case-insensitive substring search on mission name.")
@@ -1296,11 +1320,11 @@ with col_left:
                     f"{'✅' if m_status == 'Safe' else '❌'} {m_status}  |  {m_row['created_at']}",
                     expanded=False
                 ):
-                    detail_col1, detail_col2 = st.columns([1, 1])
+                    detail_col1, detail_col2 = st.columns([3, 2])
                     with detail_col1:
                         st.markdown(f"""
-                            <div class="uav-card" style="padding:0.7rem 1rem">
-                                <div style="font-size:0.8rem;color:{box_text}">
+                            <div class="uav-card" style="padding:0.75rem 1rem !important;margin-bottom:0 !important;word-break:break-word;overflow-wrap:anywhere;">
+                                <div style="font-size:0.82rem;color:{box_text};line-height:1.5;word-break:break-word;overflow-wrap:anywhere;">
                                     <b>Mission ID:</b> {mid}<br>
                                     <b>Name:</b> {m_row['mission_name']}<br>
                                     <b>Type:</b> {m_row['mission_type']}<br>
