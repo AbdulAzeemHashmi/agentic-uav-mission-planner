@@ -516,11 +516,19 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
-    /* Align widget labels and input boxes cleanly across columns */
-    div[data-testid="stColumn"] {{
+    /* Force Mission History filter widgets into a single horizontal row */
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) {{
         display: flex !important;
-        flex-direction: column !important;
-        justify-content: flex-start !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        gap: 12px !important;
+        width: 100% !important;
+    }}
+    div[data-testid="stHorizontalBlock"]:has(div[data-baseweb="input"]) > div[data-testid="stColumn"] {{
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: auto !important;
     }}
 
     /* Select Dropdown Popups */
@@ -1322,23 +1330,21 @@ with col_left:
                 status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
 
                 with st.expander(
-                    f"#{mid} - {m_row['mission_name']}  |  {m_row['mission_type'].upper()}  |  "
-                    f"{m_row['altitude']}m  |  {m_row['duration']}min  |  "
-                    f"{'✅' if m_status == 'Safe' else '❌'} {m_status}  |  {m_row['created_at']}",
+                    f"{'✅' if m_status == 'Safe' else '❌'} Mission #{mid}: {m_row['mission_name']}  ·  {m_row['mission_type'].title()}  ·  {str(m_row['created_at'])[:16]}",
                     expanded=False
                 ):
                     detail_col1, detail_col2 = st.columns([3, 2])
                     with detail_col1:
                         st.markdown(f"""
-                            <div class="uav-card" style="padding:0.75rem 1rem !important;margin-bottom:0 !important;word-break:break-word;overflow-wrap:anywhere;">
-                                <div style="font-size:0.82rem;color:{box_text};line-height:1.5;word-break:break-word;overflow-wrap:anywhere;">
-                                    <b>Mission ID:</b> {mid}<br>
-                                    <b>Name:</b> {m_row['mission_name']}<br>
-                                    <b>Type:</b> {m_row['mission_type']}<br>
-                                    <b>Altitude:</b> {m_row['altitude']} m<br>
-                                    <b>Duration:</b> {m_row['duration']} min<br>
-                                    <b>Status:</b> <span style="color:{status_color};font-weight:700">{m_status}</span><br>
-                                    <b>Saved:</b> {m_row['created_at']}
+                            <div class="uav-card" style="padding:0.85rem 1.1rem !important;margin-bottom:0 !important;word-break:break-word;overflow-wrap:anywhere;">
+                                <div style="font-weight:700;font-size:0.9rem;color:#00C6FF;margin-bottom:0.4rem">📋 Mission #{mid} Specs</div>
+                                <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:0.82rem;color:{box_text};line-height:1.5">
+                                    <div><b>Name:</b> {m_row['mission_name']}</div>
+                                    <div><b>Type:</b> {m_row['mission_type'].title()}</div>
+                                    <div><b>Altitude:</b> {m_row['altitude']} m</div>
+                                    <div><b>Duration:</b> {m_row['duration']} min</div>
+                                    <div><b>Status:</b> <span style="color:{status_color};font-weight:700">{'✅' if m_status == 'Safe' else '❌'} {m_status}</span></div>
+                                    <div><b>Saved:</b> {m_row['created_at']}</div>
                                 </div>
                             </div>
                         """, unsafe_allow_html=True)
