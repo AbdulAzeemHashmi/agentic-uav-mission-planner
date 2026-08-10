@@ -536,12 +536,12 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
-    /* Mission History filter widgets styling (scoped & responsive) */
+    /* Mission History filter widgets styling (scoped & perfectly straight row) */
     div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: wrap !important;
-        align-items: flex-end !important;
+        align-items: flex-start !important;
         gap: 12px !important;
         width: 100% !important;
         margin-bottom: 0.6rem !important;
@@ -551,21 +551,28 @@ st.markdown(f"""
         min-width: 130px !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-end !important;
+        justify-content: flex-start !important;
     }}
     div.history-filter-bar label,
     div.history-filter-bar [data-testid="stWidgetLabel"],
     div.history-filter-bar [data-testid="stWidgetLabel"] p {{
-        margin-bottom: 0.15rem !important;
+        height: 22px !important;
+        min-height: 22px !important;
+        max-height: 22px !important;
+        margin-bottom: 4px !important;
         font-size: 0.8rem !important;
         font-weight: 700 !important;
         color: {box_text} !important;
+        display: flex !important;
+        align-items: center !important;
+        line-height: 1 !important;
     }}
     div.history-filter-bar div[data-baseweb="input"],
     div.history-filter-bar div[data-baseweb="select"],
     div.history-filter-bar div[data-baseweb="select"] > div {{
-        min-height: 38px !important;
-        height: 38px !important;
+        min-height: 40px !important;
+        height: 40px !important;
+        max-height: 40px !important;
     }}
     /* Radio Option Text Visibility in Dark Mode */
     div[data-testid="stRadio"] label,
@@ -1473,8 +1480,8 @@ with col_left:
                 status_icon     = "🟢" if m_status == "Safe" else ("🔴" if m_status == "Unsafe" else "⚠️")
 
                 expander_label = (
-                    f"{status_icon} Mission #{mid} — {m_row['mission_name']}  "
-                    f"[{m_status.upper()}]  │  {m_row['altitude']}m alt  •  {m_row['duration']}min duration  •  {wp_count} WPs"
+                    f"{status_icon} Mission #{mid} : {m_row['mission_name']}  "
+                    f"[{m_status.upper()}]  |  {m_row['altitude']}m alt  •  {m_row['duration']}min duration  •  {wp_count} WPs"
                 )
 
                 with st.expander(expander_label, expanded=False):
@@ -1592,7 +1599,7 @@ with col_left:
 
                         # ── Clone Mission ─────────────────────────────
                         with st.popover(f"🗂️ Clone Mission #{mid}", use_container_width=True):
-                            st.markdown(f"**Clone Mission #{mid}** — create a duplicate you can edit independently.")
+                            st.markdown(f"**Clone Mission #{mid}**: create a duplicate you can edit independently.")
                             clone_name = st.text_input(
                                 "New Mission Name",
                                 value=f"{m_row['mission_name']}_Copy",
