@@ -233,11 +233,18 @@ st.markdown(f"""
         position: relative !important;
         z-index: 100 !important;
     }}
+
+    /* SIDEBAR TOP GAP FIX — reduced padding-top and title margin */
     section[data-testid="stSidebar"] .block-container {{
-        padding-top: 0.5cm !important;
+        padding-top: 0.1cm !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }}
+    section[data-testid="stSidebar"] h1 {{
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }}
+
     /* All text in sidebar is always light — sidebar is dark in both modes */
     section[data-testid="stSidebar"] h1,
     section[data-testid="stSidebar"] h2,
