@@ -301,7 +301,8 @@ st.markdown(f"""
         border-image: linear-gradient(90deg, #00C6FF, #0072FF) 1;
         border-radius: var(--radius-xl);
         padding: var(--spacing-lg) var(--spacing-xl);
-        margin: 0.85rem 0 1rem 0;
+        margin: 0 0 1rem 0;
+
         box-shadow: {'0 0 0 1px rgba(0,114,255,0.15), 0 18px 48px rgba(0,0,0,0.55), 0 0 40px rgba(0,100,255,0.08)' if is_dark else '0 4px 24px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06)'};
         animation: fadeInUp 0.42s cubic-bezier(.2,.9,.3,1);
         transition: transform 0.22s ease, box-shadow 0.22s ease;
@@ -682,12 +683,13 @@ st.markdown(f"""
        ================================================================ */
 
     .block-container, [data-testid="stMainBlockContainer"] {{
-        padding-top: 0.5cm !important;
+        padding-top: 0.3rem !important;
         padding-bottom: 1.5rem !important;
         padding-left: 1.8rem !important;
         padding-right: 1.8rem !important;
         max-width: 100% !important;
     }}
+
 
     .stApp h1, h1 {{
         margin-top: 0rem !important;
