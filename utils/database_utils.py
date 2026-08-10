@@ -147,23 +147,37 @@ def get_all_missions() -> list[dict[str, Any]]:
 def search_missions(
     name_filter: str = "",
     status_filter: str = "All",
-    type_filter: str = "All"
+    type_filter: str = "All",
+    date_from: str = "",
+    date_to: str = "",
+    sort_by: str = "created_at",
+    sort_dir: str = "DESC"
 ) -> list[dict[str, Any]]:
     """
-    Search missions with optional filters.
+    Search missions with optional filters, date range, and sort control.
 
     Args:
         name_filter:   Case-insensitive substring match on mission_name.
         status_filter: Exact match on status ('Safe', 'Unsafe', or 'All').
         type_filter:   Exact match on mission_type (or 'All').
+        date_from:     ISO date string 'YYYY-MM-DD' lower bound (inclusive).
+        date_to:       ISO date string 'YYYY-MM-DD' upper bound (inclusive).
+        sort_by:       Column to sort by: 'created_at', 'mission_name',
+                       'altitude', 'duration', 'status'.
+        sort_dir:      'ASC' or 'DESC'.
 
     Returns:
-        List of mission dicts ordered by created_at DESC.
+        List of mission dicts in the requested order.
     """
     init_db()
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
+
+    # Whitelist sort columns to prevent SQL injection
+    _VALID_SORT_COLS = {"created_at", "mission_name", "altitude", "duration", "status"}
+    _safe_col = sort_by if sort_by in _VALID_SORT_COLS else "created_at"
+    _safe_dir = "ASC" if sort_dir.upper() == "ASC" else "DESC"
 
     query = "SELECT * FROM missions WHERE 1=1"
     params: list[Any] = []
@@ -180,7 +194,15 @@ def search_missions(
         query += " AND mission_type = ?"
         params.append(type_filter)
 
-    query += " ORDER BY created_at DESC"
+    if date_from.strip():
+        query += " AND DATE(created_at) >= ?"
+        params.append(date_from.strip())
+
+    if date_to.strip():
+        query += " AND DATE(created_at) <= ?"
+        params.append(date_to.strip())
+
+    query += f" ORDER BY {_safe_col} {_safe_dir}"
     cursor.execute(query, params)
     rows = cursor.fetchall()
     conn.close()
@@ -224,7 +246,8 @@ def delete_mission(mission_id: int):
     conn = sqlite3.connect(DB_PATH)
     cursor = conn.cursor()
     try:
-        # SQLite foreign key cascade should be enabled if supported, or we do manual deletion:
+        # L8 fix: enable FK enforcement so ON DELETE CASCADE works correctly
+        cursor.execute("PRAGMA foreign_keys=ON;")
         cursor.execute("DELETE FROM waypoints WHERE mission_id = ?", (mission_id,))
         cursor.execute("DELETE FROM safety_checks WHERE mission_id = ?", (mission_id,))
         cursor.execute("DELETE FROM missions WHERE mission_id = ?", (mission_id,))
@@ -234,3 +257,40 @@ def delete_mission(mission_id: int):
         raise e
     finally:
         conn.close()
+
+
+def get_mission_waypoint_count(mission_id: int) -> int:
+    """Return the number of waypoints stored for the given mission_id."""
+    init_db()
+    conn = sqlite3.connect(DB_PATH)
+    cursor = conn.cursor()
+    try:
+        cursor.execute(
+            "SELECT COUNT(*) FROM waypoints WHERE mission_id = ?", (mission_id,)
+        )
+        result = cursor.fetchone()
+        return int(result[0]) if result else 0
+    finally:
+        conn.close()
+
+
+def clone_mission(mission_id: int, new_name: str) -> int:
+    """
+    Duplicate a mission (metadata + waypoints + safety checks) under a new name.
+
+    Args:
+        mission_id: The source mission to clone.
+        new_name:   The name to assign to the cloned mission.
+
+    Returns:
+        The mission_id of the newly created clone.
+    """
+    original, waypoints, safety_checks = get_mission_by_id(mission_id)
+    cloned_meta = {
+        "mission_name": new_name,
+        "mission_type": original.get("mission_type", "surveillance"),
+        "altitude":     original.get("altitude", 50.0),
+        "duration":     original.get("duration", 15.0),
+        "status":       original.get("status", "Needs Revision"),
+    }
+    return save_mission(cloned_meta, waypoints, safety_checks)

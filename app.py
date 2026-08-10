@@ -19,7 +19,10 @@ from agents.waypoint_planner_agent import generate_waypoints
 from agents.safety_compliance_agent import perform_safety_checks
 from agents.correction_agent import generate_corrections
 from utils.map_utils import create_mission_map
-from utils.database_utils import save_mission, init_db, search_missions, get_mission_by_id
+from utils.database_utils import (
+    save_mission, init_db, search_missions, get_mission_by_id,
+    get_mission_waypoint_count, clone_mission
+)
 from utils.export_utils import (
     export_mission_json, export_waypoints_csv, generate_pdf_report,
     export_qgroundcontrol_plan, export_ardupilot_waypoints, export_kml_format
@@ -1323,22 +1326,59 @@ with col_left:
     # Page 8: Mission History
     elif st.session_state.current_page == "Mission History":
         st.subheader("📂 Mission History & Database")
-        st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
+        st.caption("Browse, search, filter, sort, export, clone, and delete saved missions from the local SQLite database.")
 
-        filt_col1, filt_col2, filt_col3 = st.columns([1, 1, 1])
+        # ── Filter Row 1: Name | Status | Type ──────────────────────────────
+        filt_col1, filt_col2, filt_col3 = st.columns([2, 1, 1])
         with filt_col1:
-            name_search = st.text_input("🔍 Search by Name", "", placeholder="Type mission name...",
-                                        help="Case-insensitive substring search on mission name.")
+            name_search = st.text_input(
+                "🔍 Search by Name", "", placeholder="Type mission name...",
+                help="Case-insensitive substring search on mission name."
+            )
         with filt_col2:
-            status_filter = st.selectbox("🛡️ Filter by Status", ["All", "Safe", "Unsafe", "Needs Revision"],
-                                         help="Filter missions by safety compliance status.")
+            status_filter = st.selectbox(
+                "🛡️ Status", ["All", "Safe", "Unsafe", "Needs Revision"],
+                help="Filter missions by safety compliance status."
+            )
         with filt_col3:
-            type_filter = st.selectbox("✈️ Filter by Type", ["All", "surveillance", "mapping", "search_rescue", "inspection"],
-                                       help="Filter missions by operational type.")
+            type_filter = st.selectbox(
+                "✈️ Type", ["All", "surveillance", "mapping", "search_rescue", "inspection"],
+                help="Filter missions by operational type."
+            )
 
-        missions_list = search_missions(name_search, status_filter, type_filter)
+        # ── Filter Row 2: Date From | Date To | Sort By | Sort Dir ──────────
+        filt_col4, filt_col5, filt_col6, filt_col7 = st.columns([1, 1, 1, 1])
+        with filt_col4:
+            date_from = st.date_input(
+                "📅 From Date", value=None, help="Show missions on or after this date."
+            )
+        with filt_col5:
+            date_to = st.date_input(
+                "📅 To Date", value=None, help="Show missions on or before this date."
+            )
+        with filt_col6:
+            sort_by = st.selectbox(
+                "🔃 Sort By",
+                ["created_at", "mission_name", "altitude", "duration", "status"],
+                index=0,
+                help="Column used to sort the results."
+            )
+        with filt_col7:
+            sort_dir = st.radio(
+                "↕️ Order", ["DESC", "ASC"], horizontal=True,
+                help="Newest first (DESC) or oldest first (ASC)."
+            )
 
-        # Batch Export All Missions
+        # Convert date inputs to ISO strings for the DB query
+        date_from_str = date_from.strftime("%Y-%m-%d") if date_from else ""
+        date_to_str   = date_to.strftime("%Y-%m-%d")   if date_to   else ""
+
+        missions_list = search_missions(
+            name_search, status_filter, type_filter,
+            date_from_str, date_to_str, sort_by, sort_dir
+        )
+
+        # ── Batch Export ─────────────────────────────────────────────────────
         if missions_list:
             all_missions_export = []
             for _m in missions_list:
@@ -1360,7 +1400,7 @@ with col_left:
         if not missions_list:
             st.info("No saved missions found. Complete a mission and click **Save Mission to Database** on the Safety Check page.")
         else:
-            # Pagination
+            # ── Pagination ───────────────────────────────────────────────────
             page_size = 10
             total_missions = len(missions_list)
             total_pages = (total_missions + page_size - 1) // page_size
@@ -1373,24 +1413,34 @@ with col_left:
             else:
                 page_missions = missions_list
 
-            st.markdown(f"<div style='font-size:0.82rem;color:{caption_col};margin-bottom:0.5rem'>"
-                        f"Showing <b>{len(page_missions)}</b> of <b>{total_missions}</b> mission(s)</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='font-size:0.82rem;color:{caption_col};margin-bottom:0.5rem'>"
+                f"Showing <b>{len(page_missions)}</b> of <b>{total_missions}</b> mission(s)</div>",
+                unsafe_allow_html=True
+            )
 
+            # ── Mission Cards ─────────────────────────────────────────────────
             for m_row in page_missions:
-                mid = m_row["mission_id"]
-                m_status = m_row.get("status", "")
-                status_color = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
+                mid       = m_row["mission_id"]
+                m_status  = m_row.get("status", "")
+                wp_count  = get_mission_waypoint_count(mid)          # L7: waypoint count
+                status_color    = "#10B981" if m_status == "Safe" else ("#EF4444" if m_status == "Unsafe" else "#F59E0B")
+                status_badge_bg = "rgba(16,185,129,0.14)" if m_status == "Safe" else ("rgba(239,68,68,0.14)" if m_status == "Unsafe" else "rgba(245,158,11,0.14)")
 
-                status_badge_bg = "rgba(16, 185, 129, 0.14)" if m_status == "Safe" else ("rgba(239, 68, 68, 0.14)" if m_status == "Unsafe" else "rgba(245, 158, 11, 0.14)")
+                # L7: waypoint count shown in expander header
+                expander_label = (
+                    f"{'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}  │  "
+                    f"#{mid} • {m_row['mission_name']} "
+                    f"({m_row['altitude']}m / {m_row['duration']}min / {wp_count} WPs)"
+                )
 
-                with st.expander(
-                    f"{'✅ SAFE' if m_status == 'Safe' else '🔴 ' + m_status.upper()}  │  #{mid} • {m_row['mission_name']} ({m_row['altitude']}m / {m_row['duration']}min)",
-                    expanded=False
-                ):
+                with st.expander(expander_label, expanded=False):
                     detail_col1, detail_col2 = st.columns([3, 2])
+
                     with detail_col1:
+                        # ── Telemetry card ────────────────────────────────
                         st.markdown(f"""
-                            <div style="background:{box_bg};border:1px solid {border_col};border-radius:10px;padding:0.85rem 1.1rem;margin-bottom:0;box-shadow:0 2px 8px rgba(0,0,0,0.06);word-break:break-word;overflow-wrap:anywhere;">
+                            <div style="background:{box_bg};border:1px solid {border_col};border-radius:10px;padding:0.85rem 1.1rem;margin-bottom:0.6rem;box-shadow:0 2px 8px rgba(0,0,0,0.06);word-break:break-word;overflow-wrap:anywhere;">
                                 <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:0.7rem;padding-bottom:0.4rem;border-bottom:1px solid {border_col}">
                                     <span style="font-weight:800;font-size:0.88rem;color:#00C6FF">📋 Mission #{mid} Telemetry & Specs</span>
                                     <span style="background:{status_badge_bg};color:{status_color};padding:2px 10px;border-radius:12px;font-size:0.75rem;font-weight:800;border:1px solid {status_color}33">
@@ -1399,49 +1449,144 @@ with col_left:
                                 </div>
                                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px 14px;font-size:0.82rem;color:{box_text};line-height:1.4">
                                     <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🏷️ MISSION NAME</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['mission_name']}</b></div>
-                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🎯 FLIGHT PATTERN</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['mission_type'].title()}</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🎯 FLIGHT TYPE</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['mission_type'].title()}</b></div>
                                     <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📐 CRUISE ALTITUDE</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['altitude']} m</b></div>
                                     <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">⏱️ MAX DURATION</span><br><b style="color:{box_text};font-size:0.88rem">{m_row['duration']} min</b></div>
+                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📍 WAYPOINTS</span><br><b style="color:{box_text};font-size:0.88rem">{wp_count} points</b></div>
                                     <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">🛡️ SAFETY AUDIT</span><br><b style="color:{status_color};font-size:0.88rem">{m_status}</b></div>
-                                    <div><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📅 RECORDED DATE</span><br><b style="color:{box_text};font-size:0.82rem">{m_row['created_at']}</b></div>
+                                    <div style="grid-column:1/-1"><span style="color:{caption_col};font-weight:600;font-size:0.74rem">📅 RECORDED DATE</span><br><b style="color:{box_text};font-size:0.82rem">{m_row['created_at']}</b></div>
                                 </div>
                             </div>
                         """, unsafe_allow_html=True)
+
+                        # ── L2: Inline Waypoint Table ─────────────────────
+                        if wp_count > 0:
+                            try:
+                                _, m_wps_preview, _ = get_mission_by_id(mid)
+                                st.markdown(
+                                    f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};"
+                                    f"margin-bottom:0.3rem'>📍 Waypoint Sequence ({wp_count} points):</div>",
+                                    unsafe_allow_html=True
+                                )
+                                df_preview = pd.DataFrame(m_wps_preview)[["sequence_no", "latitude", "longitude", "altitude", "action"]]
+                                st.dataframe(
+                                    df_preview,
+                                    use_container_width=True,
+                                    height=min(250, 38 + len(df_preview) * 35),
+                                    column_config={
+                                        "sequence_no": st.column_config.NumberColumn("Seq #",    format="%d",    width="small"),
+                                        "latitude":    st.column_config.NumberColumn("Lat",      format="%.6f"),
+                                        "longitude":   st.column_config.NumberColumn("Lon",      format="%.6f"),
+                                        "altitude":    st.column_config.NumberColumn("Alt (m)",  format="%.1f", width="small"),
+                                        "action":      st.column_config.TextColumn("Action",    width="small"),
+                                    }
+                                )
+                            except Exception as _e:
+                                st.caption(f"Could not load waypoints: {_e}")
+
                     with detail_col2:
                         st.markdown(
-                            f"<div style='display:flex;flex-direction:column;gap:0.5rem;padding-top:0.25rem'>",
+                            f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};margin-bottom:0.4rem'>⚡ Actions</div>",
                             unsafe_allow_html=True
                         )
-                        load_btn = st.button(
-                            f"Load Mission #{mid}",
-                            key=f"load_mission_{mid}",
-                            use_container_width=True,
-                            help="Load this mission into the active planning session."
-                        )
-                        if load_btn:
+
+                        # ── Load Mission ─────────────────────────────────
+                        if st.button(f"📂 Load Mission #{mid}", key=f"load_mission_{mid}",
+                                     use_container_width=True,
+                                     help="Load this mission into the active planning session."):
                             try:
                                 m_data, m_wps, m_checks = get_mission_by_id(mid)
-                                st.session_state.mission_name = m_data["mission_name"]
-                                st.session_state.mission_type = m_data["mission_type"]
-                                st.session_state.altitude = float(m_data["altitude"])
-                                st.session_state.duration = float(m_data["duration"])
-                                st.session_state.generated_waypoints = m_wps
-                                st.session_state.safety_checks = m_checks
-                                st.session_state.corrections = []
-                                st.session_state.nl_extracted = None
-                                st.session_state.current_page = "Mission Plan"
+                                st.session_state.mission_name         = m_data["mission_name"]
+                                st.session_state.mission_type         = m_data["mission_type"]
+                                st.session_state.altitude             = float(m_data["altitude"])
+                                st.session_state.duration             = float(m_data["duration"])
+                                st.session_state.generated_waypoints  = m_wps
+                                st.session_state.safety_checks        = m_checks
+                                st.session_state.corrections          = []
+                                st.session_state.nl_extracted         = None
+                                st.session_state.current_page         = "Mission Plan"
                                 st.success(f"Mission '{m_data['mission_name']}' loaded.")
                                 st.rerun()
                             except Exception as e:
                                 st.error(f"Error loading mission: {e}")
 
-                        with st.popover(f"Delete Mission #{mid}", use_container_width=True):
+                        # ── L4: Clone Mission ─────────────────────────────
+                        with st.popover(f"🗂️ Clone Mission #{mid}", use_container_width=True):
+                            st.markdown(f"**Clone Mission #{mid}** — create a duplicate you can edit independently.")
+                            clone_name = st.text_input(
+                                "New Mission Name",
+                                value=f"{m_row['mission_name']}_Copy",
+                                key=f"clone_name_{mid}"
+                            )
+                            if st.button(f"✅ Create Clone", key=f"confirm_clone_{mid}", use_container_width=True):
+                                try:
+                                    new_id = clone_mission(mid, clone_name)
+                                    st.success(f"✅ Cloned as Mission #{new_id}: '{clone_name}'")
+                                    st.rerun()
+                                except Exception as ce:
+                                    st.error(f"Clone failed: {ce}")
+
+                        # ── Delete Mission ───────────────────────────────
+                        with st.popover(f"🗑️ Delete Mission #{mid}", use_container_width=True):
                             st.warning(f"Permanently delete mission #{mid}?")
                             if st.button(f"Yes, Delete #{mid}", key=f"confirm_delete_{mid}", use_container_width=True):
                                 from utils.database_utils import delete_mission
                                 delete_mission(mid)
                                 st.success(f"Mission #{mid} deleted.")
                                 st.rerun()
+
+                        # ── L3: Per-Mission Exports ───────────────────────
+                        st.markdown(
+                            f"<div style='font-size:0.8rem;font-weight:700;color:{caption_col};"
+                            f"margin-top:0.6rem;margin-bottom:0.3rem'>📤 Export This Mission</div>",
+                            unsafe_allow_html=True
+                        )
+                        try:
+                            _md, _mw, _mc = get_mission_by_id(mid)
+                            _meta = {
+                                "mission_name": _md["mission_name"],
+                                "mission_type": _md["mission_type"],
+                                "altitude":     _md["altitude"],
+                                "duration":     _md["duration"],
+                                "status":       _md.get("status", "Unknown"),
+                                "created_at":   _md.get("created_at", ""),
+                            }
+                            _fn = _md["mission_name"].replace(" ", "_")[:40]
+
+                            st.download_button(
+                                "⬇️ JSON",
+                                data=export_mission_json(_meta, _mw, _mc),
+                                file_name=f"{_fn}.json", mime="application/json",
+                                use_container_width=True, key=f"exp_json_{mid}"
+                            )
+                            st.download_button(
+                                "⬇️ CSV Waypoints",
+                                data=export_waypoints_csv(_mw),
+                                file_name=f"{_fn}_waypoints.csv", mime="text/csv",
+                                use_container_width=True, key=f"exp_csv_{mid}"
+                            )
+                            st.download_button(
+                                "🛸 QGroundControl (.plan)",
+                                data=export_qgroundcontrol_plan(_meta, _mw),
+                                file_name=f"{_fn}.plan", mime="application/json",
+                                use_container_width=True, key=f"exp_plan_{mid}"
+                            )
+                            st.download_button(
+                                "✈️ ArduPilot (.waypoints)",
+                                data=export_ardupilot_waypoints(_mw),
+                                file_name=f"{_fn}.waypoints", mime="text/plain",
+                                use_container_width=True, key=f"exp_wp_{mid}"
+                            )
+                            st.download_button(
+                                "🌍 Google Earth (.kml)",
+                                data=export_kml_format(_meta, _mw),
+                                file_name=f"{_fn}.kml",
+                                mime="application/vnd.google-earth.kml+xml",
+                                use_container_width=True, key=f"exp_kml_{mid}"
+                            )
+                        except Exception as _ex:
+                            st.caption(f"Export unavailable: {_ex}")
+
 
 with col_right:
     st.markdown(f"""
