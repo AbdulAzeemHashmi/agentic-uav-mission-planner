@@ -856,14 +856,6 @@ with col_left:
                     </div>
                 </div>
             """, unsafe_allow_html=True)
-            st.markdown(
-                f"<div style='margin-top:0.4rem'>"
-                f"<button onclick=\"window.location.reload()\" "
-                f"style='background:{box_bg};color:{box_text};border:1px solid {border_col};"
-                f"border-radius:6px;padding:0.3rem 0.8rem;font-size:0.82rem;font-weight:600;"
-                f"cursor:pointer;transition:all 0.2s'>✖ Clear AI Extraction</button></div>",
-                unsafe_allow_html=True
-            )
             if st.button("✖ Clear AI Extraction", key="clear_nl_extracted", type="secondary", help="Dismiss the extracted parameters card and use manual values only."):
                 st.session_state.nl_extracted = None
                 st.rerun()
@@ -1242,7 +1234,7 @@ with col_left:
         st.subheader("📂 Mission History & Database")
         st.caption("Browse, search, filter, load, and delete saved missions from the local SQLite database.")
 
-        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2], vertical_alignment="bottom")
+        filt_col1, filt_col2, filt_col3 = st.columns([3, 2, 2])
         with filt_col1:
             name_search = st.text_input("🔍 Search by name", "", placeholder="Type mission name...",
                                         help="Case-insensitive substring search on mission name.")
