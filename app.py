@@ -536,43 +536,45 @@ st.markdown(f"""
         box-shadow: 0 0 0 2px rgba(0, 114, 255, 0.2) !important;
     }}
 
-    /* Mission History filter widgets styling (scoped & perfectly straight row) */
+    /* Mission History filter widgets styling (100% straight horizontal line) */
     div.history-filter-bar div[data-testid="stHorizontalBlock"] {{
         display: flex !important;
         flex-direction: row !important;
-        flex-wrap: wrap !important;
-        align-items: flex-start !important;
-        gap: 12px !important;
+        flex-wrap: nowrap !important;
+        align-items: flex-end !important;
+        gap: 8px !important;
         width: 100% !important;
         margin-bottom: 0.6rem !important;
     }}
     div.history-filter-bar div[data-testid="stHorizontalBlock"] > div[data-testid="stColumn"] {{
-        flex: 1 1 160px !important;
-        min-width: 130px !important;
+        flex: 1 1 0% !important;
+        min-width: 0 !important;
+        width: auto !important;
         display: flex !important;
         flex-direction: column !important;
-        justify-content: flex-start !important;
+        justify-content: flex-end !important;
     }}
     div.history-filter-bar label,
     div.history-filter-bar [data-testid="stWidgetLabel"],
     div.history-filter-bar [data-testid="stWidgetLabel"] p {{
-        height: 22px !important;
-        min-height: 22px !important;
-        max-height: 22px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        height: 20px !important;
+        min-height: 20px !important;
+        max-height: 20px !important;
         margin-bottom: 4px !important;
-        font-size: 0.8rem !important;
+        font-size: 0.78rem !important;
         font-weight: 700 !important;
         color: {box_text} !important;
-        display: flex !important;
-        align-items: center !important;
-        line-height: 1 !important;
+        line-height: 20px !important;
     }}
     div.history-filter-bar div[data-baseweb="input"],
     div.history-filter-bar div[data-baseweb="select"],
     div.history-filter-bar div[data-baseweb="select"] > div {{
-        min-height: 40px !important;
-        height: 40px !important;
-        max-height: 40px !important;
+        min-height: 38px !important;
+        height: 38px !important;
+        max-height: 38px !important;
     }}
     /* Radio Option Text Visibility in Dark Mode */
     div[data-testid="stRadio"] label,
@@ -1374,7 +1376,7 @@ with col_left:
         filt_col1, filt_col2, filt_col3 = st.columns([2, 1, 1])
         with filt_col1:
             name_search = st.text_input(
-                "🔍 Search by Name", "", placeholder="Type mission name...",
+                "🔍 Name", "", placeholder="Type mission name...",
                 help="Case-insensitive substring search on mission name."
             )
         with filt_col2:
@@ -1391,15 +1393,15 @@ with col_left:
         filt_col4, filt_col5, filt_col6, filt_col7 = st.columns([1, 1, 1, 1])
         with filt_col4:
             date_from = st.date_input(
-                "📅 From Date", value=None, help="Show missions on or after this date."
+                "📅 From", value=None, help="Show missions on or after this date."
             )
         with filt_col5:
             date_to = st.date_input(
-                "📅 To Date", value=None, help="Show missions on or before this date."
+                "📅 To", value=None, help="Show missions on or before this date."
             )
         with filt_col6:
             sort_by = st.selectbox(
-                "🔃 Sort By",
+                "🔃 Sort",
                 ["created_at", "mission_name", "altitude", "duration", "status"],
                 index=0,
                 help="Column used to sort the results."
