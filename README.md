@@ -1,4 +1,4 @@
-<div align="center">
+﻿<div align="center">
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=220&section=header&text=Agentic%20UAV%20Mission%20Planner&fontSize=36&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=AI%20Mission%20Planning%20and%20Airspace%20Auditing&descAlignY=58&descSize=18" width="100%"/>
 
@@ -15,385 +15,207 @@
 
 <br/>
 
-<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&pause=1000&color=00C6FF&center=true&vCenter=true&width=720&lines=Natural+Language+Mission+Planning;5+AI+Agents+Working+Together;7+Safety+Rules+Checked;Live+Map+and+Export+Ready;Interactive+History+Map+Preview;JSON+Batch+Import+and+Export" alt="Typing SVG"/>
+<img src="https://readme-typing-svg.demolab.com?font=Fira+Code&size=22&pause=1000&color=00C6FF&center=true&vCenter=true&width=720&lines=Natural+Language+Mission+Planning;5+AI+Agents+Working+Together;7+Safety+Rules+Checked;Live+Map+Preview;Mission+History+and+Export;Interactive+Screenshots" alt="Typing SVG"/>
 
 <br/>
 
-> 🚁 A smart mission planning app for UAV flights with AI guidance, live map views, safety checks, interactive history preview, and export ready reports.
+> 🚁 Agentic UAV Mission Planner converts natural language mission goals into validated UAV flight plans with AI planning, safety checks, and export-ready files.
 >
-> 🔒 This project is a software simulation only. No real drone hardware is involved.
+> 🔒 This repository is a software simulation only. No actual drone hardware is controlled.
 
 </div>
 
 ---
 
-## 🚀 Project Overview
+## 🚀 What This Project Does
 
-This project lets a user describe a UAV mission in plain language and turns it into a structured flight plan. The app uses five specialized AI agents to understand the request, generate route waypoints, verify airspace safety rules, suggest corrections, and build complete flight reports.
+Agentic UAV Mission Planner is a Streamlit app that turns text-based mission requests into complete UAV flight plans. It uses a chain of AI agents to:
 
-### ✨ What the app does
-
-- 🧠 **Natural Language Parsing**: Converts plain text prompts into structured mission parameters with Google Gemini AI
-- 📍 **Route Generation**: Builds safe waypoint routes for Square, Grid, Circle, and Perimeter flight patterns
-- 🛡 **7-Rule Safety Audit Engine**: Enforces strict airspace safety compliance rules before takeoff
-- 🔧 **Automated Corrections**: Generates actionable fix suggestions for failed safety checks
-- 🗺 **Live GCS Radar Map**: Visualizes flight path, takeoff points, and restricted no-fly zones in real time
-- 📂 **Mission History & Database**: Browse, filter, sort, preview on map, import, and manage saved SQLite missions
-- 📥 **Multi-Format Export**: Generates QGroundControl (.plan), ArduPilot (.waypoints), Google Earth (.kml), JSON, CSV, and PDF reports
+- Convert plain language into mission details
+- Generate mission waypoints and patterns
+- Check airspace safety rules and no-fly zones
+- Suggest corrections for mission issues
+- Export mission plans in multiple formats
 
 ---
 
-## 🖼️ Application Showcase & Screenshots
+## 🖼 Demo Gallery
 
-### 🏠 Ground Control Station Dashboard
+### 🚁 Control Station View
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121230.png" width="90%" alt="Ground Control Station Dashboard"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20220852.png" width="90%" alt="Control Station Dashboard"/>
   <br/>
-  <i>Ground Control Station Overview: Active Airspace Regulations and Mission Workflow</i>
+  <i>Mission dashboard showing route status and planning controls.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121248.png" width="90%" alt="Live Airspace Radar"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20220921.png" width="90%" alt="Airspace Radar"/>
   <br/>
-  <i>Live Airspace Radar and Dynamic Mission HUD</i>
+  <i>Live airspace radar view with no-fly zone highlights.</i>
 </div>
 
 ---
 
-### 📝 Mission Input & AI Natural Language Understanding
+### ✍️ Mission Input and AI Understanding
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121303.png" width="90%" alt="Natural Language Input"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222349.png" width="90%" alt="Mission Prompt Input"/>
   <br/>
-  <i>Natural Language Intent Extraction powered by Google Gemini AI</i>
+  <i>Plain language mission prompt converted to mission data.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121318.png" width="90%" alt="Flight Profile Selection"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222405.png" width="90%" alt="Drone Profile Selection"/>
   <br/>
-  <i>Manual Flight Parameters and Drone Profile Selection</i>
+  <i>Vehicle profile selection and flight settings.</i>
 </div>
 
 ---
 
-### ⚙️ Mission Planning & Waypoint Generation
+### 🧭 Waypoint Planning and Pattern Generation
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121332.png" width="90%" alt="Waypoint Sequence Table"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222446.png" width="90%" alt="Waypoint Table"/>
   <br/>
-  <i>Generated Waypoint Sequence Table with Coordinates and Altitude Profile</i>
+  <i>Waypoint table with coordinates, altitude, and sequence order.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121347.png" width="90%" alt="Pattern Profile Mapping"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222458.png" width="90%" alt="Flight Pattern Settings"/>
   <br/>
-  <i>Raster Grid and Serpentine Flight Pattern Configuration</i>
+  <i>Pattern selection for grid, square, circle, and perimeter missions.</i>
 </div>
 
 ---
 
-### 🗺️ Live GCS Airspace Radar Map & Geofence
+### 🛡 Safety Audit and Correction Suggestions
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121358.png" width="90%" alt="Live GCS Radar Map"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222644.png" width="90%" alt="Safety Audit"/>
   <br/>
-  <i>Interactive Folium GCS Airspace Radar Map with Route Polyline</i>
+  <i>Mission safety audit displaying rule pass and fail states.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121407.png" width="90%" alt="No Fly Zone Polygon Overlay"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222703.png" width="90%" alt="AI Corrections"/>
   <br/>
-  <i>No-Fly Zone Polygon Overlay and Takeoff Marker Visualization</i>
+  <i>AI-generated mission corrections for safety violations.</i>
 </div>
 
 ---
 
-### 🛡️ Safety Compliance Audit & AI Corrections
+### 📂 Mission History and Exports
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121425.png" width="90%" alt="Safety Audit Engine"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222829.png" width="90%" alt="Mission History"/>
   <br/>
-  <i>7-Rule Airspace Safety Compliance Engine Audit Results</i>
+  <i>Mission history, filtering, and quick preview controls.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121531.png" width="90%" alt="AI Correction Suggestions"/>
+  <img src="./screenshots/Screenshot%202026-08-10%20222855.png" width="90%" alt="History Map Preview"/>
   <br/>
-  <i>Automated AI Correction Suggestions for Flight Rule Pass/Fail Violations</i>
+  <i>Saved mission preview on the map before export.</i>
 </div>
 
 ---
 
-### 📤 Multi-Format Mission Export & GCS Plans
+## 🧠 How the Agent Chain Works
 
-<div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121554.png" width="90%" alt="Multi-Format Export"/>
-  <br/>
-  <i>Multi-Format Mission Export: QGroundControl (.plan), ArduPilot (.waypoints), Google Earth (.kml), JSON, CSV, PDF</i>
-</div>
-
----
-
-### 📂 Mission History & Database Management
-
-<div align="center">
-  <img src="./screenshots/Screenshot%202026-08-10%20121608.png" width="90%" alt="Mission History Search and Filters"/>
-  <br/>
-  <i>Mission History Search, Status Filters, Sort Controls, and Straight Alignment Layout</i>
-  <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121631.png" width="90%" alt="Interactive Map Preview"/>
-  <br/>
-  <i>Interactive History Map Preview: Instantly Display Saved Mission Routes on GCS Radar</i>
-  <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-10%20121644.png" width="90%" alt="JSON Mission Import and Detailed Audit Breakdown"/>
-  <br/>
-  <i>JSON Mission File Import and Detailed Safety Audit Rule Breakdown Table</i>
-</div>
-
----
-
-## 🧩 System Flow
+The app processes user input with a set of AI agents that each add structure, validation, or export readiness:
 
 ```text
-User Input
-   │
-   ▼
+User prompt
+  |
+  v
 Mission Understanding Agent
-   │
-   ▼
+  |
+  v
 Waypoint Planner Agent
-   │
-   ▼
+  |
+  v
 Safety Compliance Agent
-   │
-   ▼
+  |
+  v
 Correction Agent
-   │
-   ▼
+  |
+  v
 Report Agent
-   │
-   ▼
-Map View + Database + Export Tools
+  |
+  v
+Map view, history, and export files
 ```
 
 ---
 
-## 🤖 Agentic Workflow
+## 🤖 Agent Roles
 
-The application uses five specialized AI agents operating in one unified pipeline.
-
-| Step | Agent | Purpose |
+| Step | Agent | Role |
 |---|---|---|
-| 1 | 🧠 Mission Understanding Agent | Converts natural language into structured mission parameters |
-| 2 | 📍 Waypoint Planner Agent | Generates takeoff, route, altitude, and RTL points |
-| 3 | 🛡 Safety Compliance Agent | Validates seven airspace safety compliance rules |
-| 4 | 🔧 Correction Agent | Produces actionable fix suggestions for failed checks |
-| 5 | 📄 Report Agent | Builds mission summaries and downloadable PDF reports |
-
-### 💬 Example mission prompt
-
-```text
-Plan a surveillance mission around the campus for 20 minutes.
-Keep altitude below 80 meters, avoid restricted airspace,
-and return to launch after completion.
-```
+| 1 | Mission Understanding Agent | Parse mission goals from natural language |
+| 2 | Waypoint Planner Agent | Build route waypoints and flight legs |
+| 3 | Safety Compliance Agent | Validate no-fly zones and mission rules |
+| 4 | Correction Agent | Suggest fixes for mission failures |
+| 5 | Report Agent | Create summary reports and export packages |
 
 ---
 
-## 🌟 Key Features
+## 🌟 Features
 
-- 🚁 Natural language mission input powered by Google Gemini AI
-- 📍 Automatic generation of mission waypoints for 4 flight patterns
-- 🗺 Live interactive GCS map with route lines and no fly zone overlays
-- 🛡 Seven rule safety validation audit engine
-- 🔧 Actionable AI correction suggestions
-- 📊 Detailed mission summary reports and PDF export
-- 📂 SQLite database for mission history, search filtering, and page controls
-- 👁️ Interactive history map preview without overwriting active session
-- 📥 JSON mission file import and 2-query batch export optimization
-- 🎨 Dark and light display modes with responsive CSS layout
-- ☰ Stable sidebar toggle and persistent branding header
+- 🚁 Natural language mission creation
+- 📍 Automatic waypoint route generation
+- 🗺 Live airspace map with route overlay
+- 🛡 Seven-rule mission safety audit
+- 🔧 AI correction recommendations
+- 📂 SQLite mission history and search
+- 📤 Export to plan, waypoint, kml, json, csv, pdf
+- 🧾 Report generation with audit summaries
 
 ---
 
-## 🛡 Safety Compliance Rules
+## 🛠 Technology Stack
 
-The safety compliance engine evaluates seven rules for every generated mission.
-
-| Rule | Description | Limit |
-|---|---|---|
-| R1 | Maximum altitude ceiling | 80 meters |
-| R2 | Mission must include a takeoff command | Required |
-| R3 | Mission must include RTL or landing point | Required |
-| R4 | No waypoint may enter a no fly zone | Zero tolerance |
-| R5 | Maximum distance between route points | 500 meters |
-| R6 | Maximum mission duration | 30 minutes |
-| R7 | Battery reserve must stay below 80 percent | Required |
+- Python 3.12
+- Streamlit UI
+- Folium map rendering
+- SQLite mission storage
+- Google Gemini AI parsing
+- ReportLab PDF generation
+- Pandas data handling
 
 ---
 
-## 🗺 Route Profiles
+## 🚀 Quick Start
 
-| Pattern | Best use case |
-|---|---|
-| 🟦 Square | Campus and building perimeter scanning |
-| ⚡ Grid | Field coverage and agricultural mapping |
-| ⭕ Circle | Point of interest inspection |
-| 🔷 Perimeter | Large area boundary patrol |
-
-All routes include takeoff command, altitude assignment, sequence numbers, and Return to Launch (RTL).
-
----
-
-## 🧰 Technology Stack
-
-| Component | Tool |
-|---|---|
-| Language | Python 3.12 |
-| Framework | Streamlit |
-| AI Engine | Google Gemini AI |
-| Interactive Maps | Folium and Streamlit Folium |
-| Data Processing | Pandas |
-| Spatial Geometry | Shapely |
-| Database | SQLite |
-| PDF Export | ReportLab |
-| Environment | Python Dotenv |
-
----
-
-## 📁 Project Structure
-
-```text
-agentic-uav-mission-planner/
-├── app.py
-├── requirements.txt
-├── README.md
-├── Dockerfile
-├── docker-compose.yml
-├── .env
-├── agents/
-│   ├── mission_understanding_agent.py
-│   ├── waypoint_planner_agent.py
-│   ├── safety_compliance_agent.py
-│   ├── correction_agent.py
-│   └── report_agent.py
-├── utils/
-│   ├── database_utils.py
-│   ├── map_utils.py
-│   ├── export_utils.py
-│   └── distance_utils.py
-├── screenshots/
-├── data/
-├── database/
-├── docs/
-├── reports/
-└── tests/
-    ├── test_planner.py
-    └── test_history.py
-```
-
----
-
-## ⚙ Setup and Run
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner.git
-cd agentic-uav-mission-planner
-```
-
-### 2. Create a virtual environment
-
-```bash
-python -m venv .venv
-
-# Windows
-.venv\Scripts\activate
-
-# macOS and Linux
-source .venv/bin/activate
-```
-
-### 3. Install dependencies
+1. Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### 4. Add your Gemini API key
-
-Create a file named `.env` in the project root and add:
-
-```env
-GEMINI_API_KEY=your_google_gemini_api_key_here
-```
-
-Get your key here: https://aistudio.google.com/app/apikey
-
-### 5. Launch the app
+2. Run the app:
 
 ```bash
 streamlit run app.py
 ```
 
-Open your browser at `http://localhost:8501`
+3. Open the local Streamlit URL shown in your terminal.
 
 ---
 
-### 🐳 Running with Docker
+## 📁 Repository Layout
 
-You can easily containerize and run this application using Docker or Docker Compose.
-
-#### Option A: Using Docker Compose (Recommended)
-
-1. Ensure Docker Desktop is running and `.env` contains your `GEMINI_API_KEY`.
-2. Build and start the containerized application:
-
-```bash
-docker compose up --build
-```
-
-3. Access the app in your browser at `http://localhost:8501`.
-
-#### Option B: Using Docker CLI
-
-1. Build the Docker image:
-
-```bash
-docker build -t agentic-uav-mission-planner .
-```
-
-2. Run the container:
-
-```bash
-docker run -d -p 8501:8501 --env-file .env --name uav-planner agentic-uav-mission-planner
-```
-
-3. Open `http://localhost:8501` in your browser.
+- `app.py` - main Streamlit application
+- `agents/` - mission planning, safety, correction, report logic
+- `config/` - settings and no-fly zone data
+- `data/` - sample missions and waypoint data
+- `database/` - SQLite mission storage
+- `reports/` - generated export output
+- `screenshots/` - demo image files referenced here
+- `tests/` - automated test cases
+- `utils/` - helper utilities for maps and exports
 
 ---
 
-## 🖥 Application Pages
+## 💡 Notes
 
-| Page | Purpose |
-|---|---|
-| 🏠 Home | Mission overview and quick start dashboard |
-| 📝 Mission Input | Manual entry or natural language mission prompt |
-| ⚙ Mission Plan | Waypoint generation and mission report view |
-| 🗺 Map View | Interactive route and no fly zone map |
-| 🛡 Safety Check | Rule by rule compliance audit |
-| 💡 Suggestions | Correction recommendations |
-| 📥 Export | Download QGroundControl, ArduPilot, KML, JSON, CSV, PDF |
-| 📂 Mission History | Database search, history map preview, JSON import/export |
+- This project is a software-only mission planning demo.
+- It is not a live drone autopilot or flight controller.
+- Always validate exported mission files in a dedicated ground station.
 
 ---
 
-## 📬 Contact
+## 📄 License
 
-- 👤 Author: Abdul Azeem Hashmi
-- 🐙 GitHub: https://github.com/AbdulAzeemHashmi
-- 📦 Repository: https://github.com/AbdulAzeemHashmi/agentic-uav-mission-planner
-
----
-
-<div align="center">
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=0:0072ff,100:00c6ff&height=100&section=footer&animation=fadeIn" width="100%"/>
-
-**Built with 🚁 🤖 and 💙 for UAV research and education**
-
-![Visitors](https://visitor-badge.laobi.icu/badge?page_id=AbdulAzeemHashmi.agentic-uav-mission-planner)
-
-</div>
+MIT License
