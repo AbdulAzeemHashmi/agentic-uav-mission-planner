@@ -8,7 +8,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-Database-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![Folium](https://img.shields.io/badge/Folium-Live%20Map-77B829?style=for-the-badge)](https://python-visualization.github.io/folium/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=for-the-badge)](./LICENSE)
 
 <img src="https://img.shields.io/github/stars/AbdulAzeemHashmi/agentic-uav-mission-planner?style=social" alt="stars"/>
 <img src="https://img.shields.io/github/forks/AbdulAzeemHashmi/agentic-uav-mission-planner?style=social" alt="forks"/>
@@ -238,6 +238,7 @@ agentic-uav-mission-planner/
 ├── app.py                   Main Streamlit application
 ├── Dockerfile
 ├── docker-compose.yml
+├── LICENSE
 ├── requirements.txt
 └── README.md
 ```
@@ -337,7 +338,7 @@ Then open `http://localhost:8501` in your browser.
 
 ## 📄 License
 
-MIT License
+This project is licensed under the MIT License. See the [LICENSE](./LICENSE) file for full details.
 
 ---
 
