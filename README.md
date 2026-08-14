@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:00c6ff,100:0072ff&height=220&section=header&text=Agentic%20UAV%20Mission%20Planner&fontSize=36&fontColor=ffffff&animation=fadeIn&fontAlignY=38&desc=AI%20Mission%20Planning%20and%20Airspace%20Auditing&descAlignY=58&descSize=18" width="100%"/>
 
@@ -20,7 +20,7 @@
 
 <br/>
 
-> 🚁 Agentic UAV Mission Planner converts natural language mission goals into validated UAV flight plans with AI planning, safety checks, and export ready files.
+> 🛩️ Agentic UAV Mission Planner converts natural language mission goals into validated UAV flight plans with AI planning, safety checks, and export ready files.
 >
 > 🔒 This repository is a software simulation only. No actual drone hardware is controlled.
 
@@ -42,7 +42,7 @@ Agentic UAV Mission Planner is a Streamlit app that turns text based mission req
 
 ## 🖼 Demo Gallery
 
-### 🚁 Control Station View
+### 🛩️ Control Station View
 
 <div align="center">
   <img src="./screenshots/Screenshot%202026-08-10%20220852.png" width="90%" alt="Control Station Dashboard"/>
@@ -191,7 +191,7 @@ All routes include a takeoff command, altitude assignment, sequence numbers, and
 
 ## 🌟 Features
 
-- 🚁 Natural language mission creation
+- 🛩️ Natural language mission creation
 - 📍 Automatic waypoint route generation for four flight patterns
 - 🗺 Live airspace map with route overlay and no fly zone rendering
 - 🛡 Seven rule mission safety audit engine
@@ -346,7 +346,7 @@ This project is licensed under the MIT License. See the [LICENSE](./LICENSE) fil
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0072ff,100:00c6ff&height=100&section=footer&animation=fadeIn" width="100%"/>
 
-**Built with 🚁 🤖 and 💙 for UAV research and education**
+**Built with 🛩️ 🤖 and 💙 for UAV research and education**
 
 ![Visitors](https://visitor-badge.laobi.icu/badge?page_id=AbdulAzeemHashmi.agentic-uav-mission-planner)
 

@@ -8,7 +8,7 @@ from streamlit_folium import st_folium
 # Configure streamlit page settings (MUST be the first command)
 st.set_page_config(
     page_title="Agentic UAV Mission Planner",
-    page_icon="🚁",
+    page_icon="🛩️",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -234,15 +234,17 @@ st.markdown(f"""
         z-index: 100 !important;
     }}
 
-    /* ===== SIDEBAR TOP GAP = 0.4cm (the fix) ===== */
-    section[data-testid="stSidebar"] .block-container {{
+    /* ===== SIDEBAR TOP GAP = 0.4cm ===== */
+    section[data-testid="stSidebar"] > div:first-child,
+    section[data-testid="stSidebar"] .block-container,
+    [data-testid="stSidebarContent"],
+    [data-testid="stSidebarUserContent"] {{
         padding-top: 0.4cm !important;
         padding-left: 1rem !important;
         padding-right: 1rem !important;
     }}
 
     /* Eliminate all other top padding/margin that could interfere */
-    section[data-testid="stSidebar"] [data-testid="stSidebarUserContent"],
     section[data-testid="stSidebar"] [data-testid="stVerticalBlock"],
     section[data-testid="stSidebar"] [data-testid="stVerticalBlockBorderWrapper"],
     section[data-testid="stSidebar"] [data-testid="stAppViewBlockContainer"] {{
@@ -925,7 +927,7 @@ st.markdown(f"""
 """, unsafe_allow_html=True)
 
 # Sidebar Navigation Header
-st.sidebar.title("🚁 UAV Mission Planner")
+st.sidebar.title("🛩️ UAV Mission Planner")
 st.sidebar.caption("Agentic AI Airspace Planner & Auditor")
 st.sidebar.markdown("<hr style='border:1px solid #22223A;margin:0.4rem 0 0.8rem 0'>", unsafe_allow_html=True)
 
@@ -1004,7 +1006,7 @@ col_branding, col_toggle = st.columns([12, 1])
 with col_branding:
     st.markdown(f"""
         <div class="app-branding-card">
-            <div class="app-branding-kicker">🚁 UAV Mission Planner</div>
+            <div class="app-branding-kicker">🛩️ UAV Mission Planner</div>
             <div class="app-branding-title">Agentic AI Airspace Planner and Auditor</div>
             <div class="app-branding-subtitle">Mission planning, safety validation, and live route auditing in one place</div>
             <div class="app-branding-footer">💡 Powered by Google Gemini AI</div>
@@ -1539,7 +1541,7 @@ with col_left:
                     use_container_width=True
                 )
 
-            st.markdown("<div style='font-size:0.9rem;font-weight:700;margin-top:1.2rem;margin-bottom:0.4rem'>🚁 Industry GCS & GIS Mission Package Exports:</div>", unsafe_allow_html=True)
+            st.markdown("<div style='font-size:0.9rem;font-weight:700;margin-top:1.2rem;margin-bottom:0.4rem'>🛩️ Industry GCS & GIS Mission Package Exports:</div>", unsafe_allow_html=True)
             col_g1, col_g2, col_g3 = st.columns(3)
             with col_g1:
                 qgc_str = export_qgroundcontrol_plan(mission_meta, st.session_state.generated_waypoints)
