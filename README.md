@@ -37,21 +37,18 @@ Agentic UAV Mission Planner is an intelligent Streamlit web application that tra
 - 🛡 **7-Rule Airspace Safety Auditing**: Verifies altitude ceiling, mandatory takeoff, RTL landing points, geofenced no fly zones, leg separation, flight duration, and battery reserve limits.
 - 🔧 **AI Correction Recommendations**: Generates actionable recovery steps and parameter adjustments for non compliant missions.
 - 📤 **Multi Format Exports**: Generates production ready mission packages for QGroundControl (.plan), ArduPilot (.waypoints), Google Earth (.kml), JSON, CSV, and PDF audit reports.
+- 📂 **Mission Storage Engine**: Full SQLite database integration to save, filter, clone, load, and batch export past missions.
 
 ---
 
-## 🖼 Demo Gallery
+## 🖼️ Demo Gallery
 
 ### 🛩️ Control Station Overview & Live Airspace Radar
 
 <div align="center">
-  <img src="./screenshots/Screenshot%202026-08-14%20164559.png" width="95%" alt="Control Station Dashboard"/>
+  <img src="./screenshots/Screenshot%202026-08-14%20164559.png" width="95%" alt="Ground Control Station Overview"/>
   <br/>
-  <i>Ground Control Station Overview with telemetry metrics and safety regulation guidelines.</i>
-  <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-14%20164647.png" width="95%" alt="Live GCS Mission Radar"/>
-  <br/>
-  <i>Live GCS Mission Radar with flight route overlay and geofenced airspace rendering.</i>
+  <i>Ground Control Station Overview with telemetry metrics and active safety regulation guidelines.</i>
 </div>
 
 ---
@@ -61,43 +58,43 @@ Agentic UAV Mission Planner is an intelligent Streamlit web application that tra
 <div align="center">
   <img src="./screenshots/Screenshot%202026-08-14%20164715.png" width="95%" alt="AI Mission Parameter Input"/>
   <br/>
-  <i>Natural language request processing powered by Google Gemini AI.</i>
+  <i>Natural language request processing powered by Google Gemini AI and live airspace radar integration.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-14%20164821.png" width="95%" alt="Manual Parameter Override"/>
+  <img src="./screenshots/Screenshot%202026-08-14%20164821.png" width="95%" alt="Manual Parameter Controls"/>
   <br/>
-  <i>Manual parameter controls for cruise altitude, flight duration, and launch coordinates.</i>
+  <i>Manual parameter controls for mission name, target altitude, flight duration, and launch coordinates.</i>
 </div>
 
 ---
 
-### ⚙️ Trajectory Generation, Summary Report & Waypoint Sequence
+### ⚙️ Trajectory Generator, Summary Report & Waypoint Sequence
 
 <div align="center">
   <img src="./screenshots/Screenshot%202026-08-14%20165516.png" width="95%" alt="Mission Route Planner"/>
   <br/>
-  <i>Mission Route Planner with active setup, geometry options, and interactive waypoint editor.</i>
+  <i>Mission Route Planner with active setup, geometry options, and interactive waypoint editor table.</i>
   <br/><br/>
   <img src="./screenshots/Screenshot%202026-08-14%20165533.png" width="95%" alt="Mission Summary Report"/>
   <br/>
   <i>Mission Summary Report Card with elevated metric boxes and rule compliance checklist.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-14%20165626.png" width="95%" alt="Telemetry & Waypoints List"/>
+  <img src="./screenshots/Screenshot%202026-08-14%20165626.png" width="95%" alt="Telemetry and Coordinates Control"/>
   <br/>
-  <i>Telemetry and Coordinates Control displaying waypoint sequence list.</i>
+  <i>Telemetry and Coordinates Control displaying flight summary metrics and sequenced waypoint list.</i>
 </div>
 
 ---
 
-### 🛡️ Safety Compliance Auditor & AI Correction Suggestions
+### 🛡️ Safety Compliance Auditor & AI Fix Suggestions
 
 <div align="center">
   <img src="./screenshots/Screenshot%202026-08-14%20165641.png" width="95%" alt="Safety Compliance Auditor"/>
   <br/>
-  <i>7-Rule Safety Auditor displaying rule compliance pass states.</i>
+  <i>7-Rule Safety Auditor displaying pass status across all airspace regulation checks.</i>
   <br/><br/>
   <img src="./screenshots/Screenshot%202026-08-14%20165047.png" width="95%" alt="Correction Suggestions Agent"/>
   <br/>
-  <i>Correction Suggestions Agent providing automated recovery recommendations.</i>
+  <i>Correction Suggestions Agent providing automated recovery recommendations for safety violations.</i>
 </div>
 
 ---
@@ -107,15 +104,15 @@ Agentic UAV Mission Planner is an intelligent Streamlit web application that tra
 <div align="center">
   <img src="./screenshots/Screenshot%202026-08-14%20165118.png" width="95%" alt="Export Mission Packages"/>
   <br/>
-  <i>Export center supporting QGroundControl (.plan), ArduPilot (.waypoints), KML, JSON, CSV, and PDF.</i>
+  <i>Export center supporting QGroundControl (.plan), ArduPilot (.waypoints), KML, JSON, CSV, and PDF reports.</i>
   <br/><br/>
-  <img src="./screenshots/Screenshot%202026-08-14%20165400.png" width="95%" alt="Mission History & Database"/>
+  <img src="./screenshots/Screenshot%202026-08-14%20165400.png" width="95%" alt="Mission History and Database"/>
   <br/>
-  <i>SQLite Mission History with search, filter, date range, pagination, and batch export.</i>
+  <i>SQLite Mission History with search, filter, date range, pagination, and batch export controls.</i>
   <br/><br/>
   <img src="./screenshots/Screenshot%202026-08-14%20165159.png" width="95%" alt="Database Record Telemetry"/>
   <br/>
-  <i>Saved mission details with telemetry specs, sequence table, and quick actions.</i>
+  <i>Saved mission record view with telemetry specs, sequence table, preview on map, and quick actions.</i>
 </div>
 
 ---
@@ -124,26 +121,15 @@ Agentic UAV Mission Planner is an intelligent Streamlit web application that tra
 
 The application processes user requests through a five agent pipeline:
 
-```text
-User Input / Natural Language Prompt
-               |
-               v
-  [1] Mission Understanding Agent (Google Gemini AI)
-               |
-               v
-  [2] Waypoint Planner Agent (Geometry Engine)
-               |
-               v
-  [3] Safety Compliance Agent (7-Rule Auditor)
-               |
-               v
-  [4] Correction Agent (Compliance Heuristics)
-               |
-               v
-  [5] Report Agent (Summary & Multi-Format Exporter)
-               |
-               v
-Interactive Map, SQLite Database & GCS Mission Files
+```mermaid
+flowchart TD
+    A[User Input / Prompt] --> B[1. Mission Understanding Agent]
+    B -->|Structured Intent JSON| C[2. Waypoint Planner Agent]
+    C -->|Coordinate Trajectory| D[3. Safety Compliance Agent]
+    D -->|Rule Compliance Status| E[4. Correction Agent]
+    D -->|Audit Summary| F[5. Report Agent]
+    E -->|Automated Fixes| C
+    F --> G[Map Visuals, Database & Export Files]
 ```
 
 ---
